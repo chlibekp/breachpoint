@@ -103,7 +103,18 @@ func _load_map(id: String) -> void:
 	if map_id == id:
 		return
 	map_id = id
-	map = (load("res://scenes/maps/%s.tscn" % id) as PackedScene).instantiate() as MapRuntime
+	# Loading screen first; threaded load so the progress bar moves (falls back to sync on web).
+	var loading := LoadingScreen.new()
+	add_child(loading)
+	loading.show_match(id, roster, my_team)
+	var path := "res://scenes/maps/%s.tscn" % id
+	ResourceLoader.load_threaded_request(path)
+	var progress: Array = []
+	while ResourceLoader.load_threaded_get_status(path, progress) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		loading.set_progress(float(progress[0]) if not progress.is_empty() else 0.0)
+		await get_tree().process_frame
+	map = (ResourceLoader.load_threaded_get(path) as PackedScene).instantiate() as MapRuntime
+	loading.finish()
 	add_child(map)
 	move_child(map, 0)
 	world = SimWorld.load_map(id)

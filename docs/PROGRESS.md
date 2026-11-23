@@ -16,11 +16,33 @@ verified, what is open, and the exact next steps. Update it at the end of every 
 | 3 | Offline game feel + the Range | ✅ Done |
 | 4 | Authoritative server core | ✅ Done (prediction/reconciliation, lag comp, fog of war) |
 | 5 | Round loop | ✅ Done (buy, plant/defuse, economy, halftime, bots) |
-| 6 | Full SOLSTICE | ✅ Layout + lightmap baked. Bookmark screenshot set still to capture |
+| 6 | Full SOLSTICE | ✅ Layout + lightmap baked; bookmark set in `qa/screens/2026-11-23/solstice/` |
 | 7 | Agents and abilities | ✅ Done (8 agents, data-driven ability engine, bot casting) |
 | 8 | Front end and backend | ✅ Done (accounts, parties, MM, agent select, menus, career) |
-| 9 | NEON DISTRICT + full weapon roster | 🟡 Map + roster done; NEON bake + killfeed/buy icons open |
-| 10 | Polish and launch prep | ⏳ Not started (list below) |
+| 9 | NEON DISTRICT + full weapon roster | ✅ Map + lightmap, 14 weapons + knife, skins, model-rendered icons |
+| 10 | Polish and launch prep | 🟡 Most done (see M10 checklist); readability pass + art polish open |
+
+### Milestone 10 checklist
+
+- [x] Replays: server `.bpr` recorder (gzip stream), 14-day pruning, `GET /replays/:id`, client
+      viewer (free cam, POV, scrub, speeds) from Career → REPLAY. Tests both sides.
+- [x] Anti-cheat: input validation (non-finite, interp cap), reaction/snap/headshot/accuracy flags →
+      `anticheat_flags`; scoreboard REPORT → `reports`.
+- [x] Colour-blind modes (from M8).
+- [x] Voice chat: WebRTC data-channel signalling via the match server + server relay fallback,
+      push-to-talk (V), per-player mute/volume; text chat (Enter team / T all).
+- [x] Ping wheel (Z) with world markers; announcer + teammate ability callouts (TTS + subtitles,
+      `shared/config/voicelines.json`).
+- [x] End-of-match screen (timeline, MVP, stats); match loading screen (callouts, rosters, tip).
+- [x] Load test: `npm run loadtest` — report `qa/perf/2026-11-23-m10-load.md` (≈85 matches/core).
+- [x] Browser loading: `tools/export-web.sh` (half-res 3D textures, desktop VRAM formats only,
+      hashed filenames) → 75 MB pack / 26 MB gzip + 10 MB gzip wasm; boots in Chromium in ~4 s.
+- [x] Compatibility glow compensation (`glowScale`).
+- [ ] Readability capture: tool `scenes/dev/readability.tscn` (WCAG ratio per bookmark) — run and
+      fix failing bookmarks (night map is the risk: agents may need a stronger rim on NEON).
+- [ ] Compatibility "cool lift" with shadowed sun (needs an engine-level repro).
+- [ ] Snapshot deltas against `baseTick` (halves egress; field already in the protocol).
+- [ ] Final art polish pass on every bookmark camera; perf capture on real hardware.
 
 ## What exists (map of the code)
 
@@ -52,10 +74,13 @@ verified, what is open, and the exact next steps. Update it at the end of every 
 
 ```bash
 npm ci && TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/breachpoint_test \
-  TEST_REDIS_URL=redis://127.0.0.1:6379/1 npm run ci     # 67 Vitest tests incl. e2e matchmaking
-GODOT_BIN=… bash tools/gdcheck.sh                        # compiles all 59 scripts in the runtime
-GODOT_BIN=… npm run godot:test                           # 16 GDScript tests incl. sim parity
-GODOT_BIN=… bash tools/bake-lightmaps.sh [res://scene]   # needs Xvfb + lavapipe, ~25 min/map
+  TEST_REDIS_URL=redis://127.0.0.1:6379/1 npm run ci     # 80 Vitest tests incl. e2e matchmaking
+GODOT_BIN=… bash tools/gdcheck.sh                        # compiles all scripts in the runtime
+GODOT_BIN=… npm run godot:test                           # 21 GDScript tests incl. sim parity
+GODOT_BIN=… bash tools/bake-lightmaps.sh [res://scene]   # needs Xvfb + lavapipe, 10–25 min/map
+GODOT_BIN=… bash tools/export-web.sh                     # half-res, hashed web build
+GODOT_BIN=… bash tools/capture-bookmarks.sh <map>        # qa/screens/<date>/<map>/
+npm run loadtest -- --matches 200                        # load test report to stdout
 ```
 
 Bot-match perf (Vitest `server/tests/match.test.ts`, 10 bots): SOLSTICE avg 0.27 ms / p99 0.88 ms
@@ -81,20 +106,15 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
 4. NEON street lights are dynamic (unshadowed) so the map reads at night without a bake; the
    bake adds moon bounce only. Check web perf with ~25 omni lights (Compatibility limit 8/object).
 5. Perf numbers are from software rendering; real-hardware capture still needed.
-6. Killfeed and buy-menu weapon icons are text; spec wants icons rendered from the weapon models.
+6. Captures on lavapipe are slow (minutes per lightmapped frame); run them in the background.
 
 ## Next steps (in order)
 
-1. Wait for the NEON bake (`scratchpad/bake_neon.log` → "[bp_tools] baked"), commit
-   `scenes/maps/neon.{tscn,exr,lmbake}`, capture NEON + SOLSTICE bookmark sets into `qa/screens/<date>/`
-   (`-- --capture=res://scenes/dev/lookdev.tscn --bookmark=N --map=<id>`; lightmapped captures take
-   minutes each on lavapipe — use a long timeout).
-2. Weapon icons: render each weapon recipe to a transparent PNG (SubViewport) → killfeed + buy menu.
-3. M10: replays (record inputs+snapshots per match, viewer scene), anti-cheat heuristics + report
-   button, WebRTC voice signalling, 200-match load test, web loading optimisations (OGG audio,
-   half-res textures), perf fly-through capture, readability/contrast capture, Compatibility parity.
-4. Docs: DECISIONS (procedural pipeline, dynamic NEON lights), CREDITS (npm licences: argon2, pg,
-   ioredis, ws), docker-compose env for the API.
+1. Run the readability capture on both maps (`res://scenes/dev/readability.tscn -- --map=<id>
+   --out=<dir>`), then raise agent rim/emissive or map lighting where a bookmark is under 3:1.
+2. Snapshot delta compression (protocol: encode players relative to `baseTick`, acked by the client).
+3. Compatibility shadow-lift investigation; real-hardware perf captures (144 fps Medium / 60 fps web).
+4. Art polish pass using the bookmark sets in `qa/screens/2026-11-23/`.
 
 ## Environment notes for agents (cloud container)
 
@@ -117,4 +137,8 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
 - **2026-11-23 (2)** — M2–M8: procedural art pipeline, SOLSTICE, KESTREL + 7 agents, shared sim,
   authoritative server + netcode, round loop, bots, abilities, backend + menus.
 - **2026-11-23 (3)** — M9: full weapon roster with skins; NEON DISTRICT (metro A / market B /
-  arcade Mid, Rift monolith); SOLSTICE lightmap baked and committed; map rotation; NEON bake started.
+  arcade Mid, Rift monolith); both lightmaps baked; map rotation; weapon icons.
+- **2026-11-23 (4)** — M10: replays, anti-cheat, reports, voice + text chat, ping wheel, announcer,
+  end/loading screens, load test (+LOS optimisation), web build 217→75 MB with hashed files.
+  Fixed: matchmade matches ignored lobby map/mode (ratings never moved), workers never released,
+  e2e test leaked its server.

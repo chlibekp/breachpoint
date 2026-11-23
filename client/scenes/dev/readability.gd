@@ -27,6 +27,10 @@ func _ready() -> void:
 		_lut.append(c / 12.92 if c <= 0.04045 else pow((c + 0.055) / 1.055, 2.4))
 	map = (load("res://scenes/maps/%s.tscn" % map_id) as PackedScene).instantiate() as MapRuntime
 	add_child(map)
+	# Freeze everything that animates so the only change between the two renders is the agent.
+	map.set_process(false)
+	for n: Node in map.find_children("*", "GPUParticles3D", true, false) + map.find_children("*", "CPUParticles3D", true, false):
+		(n as Node3D).visible = false
 	camera = Camera3D.new()
 	camera.current = true
 	add_child(camera)
@@ -54,7 +58,7 @@ func _ready() -> void:
 		camera.fov = float(m.get("fov", 75.0))
 		if not _place(rig):
 			continue
-		var box := _screen_box(rig)
+		var box := Rect2i(0, 0, 100000, 100000)
 		var with_agent := await _grab()
 		# Some rig parts are not under the rig's visibility, so move it out of view instead.
 		var at := rig.global_position
@@ -112,17 +116,6 @@ func _grab() -> Image:
 	return get_viewport().get_texture().get_image()
 
 
-func _screen_box(rig: Node3D) -> Rect2i:
-	var pts: Array[Vector2] = []
-	for y: float in [0.0, 1.0, 1.95]:
-		for o: Vector3 in [Vector3(-0.6, 0, -0.6), Vector3(0.6, 0, 0.6), Vector3(-0.6, 0, 0.6), Vector3(0.6, 0, -0.6)]:
-			pts.append(camera.unproject_position(rig.global_position + o + Vector3(0, y, 0)))
-	var r := Rect2(pts[0], Vector2.ZERO)
-	for p: Vector2 in pts:
-		r = r.expand(p)
-	return Rect2i(r)
-
-
 func _lum(d: PackedByteArray, i: int) -> float:
 	return 0.2126 * _lut[d[i]] + 0.7152 * _lut[d[i + 1]] + 0.0722 * _lut[d[i + 2]]
 
@@ -133,9 +126,6 @@ func _measure(a: Image, b: Image, box: Rect2i) -> Dictionary:
 	var da := a.get_data()
 	var db := b.get_data()
 	var w := a.get_width()
-	# The box is in viewport (stretch) space; the grabbed image is in window pixels.
-	var k := Vector2(a.get_size()) / get_viewport().get_visible_rect().size
-	box = Rect2i(Vector2i(Vector2(box.position) * k), Vector2i((Vector2(box.size) * k).ceil()))
 	box = box.intersection(Rect2i(Vector2i.ZERO, a.get_size()))
 	var la := 0.0
 	var lb := 0.0
@@ -147,8 +137,8 @@ func _measure(a: Image, b: Image, box: Rect2i) -> Dictionary:
 				la += _lum(da, i)
 				lb += _lum(db, i)
 				n += 1
-				# Outline the mask in the saved image for review.
-				a.set_pixel(x, y, a.get_pixel(x, y).lerp(Color(1, 0, 1), 0.15))
+				# Tint the mask in the saved image for review.
+				a.set_pixel(x, y, a.get_pixel(x, y).lerp(Color(1, 0, 1), 0.25))
 	if n < 200:
 		return {"ratio": 0.0, "agent_l": 0.0, "behind_l": 0.0, "pixels": n}
 	la /= n
