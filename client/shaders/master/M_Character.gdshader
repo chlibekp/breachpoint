@@ -35,7 +35,7 @@ vec3 saturate_color(vec3 c, float s) {
 }
 
 void vertex() {
-	if (viewmodel) viewmodel_project(VERTEX, MODELVIEW_MATRIX, PROJECTION_MATRIX, POSITION);
+	viewmodel_project(VERTEX, MODELVIEW_MATRIX, PROJECTION_MATRIX, POSITION);
 }
 
 void fragment() {

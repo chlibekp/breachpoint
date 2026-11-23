@@ -24,6 +24,13 @@ var _death_t: float = 0.0
 var _weapon_pivot: Node3D
 
 
+func revive() -> void:
+	dead = false
+	_death_t = 0.0
+	if weapon != null:
+		weapon.visible = true
+
+
 func setup(target_rig: AgentRig) -> void:
 	rig = target_rig
 	_weapon_pivot = Node3D.new()

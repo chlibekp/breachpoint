@@ -24,7 +24,7 @@ func _init() -> void:
 	for s: Callable in sections:
 		s.call()
 	_lighting()
-	mb.finalize(ProjectSettings.globalize_path("res://").path_join("../shared/maps").simplify_path(), 0.14)
+	mb.finalize(ProjectSettings.globalize_path("res://").path_join("../shared/maps").simplify_path(), 0.2)
 	map_root.set("map_id", "solstice")
 	var err := SceneIO.save(map_root, OUT, "res://scripts/maps/map_runtime.gd")
 	# Set the exported map_id in the saved scene (script is attached post-save).

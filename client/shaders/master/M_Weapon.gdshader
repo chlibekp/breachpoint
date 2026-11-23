@@ -27,7 +27,7 @@ varying vec3 obj_pos;
 
 void vertex() {
 	obj_pos = VERTEX;
-	if (viewmodel) viewmodel_project(VERTEX, MODELVIEW_MATRIX, PROJECTION_MATRIX, POSITION);
+	viewmodel_project(VERTEX, MODELVIEW_MATRIX, PROJECTION_MATRIX, POSITION);
 }
 
 void fragment() {

@@ -1,0 +1,464 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/map_runtime.gd" id="bp_root_script"]
+
+[ext_resource type="FontFile" path="res://assets/fonts/ChakraPetch-Bold.ttf" id="1_xwtov"]
+[ext_resource type="Shader" path="res://shaders/sky/S_Stylized.gdshader" id="2_bcn72"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_floor.res" id="3_6hryj"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_floor_dark.res" id="4_nn8rs"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_panel.res" id="5_us40a"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_trim.res" id="6_8gbqy"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_light_strip.res" id="7_285xf"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_panel_dark.res" id="8_yv5y1"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_accent.res" id="9_i5uwk"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_metal.res" id="10_dstbm"]
+[ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_site_paint.res" id="11_grr2i"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_f2feq"]
+shader = ExtResource("2_bcn72")
+shader_parameter/zenith_color = null
+shader_parameter/horizon_color = null
+shader_parameter/ground_color = null
+shader_parameter/sun_color = null
+shader_parameter/cloud_light = null
+shader_parameter/cloud_shadow = null
+shader_parameter/cloud_cover = 0.3
+shader_parameter/cloud_speed = null
+shader_parameter/energy = null
+
+[sub_resource type="Sky" id="Sky_lr1bp"]
+sky_material = SubResource("ShaderMaterial_f2feq")
+
+[sub_resource type="Environment" id="Environment_pdcmx"]
+background_mode = 2
+sky = SubResource("Sky_lr1bp")
+ambient_light_source = 3
+ambient_light_energy = 0.7
+tonemap_mode = 4
+ssao_enabled = true
+glow_enabled = true
+glow_hdr_threshold = 1.3
+adjustment_enabled = true
+adjustment_contrast = 1.05
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_anj03"]
+size = Vector3(36, 0.6, 80)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_n6k5h"]
+size = Vector3(0.8, 9, 80)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ix2n1"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_jew0p"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4m14i"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_q8v1h"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4rlq4"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0cuco"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_l1oht"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7l7ad"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8lli8"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1mm5n"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kildh"]
+size = Vector3(0.8, 9, 80)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6ypct"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_y4p3d"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nbi3e"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r4uot"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8x5s8"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4dw11"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rc04o"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hfovj"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wlgps"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gpisi"]
+size = Vector3(1.4, 9, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_y65qb"]
+size = Vector3(37.6, 9, 0.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pcrmt"]
+size = Vector3(37.6, 9, 0.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ghw56"]
+size = Vector3(10, 1.05, 0.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bmagv"]
+size = Vector3(0.12, 2.4, 1.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xhu1h"]
+size = Vector3(0.12, 2.4, 1.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ssrq0"]
+size = Vector3(0.12, 2.4, 1.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3wq00"]
+size = Vector3(0.12, 2.4, 1.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_uqpdt"]
+size = Vector3(0.12, 2.4, 1.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_b478t"]
+size = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tb10e"]
+size = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_stmso"]
+size = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sbkvk"]
+size = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_13gjh"]
+size = Vector3(0.6, 2.2, 6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kiruf"]
+size = Vector3(6, 3.5, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7tw60"]
+size = Vector3(0.5, 3.5, 6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_npmte"]
+size = Vector3(2, 1, 4)
+
+[node name="Range" type="Node3D" unique_id=340335351]
+script = ExtResource("bp_root_script")
+map_id = "range"
+
+[node name="@Label3D@2" type="Label3D" parent="." unique_id=857652511]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -6.5, 0.03, -10.2)
+pixel_size = 0.008
+modulate = Color(0.95, 0.97, 1, 0.8)
+text = "10 M"
+font = ExtResource("1_xwtov")
+font_size = 128
+
+[node name="@Label3D@3" type="Label3D" parent="." unique_id=1437464933]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -6.5, 0.03, -20.2)
+pixel_size = 0.008
+modulate = Color(0.95, 0.97, 1, 0.8)
+text = "20 M"
+font = ExtResource("1_xwtov")
+font_size = 128
+
+[node name="@Label3D@4" type="Label3D" parent="." unique_id=763557178]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -6.5, 0.03, -30.2)
+pixel_size = 0.008
+modulate = Color(0.95, 0.97, 1, 0.8)
+text = "30 M"
+font = ExtResource("1_xwtov")
+font_size = 128
+
+[node name="@Label3D@5" type="Label3D" parent="." unique_id=1069949970]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -6.5, 0.03, -50.2)
+pixel_size = 0.008
+modulate = Color(0.95, 0.97, 1, 0.8)
+text = "50 M"
+font = ExtResource("1_xwtov")
+font_size = 128
+
+[node name="@Label3D@6" type="Label3D" parent="." unique_id=333916126]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.2, -71.95)
+pixel_size = 0.008
+shaded = true
+modulate = Color(0.9254902, 0.9098039, 0.88235295, 1)
+text = "PRISM TRAINING FACILITY"
+font = ExtResource("1_xwtov")
+font_size = 128
+
+[node name="@Label3D@7" type="Label3D" parent="." unique_id=242467948]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -17.95, 3.4, -45)
+pixel_size = 0.0048
+shaded = true
+modulate = Color(0.9254902, 0.9098039, 0.88235295, 1)
+text = "PLANT PRACTICE"
+font = ExtResource("1_xwtov")
+font_size = 128
+
+[node name="@Label3D@8" type="Label3D" parent="." unique_id=1785816661]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 17.95, 3.4, -52)
+pixel_size = 0.0048
+shaded = true
+modulate = Color(0.9254902, 0.9098039, 0.88235295, 1)
+text = "ABILITY SANDBOX"
+font = ExtResource("1_xwtov")
+font_size = 128
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1437855993]
+environment = SubResource("Environment_pdcmx")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=2089477153]
+transform = Transform3D(0.8660254, -0.42402405, 0.26495963, 0, 0.52991927, 0.8480481, -0.5, -0.73443115, 0.45892355, 0, 0, 0)
+light_color = Color(1, 0.94509804, 0.8627451, 1)
+light_energy = 1.4
+shadow_enabled = true
+
+[node name="LightmapGI" type="LightmapGI" parent="." unique_id=732712599]
+quality = 0
+bounces = 2
+texel_scale = 0.6
+
+[node name="Geometry" type="Node3D" parent="." unique_id=825858082]
+
+[node name="SM_floor" type="MeshInstance3D" parent="Geometry" unique_id=1147118721]
+mesh = ExtResource("3_6hryj")
+
+[node name="SM_floor_dark" type="MeshInstance3D" parent="Geometry" unique_id=993183007]
+mesh = ExtResource("4_nn8rs")
+
+[node name="SM_panel" type="MeshInstance3D" parent="Geometry" unique_id=1144869539]
+mesh = ExtResource("5_us40a")
+
+[node name="SM_trim" type="MeshInstance3D" parent="Geometry" unique_id=266423146]
+mesh = ExtResource("6_8gbqy")
+
+[node name="SM_light_strip" type="MeshInstance3D" parent="Geometry" unique_id=13922910]
+cast_shadow = 0
+mesh = ExtResource("7_285xf")
+
+[node name="SM_panel_dark" type="MeshInstance3D" parent="Geometry" unique_id=1696638360]
+mesh = ExtResource("8_yv5y1")
+
+[node name="SM_accent" type="MeshInstance3D" parent="Geometry" unique_id=602628248]
+cast_shadow = 0
+mesh = ExtResource("9_i5uwk")
+
+[node name="SM_metal" type="MeshInstance3D" parent="Geometry" unique_id=1017894376]
+mesh = ExtResource("10_dstbm")
+
+[node name="SM_site_paint" type="MeshInstance3D" parent="Geometry" unique_id=1134866290]
+mesh = ExtResource("11_grr2i")
+
+[node name="Collision" type="StaticBody3D" parent="." unique_id=185432094]
+
+[node name="Box0_stone" type="CollisionShape3D" parent="Collision" unique_id=1470412294]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, -32)
+shape = SubResource("BoxShape3D_anj03")
+metadata/tag = "stone"
+
+[node name="Box1_stone" type="CollisionShape3D" parent="Collision" unique_id=2116667498]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.4, 4.5, -32)
+shape = SubResource("BoxShape3D_n6k5h")
+metadata/tag = "stone"
+
+[node name="Box2_stone" type="CollisionShape3D" parent="Collision" unique_id=345775354]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, 4)
+shape = SubResource("BoxShape3D_ix2n1")
+metadata/tag = "stone"
+
+[node name="Box3_stone" type="CollisionShape3D" parent="Collision" unique_id=2110927065]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -4)
+shape = SubResource("BoxShape3D_jew0p")
+metadata/tag = "stone"
+
+[node name="Box4_stone" type="CollisionShape3D" parent="Collision" unique_id=1422404247]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -12)
+shape = SubResource("BoxShape3D_4m14i")
+metadata/tag = "stone"
+
+[node name="Box5_stone" type="CollisionShape3D" parent="Collision" unique_id=775884049]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -20)
+shape = SubResource("BoxShape3D_q8v1h")
+metadata/tag = "stone"
+
+[node name="Box6_stone" type="CollisionShape3D" parent="Collision" unique_id=2139344083]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -28)
+shape = SubResource("BoxShape3D_4rlq4")
+metadata/tag = "stone"
+
+[node name="Box7_stone" type="CollisionShape3D" parent="Collision" unique_id=597473102]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -36)
+shape = SubResource("BoxShape3D_0cuco")
+metadata/tag = "stone"
+
+[node name="Box8_stone" type="CollisionShape3D" parent="Collision" unique_id=1317424419]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -44)
+shape = SubResource("BoxShape3D_l1oht")
+metadata/tag = "stone"
+
+[node name="Box9_stone" type="CollisionShape3D" parent="Collision" unique_id=56153431]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -52)
+shape = SubResource("BoxShape3D_7l7ad")
+metadata/tag = "stone"
+
+[node name="Box10_stone" type="CollisionShape3D" parent="Collision" unique_id=1473918595]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -60)
+shape = SubResource("BoxShape3D_8lli8")
+metadata/tag = "stone"
+
+[node name="Box11_stone" type="CollisionShape3D" parent="Collision" unique_id=1686933215]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.7, 4.5, -68)
+shape = SubResource("BoxShape3D_1mm5n")
+metadata/tag = "stone"
+
+[node name="Box12_stone" type="CollisionShape3D" parent="Collision" unique_id=39880131]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.4, 4.5, -32)
+shape = SubResource("BoxShape3D_kildh")
+metadata/tag = "stone"
+
+[node name="Box13_stone" type="CollisionShape3D" parent="Collision" unique_id=1416983474]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, 4)
+shape = SubResource("BoxShape3D_6ypct")
+metadata/tag = "stone"
+
+[node name="Box14_stone" type="CollisionShape3D" parent="Collision" unique_id=1593472427]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -4)
+shape = SubResource("BoxShape3D_y4p3d")
+metadata/tag = "stone"
+
+[node name="Box15_stone" type="CollisionShape3D" parent="Collision" unique_id=1918844401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -12)
+shape = SubResource("BoxShape3D_nbi3e")
+metadata/tag = "stone"
+
+[node name="Box16_stone" type="CollisionShape3D" parent="Collision" unique_id=1829279846]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -20)
+shape = SubResource("BoxShape3D_r4uot")
+metadata/tag = "stone"
+
+[node name="Box17_stone" type="CollisionShape3D" parent="Collision" unique_id=1935828585]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -28)
+shape = SubResource("BoxShape3D_8x5s8")
+metadata/tag = "stone"
+
+[node name="Box18_stone" type="CollisionShape3D" parent="Collision" unique_id=285304166]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -36)
+shape = SubResource("BoxShape3D_4dw11")
+metadata/tag = "stone"
+
+[node name="Box19_stone" type="CollisionShape3D" parent="Collision" unique_id=1601300932]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -44)
+shape = SubResource("BoxShape3D_rc04o")
+metadata/tag = "stone"
+
+[node name="Box20_stone" type="CollisionShape3D" parent="Collision" unique_id=704537978]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -52)
+shape = SubResource("BoxShape3D_hfovj")
+metadata/tag = "stone"
+
+[node name="Box21_stone" type="CollisionShape3D" parent="Collision" unique_id=591714737]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -60)
+shape = SubResource("BoxShape3D_wlgps")
+metadata/tag = "stone"
+
+[node name="Box22_stone" type="CollisionShape3D" parent="Collision" unique_id=1304117189]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7, 4.5, -68)
+shape = SubResource("BoxShape3D_gpisi")
+metadata/tag = "stone"
+
+[node name="Box23_stone" type="CollisionShape3D" parent="Collision" unique_id=440515080]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, -72.4)
+shape = SubResource("BoxShape3D_y65qb")
+metadata/tag = "stone"
+
+[node name="Box24_stone" type="CollisionShape3D" parent="Collision" unique_id=1463901514]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 8.4)
+shape = SubResource("BoxShape3D_pcrmt")
+metadata/tag = "stone"
+
+[node name="Box25_stone" type="CollisionShape3D" parent="Collision" unique_id=690468072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -0.5)
+shape = SubResource("BoxShape3D_ghw56")
+metadata/tag = "stone"
+
+[node name="Box26_metal_thin" type="CollisionShape3D" parent="Collision" unique_id=1194334001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.2, 0.2)
+shape = SubResource("BoxShape3D_bmagv")
+metadata/tag = "metal_thin"
+
+[node name="Box27_metal_thin" type="CollisionShape3D" parent="Collision" unique_id=1191109604]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1.2, 0.2)
+shape = SubResource("BoxShape3D_xhu1h")
+metadata/tag = "metal_thin"
+
+[node name="Box28_metal_thin" type="CollisionShape3D" parent="Collision" unique_id=1097843079]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.2)
+shape = SubResource("BoxShape3D_ssrq0")
+metadata/tag = "metal_thin"
+
+[node name="Box29_metal_thin" type="CollisionShape3D" parent="Collision" unique_id=669274026]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.2, 0.2)
+shape = SubResource("BoxShape3D_3wq00")
+metadata/tag = "metal_thin"
+
+[node name="Box30_metal_thin" type="CollisionShape3D" parent="Collision" unique_id=932824750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.2, 0.2)
+shape = SubResource("BoxShape3D_uqpdt")
+metadata/tag = "metal_thin"
+
+[node name="Box31_metal_heavy" type="CollisionShape3D" parent="Collision" unique_id=143506209]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 0.6, -42)
+shape = SubResource("BoxShape3D_b478t")
+metadata/tag = "metal_heavy"
+
+[node name="Box32_metal_heavy" type="CollisionShape3D" parent="Collision" unique_id=2080229660]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.3, 0.6, -42.3)
+shape = SubResource("BoxShape3D_tb10e")
+metadata/tag = "metal_heavy"
+
+[node name="Box33_metal_heavy" type="CollisionShape3D" parent="Collision" unique_id=1346643470]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0.6, -48)
+shape = SubResource("BoxShape3D_stmso")
+metadata/tag = "metal_heavy"
+
+[node name="Box34_metal_heavy" type="CollisionShape3D" parent="Collision" unique_id=1021755777]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 1.8, -42.2)
+shape = SubResource("BoxShape3D_sbkvk")
+metadata/tag = "metal_heavy"
+
+[node name="Box35_stone" type="CollisionShape3D" parent="Collision" unique_id=1041757809]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2, 1.1, -45)
+shape = SubResource("BoxShape3D_13gjh")
+metadata/tag = "stone"
+
+[node name="Box36_stone" type="CollisionShape3D" parent="Collision" unique_id=1736089303]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1.75, -48)
+shape = SubResource("BoxShape3D_kiruf")
+metadata/tag = "stone"
+
+[node name="Box37_stone" type="CollisionShape3D" parent="Collision" unique_id=872157543]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.75, -57)
+shape = SubResource("BoxShape3D_7tw60")
+metadata/tag = "stone"
+
+[node name="Box38_metal_thin" type="CollisionShape3D" parent="Collision" unique_id=1774209303]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.5, -58)
+shape = SubResource("BoxShape3D_npmte")
+metadata/tag = "metal_thin"

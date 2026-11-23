@@ -5,8 +5,8 @@
 class_name Viewmodel
 extends Node3D
 
-const HIP_POSITION := Vector3(0.16, -0.17, -0.33)
-const ADS_POSITION := Vector3(0.0, -0.135, -0.24)
+const HIP_POSITION := Vector3(0.17, -0.2, -0.42)
+const ADS_POSITION := Vector3(0.0, -0.163, -0.3)
 
 var weapon: Node3D
 var weapon_id: String = ""
@@ -119,7 +119,7 @@ func _process(_delta: float) -> void:
 	if weapon == null or arms.is_empty():
 		return
 	var targets := {"r": weapon.get_node_or_null("grip"), "l": weapon.get_node_or_null("left_hand_ik")}
-	var elbows := {"r": Vector3(0.3, -0.42, 0.02), "l": Vector3(-0.18, -0.4, -0.12)}
+	var elbows := {"r": Vector3(0.33, -0.44, -0.14), "l": Vector3(-0.2, -0.46, -0.36)}
 	for side: String in ["l", "r"]:
 		var target := targets[side] as Node3D
 		if target == null:
