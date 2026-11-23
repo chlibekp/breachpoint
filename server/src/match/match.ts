@@ -54,6 +54,10 @@ export interface MatchOptions {
   replayDir?: string;
 }
 
+/** Fog-of-war sample heights (m above feet): chest, head, feet, lead-chest. */
+const SIGHT_HEIGHTS = [1.15, 1.6, 0.35, 1.15];
+const VIS_HOLD_TICKS = 3;
+
 export const Phase = { BUY: 0, COMBAT: 1, POSTPLANT: 2, END: 3, MATCH_OVER: 4 } as const;
 export const ChargeStateId = {
   NONE: 0,
@@ -775,6 +779,7 @@ export class Match {
   step(): void {
     if (this.finished) return;
     this.tick++;
+    this.invalidateSightOnBlockers();
     const dt = 1 / TICK_RATE;
     // Phase timers.
     if (this.tick >= this.phaseEndsAt) {
@@ -1328,6 +1333,19 @@ export class Match {
   // ------------------------------------------------------------------ visibility + snapshots (spec §13.5)
 
   private visCache = new Map<number, number>();
+  private blockerSig = 0;
+
+  /** Smokes/walls appearing, growing or ending invalidate the temporal LOS reuse in canSee. */
+  private invalidateSightOnBlockers(): void {
+    let sig = 0;
+    for (const e of this.abilities.effects)
+      if (e.kind === "smoke" || e.kind === "wall")
+        sig = (Math.imul(sig, 31) + e.id * 997 + Math.round(e.radius * 8)) | 0;
+    if (sig !== this.blockerSig) {
+      this.blockerSig = sig;
+      this.visCache.clear();
+    }
+  }
   private blocksSight = (tag: number): boolean => {
     const id = this.tags[tag]?.id;
     return id !== "invisible" && id !== "glass" && id !== "fabric";
@@ -1337,7 +1355,14 @@ export class Match {
   canSee(viewer: ServerPlayer, target: ServerPlayer): boolean {
     const key = viewer.id * 4096 + target.id;
     const cached = this.visCache.get(key);
-    if (cached !== undefined && cached >> 1 === this.tick) return (cached & 1) === 1;
+    if (cached !== undefined) {
+      // Temporal reuse (load test: LOS was >50 % of tick time). A visible result holds for
+      // VIS_HOLD_TICKS (inside the 6-tick send grace); a hidden one is rechecked every 2nd tick,
+      // covered by the 2-tick + ping lead margin in computeSight.
+      const age = this.tick - (cached >> 1);
+      const vis = (cached & 1) === 1;
+      if (age === 0 || (vis ? age < VIS_HOLD_TICKS : age < 2)) return vis;
+    }
     const vis = this.computeSight(viewer, target);
     this.visCache.set(key, (this.tick << 1) | (vis ? 1 : 0));
     return vis;
@@ -1354,16 +1379,12 @@ export class Match {
     // Lead margin: also test where the target will be in ~2 ticks + latency, so enemies are sent
     // slightly before they become visible (no pop-in).
     const lead = (2 + (viewer.pingMs / 1000) * TICK_RATE) / TICK_RATE;
-    const pts: [number, number, number][] = [];
     const crouchK = 1 - target.move.crouch * 0.33;
-    for (const hy of [1.15, 1.6, 0.35])
-      pts.push([target.move.x, target.move.y + hy * crouchK, target.move.z]);
-    pts.push([
-      target.move.x + target.move.vx * lead,
-      target.move.y + 1.15 * crouchK,
-      target.move.z + target.move.vz * lead,
-    ]);
-    for (const [px, py, pz] of pts) {
+    // Chest, head, feet, then the chest where the target will be (no per-call allocation).
+    for (let i = 0; i < 4; i++) {
+      const px = target.move.x + (i === 3 ? target.move.vx * lead : 0);
+      const py = target.move.y + SIGHT_HEIGHTS[i]! * crouchK;
+      const pz = target.move.z + (i === 3 ? target.move.vz * lead : 0);
       const dx = px - ex;
       const dy = py - ey;
       const dz = pz - ez;
