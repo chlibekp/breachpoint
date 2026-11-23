@@ -146,7 +146,7 @@ func _on_message(msg: Dictionary) -> void:
 			var victim := int(msg["victimId"])
 			if killer == my_id:
 				hud.hit("kill")
-			hud.killfeed(_name(killer), _name(victim), str(Data.get_weapon(msg["weapon"]).get("name", msg["weapon"])), bool(msg["headshot"]), bool(msg["wallbang"]), _team(killer) == my_team)
+			hud.killfeed(_name(killer), _name(victim), str(Data.get_weapon(msg["weapon"]).get("name", msg["weapon"])), bool(msg["headshot"]), bool(msg["wallbang"]), _team(killer) == my_team, str(msg["weapon"]) if not Data.get_weapon(msg["weapon"]).is_empty() else "")
 			if victim == my_id and player != null:
 				player.alive = false
 				player.health = 0

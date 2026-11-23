@@ -118,7 +118,7 @@ func _on_shot(origin: Vector3, dirs: Array, weapon_id: String, _shot_number: int
 				best_kind = kind
 			if killed:
 				kills += 1
-				hud.killfeed("You", "Bot %d" % bot.bot_id, def["name"], hit["zone"] == "head", bool(hit["wallbang"]), true)
+				hud.killfeed("You", "Bot %d" % bot.bot_id, def["name"], hit["zone"] == "head", bool(hit["wallbang"]), true, str(def["id"]))
 	if best_kind != "":
 		hud.hit(best_kind)
 

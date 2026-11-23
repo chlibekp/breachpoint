@@ -3,15 +3,17 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://q0erixkiif45"
-path="res://.godot/imported/T_Brick_Dark_A.png-acabbbbebb7a07009eb2c3115c40429d.ctex"
+path.s3tc="res://.godot/imported/T_Brick_Dark_A.png-acabbbbebb7a07009eb2c3115c40429d.s3tc.ctex"
+path.etc2="res://.godot/imported/T_Brick_Dark_A.png-acabbbbebb7a07009eb2c3115c40429d.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/maps/neon/textures/T_Brick_Dark_A.png"
-dest_files=["res://.godot/imported/T_Brick_Dark_A.png-acabbbbebb7a07009eb2c3115c40429d.ctex"]
+dest_files=["res://.godot/imported/T_Brick_Dark_A.png-acabbbbebb7a07009eb2c3115c40429d.s3tc.ctex", "res://.godot/imported/T_Brick_Dark_A.png-acabbbbebb7a07009eb2c3115c40429d.etc2.ctex"]
 
 [params]
 

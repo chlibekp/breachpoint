@@ -214,17 +214,34 @@ func damage_from(world_dir: Vector3) -> void:
 	_arcs.append({"dir": atan2(local.x, -local.z), "t": 1.0})
 
 
-func killfeed(killer: String, victim: String, weapon: String, headshot: bool, wallbang: bool, killer_ally: bool) -> void:
+func killfeed(killer: String, victim: String, weapon: String, headshot: bool, wallbang: bool, killer_ally: bool, weapon_id: String = "") -> void:
 	var p := _panel_box()
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	var k := _label(killer, &"ValueLabel")
 	k.add_theme_color_override("font_color", Color("#3FE0D0") if killer_ally else Color("#FF4655"))
-	var w := _label("%s%s%s" % [weapon.to_upper(), "  ◎" if headshot else "", "  ▥" if wallbang else ""], &"MutedLabel")
+	# Weapon silhouette rendered from the model; the name shows until (or if) the icon is ready.
+	var w := _label(weapon.to_upper(), &"MutedLabel")
+	var icon := TextureRect.new()
+	icon.custom_minimum_size = Vector2(84, 30)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.modulate = Color("#ECEFF4")
+	icon.visible = false
+	if weapon_id != "":
+		WeaponIcons.request(self, weapon_id, func(tex: Texture2D) -> void:
+			if tex != null and is_instance_valid(icon):
+				icon.texture = tex
+				icon.visible = true
+				w.visible = false)
+	var marks := _label("%s%s" % ["◎" if headshot else "", " ▥" if wallbang else ""], &"MutedLabel")
+	marks.visible = headshot or wallbang
 	var v := _label(victim, &"ValueLabel")
 	v.add_theme_color_override("font_color", Color("#FF4655") if killer_ally else Color("#3FE0D0"))
 	row.add_child(k)
+	row.add_child(icon)
 	row.add_child(w)
+	row.add_child(marks)
 	row.add_child(v)
 	p.add_child(row)
 	_killfeed.add_child(p)

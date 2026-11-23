@@ -64,7 +64,9 @@ func _ready() -> void:
 		lbl.theme_type_variation = &"AccentLabel"
 		col.add_child(lbl)
 		for w: Dictionary in by_class.get(cls, []):
-			col.add_child(_item_button(w["id"], str(w["name"]), int(w["cost"])))
+			var wb := _item_button(w["id"], str(w["name"]), int(w["cost"]))
+			_add_icon(wb, str(w["id"]))
+			col.add_child(wb)
 		cols.add_child(col)
 	var shields := VBoxContainer.new()
 	shields.add_theme_constant_override("separation", 8)
@@ -82,6 +84,23 @@ func _ready() -> void:
 	hint.text = "B  close    ·    purchases carry over if you survive"
 	hint.theme_type_variation = &"MutedLabel"
 	v.add_child(hint)
+
+
+## Weapon silhouette (rendered from the model) on the right side of a buy button.
+func _add_icon(b: Button, weapon_id: String) -> void:
+	var icon := TextureRect.new()
+	icon.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	icon.offset_left = -96
+	icon.offset_right = -6
+	icon.offset_top = 6
+	icon.offset_bottom = -6
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.modulate = Color(1, 1, 1, 0.85)
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(icon)
+	b.custom_minimum_size.x = 220
+	icon.ready.connect(func() -> void: WeaponIcons.apply(icon, weapon_id), CONNECT_ONE_SHOT)
 
 
 func _item_button(item: String, label: String, cost: int) -> Button:
