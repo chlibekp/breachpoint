@@ -178,3 +178,10 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
   player in a full 10-player fight. The load test measures about 8 KB/s (64 kbit/s) per client with
   full snapshots, fog-of-war culling and quantised fields. Deltas against `baseTick` stay as an
   optimisation: the field is reserved and currently always 0.
+- **Character readability uses three levers, measured by `scenes/dev/readability.tscn`.**
+  - A value floor on every agent material (HSV v' = 0.30 + 0.70·v).
+  - Per map, a character-only fill light aimed from the camera (`MapRuntime.character_fill`).
+  - A global albedo self-illumination (`character_lift`).
+  - Daylight SOLSTICE uses no fill or lift; NEON uses fill 7 and lift 3.
+  - The metric is the WCAG ratio of the agent's mean relative luminance against the same pixels
+    without the agent. Glow, SSR reflections and the agent's own shadow are excluded.

@@ -42,9 +42,11 @@ verified, what is open, and the exact next steps. Update it at the end of every 
   - Tool: `res://scenes/dev/readability.tscn -- --map=<id> --out=<dir>`.
   - Fixes so far: a character-only camera fill light, plus `character_lift` albedo self-illumination
     (MapRuntime exports, set per map).
-  - NEON: worst 1.89, 4 of 13 bookmarks pass (`qa/readability/2026-11-23-neon/report.json`).
-  - Remaining gap is art: KESTREL's navy outfit parts are too dark in value. Next step: a per-agent
-    value pass (lighter mid-tones on enemy-visible surfaces), then re-run.
+  - Character value floor in `AgentRig` (HSV v' = 0.30 + 0.70·v).
+  - NEON: fill 7, lift 3. Worst 2.21; 8 of 13 bookmarks pass (`qa/readability/2026-11-23-neon/`).
+  - Failing: B Alley, B Market, Market stalls, Defender spawn, Turnstiles. Their backgrounds are
+    brighter (lamps, wet reflections), so the next fix is local: dim or move those lamps, or add
+    darker backdrops behind the common angles.
   - SOLSTICE readability run: see `qa/readability/2026-11-23-solstice/` once it completes.
 - [ ] Compatibility "cool lift" with shadowed sun (needs an engine-level repro).
 - [ ] Snapshot deltas against `baseTick` (halves egress; field already in the protocol).
