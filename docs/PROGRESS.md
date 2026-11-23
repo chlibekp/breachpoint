@@ -38,8 +38,14 @@ verified, what is open, and the exact next steps. Update it at the end of every 
 - [x] Browser loading: `tools/export-web.sh` (half-res 3D textures, desktop VRAM formats only,
       hashed filenames) → 75 MB pack / 26 MB gzip + 10 MB gzip wasm; boots in Chromium in ~4 s.
 - [x] Compatibility glow compensation (`glowScale`).
-- [ ] Readability capture: tool `scenes/dev/readability.tscn` (WCAG ratio per bookmark) — run and
-      fix failing bookmarks (night map is the risk: agents may need a stronger rim on NEON).
+- [~] Readability (definition of done: character contrast ≥ 3:1).
+  - Tool: `res://scenes/dev/readability.tscn -- --map=<id> --out=<dir>`.
+  - Fixes so far: a character-only camera fill light, plus `character_lift` albedo self-illumination
+    (MapRuntime exports, set per map).
+  - NEON: worst 1.89, 4 of 13 bookmarks pass (`qa/readability/2026-11-23-neon/report.json`).
+  - Remaining gap is art: KESTREL's navy outfit parts are too dark in value. Next step: a per-agent
+    value pass (lighter mid-tones on enemy-visible surfaces), then re-run.
+  - SOLSTICE readability run: see `qa/readability/2026-11-23-solstice/` once it completes.
 - [ ] Compatibility "cool lift" with shadowed sun (needs an engine-level repro).
 - [ ] Snapshot deltas against `baseTick` (halves egress; field already in the protocol).
 - [ ] Final art polish pass on every bookmark camera; perf capture on real hardware.
@@ -110,8 +116,7 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
 
 ## Next steps (in order)
 
-1. Run the readability capture on both maps (`res://scenes/dev/readability.tscn -- --map=<id>
-   --out=<dir>`), then raise agent rim/emissive or map lighting where a bookmark is under 3:1.
+1. Readability: agent value pass (outfit mid-tones), re-run both maps until every bookmark is ≥ 3:1.
 2. Snapshot delta compression (protocol: encode players relative to `baseTick`, acked by the client).
 3. Compatibility shadow-lift investigation; real-hardware perf captures (144 fps Medium / 60 fps web).
 4. Art polish pass using the bookmark sets in `qa/screens/2026-11-23/`.
@@ -141,4 +146,4 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
 - **2026-11-23 (4)** — M10: replays, anti-cheat, reports, voice + text chat, ping wheel, announcer,
   end/loading screens, load test (+LOS optimisation), web build 217→75 MB with hashed files.
   Fixed: matchmade matches ignored lobby map/mode (ratings never moved), workers never released,
-  e2e test leaked its server.
+  e2e test leaked its server, replaced bots left a frozen body on the joining player's spawn.
