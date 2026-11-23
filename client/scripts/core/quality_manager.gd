@@ -87,6 +87,11 @@ func apply_environment(env: Environment) -> void:
 	env.ssr_enabled = forward and tier["ssr"]
 	env.sdfgi_enabled = false  # Baked LightmapGI is the GI solution on every tier.
 	env.volumetric_fog_enabled = forward and tier["volumetricFog"]
+	# Renderer parity: Compatibility glow is ~2x Forward+ with the same settings (DECISIONS.md).
+	# The authored value is kept in metadata because map Environments are cached, shared resources.
+	if not env.has_meta("bp_glow_base"):
+		env.set_meta("bp_glow_base", env.glow_intensity)
+	env.glow_intensity = float(env.get_meta("bp_glow_base")) * float(tier.get("glowScale", 1.0))
 
 
 ## Applies shadow cascades to a map's sun.

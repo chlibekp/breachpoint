@@ -3,32 +3,157 @@
   "$id": "quality.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "defaultDesktopTier", "tiers"],
+  "required": [
+    "version",
+    "defaultDesktopTier",
+    "tiers"
+  ],
   "properties": {
-    "$schema": { "type": "string" },
-    "version": { "type": "integer", "minimum": 1 },
-    "defaultDesktopTier": { "enum": ["low", "medium", "high", "ultra"] },
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "defaultDesktopTier": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "ultra"
+      ]
+    },
     "tiers": {
-      "type": "array", "minItems": 1,
+      "type": "array",
+      "minItems": 1,
       "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["id", "index", "renderer", "textureScale", "shadowCascades", "shadowSize", "softShadows", "ssao", "ssil", "ssr", "volumetricFog", "msaa", "fxaa", "taa", "fsr2", "sharpen", "particleScale", "extraDebris", "gpuParticles", "ragdoll", "targetFps"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "index",
+          "renderer",
+          "textureScale",
+          "shadowCascades",
+          "shadowSize",
+          "softShadows",
+          "ssao",
+          "ssil",
+          "ssr",
+          "volumetricFog",
+          "msaa",
+          "fxaa",
+          "taa",
+          "fsr2",
+          "sharpen",
+          "particleScale",
+          "extraDebris",
+          "gpuParticles",
+          "ragdoll",
+          "targetFps",
+          "glowScale"
+        ],
         "properties": {
-          "id": { "enum": ["web", "low", "medium", "high", "ultra"] },
-          "index": { "type": "integer", "minimum": 0, "maximum": 4 },
-          "renderer": { "enum": ["gl_compatibility", "forward_plus"] },
-          "textureScale": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
-          "shadowCascades": { "type": "integer", "minimum": 1, "maximum": 4 },
-          "shadowSize": { "enum": [1024, 2048, 4096, 8192] },
-          "softShadows": { "type": "boolean" },
-          "ssao": { "type": "boolean" }, "ssil": { "type": "boolean" }, "ssr": { "type": "boolean" },
-          "volumetricFog": { "type": "boolean" },
-          "msaa": { "enum": [0, 2, 4, 8] },
-          "fxaa": { "type": "boolean" }, "taa": { "type": "boolean" }, "fsr2": { "type": "boolean" },
-          "sharpen": { "type": "number", "minimum": 0, "maximum": 2 },
-          "particleScale": { "type": "number", "minimum": 0, "maximum": 1 },
-          "extraDebris": { "type": "boolean" }, "gpuParticles": { "type": "boolean" }, "ragdoll": { "type": "boolean" },
-          "targetFps": { "type": "integer", "minimum": 30 }
+          "id": {
+            "enum": [
+              "web",
+              "low",
+              "medium",
+              "high",
+              "ultra"
+            ]
+          },
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "renderer": {
+            "enum": [
+              "gl_compatibility",
+              "forward_plus"
+            ]
+          },
+          "textureScale": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1
+          },
+          "shadowCascades": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "shadowSize": {
+            "enum": [
+              1024,
+              2048,
+              4096,
+              8192
+            ]
+          },
+          "softShadows": {
+            "type": "boolean"
+          },
+          "ssao": {
+            "type": "boolean"
+          },
+          "ssil": {
+            "type": "boolean"
+          },
+          "ssr": {
+            "type": "boolean"
+          },
+          "volumetricFog": {
+            "type": "boolean"
+          },
+          "msaa": {
+            "enum": [
+              0,
+              2,
+              4,
+              8
+            ]
+          },
+          "fxaa": {
+            "type": "boolean"
+          },
+          "taa": {
+            "type": "boolean"
+          },
+          "fsr2": {
+            "type": "boolean"
+          },
+          "sharpen": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "particleScale": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "extraDebris": {
+            "type": "boolean"
+          },
+          "gpuParticles": {
+            "type": "boolean"
+          },
+          "ragdoll": {
+            "type": "boolean"
+          },
+          "targetFps": {
+            "type": "integer",
+            "minimum": 30
+          },
+          "glowScale": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "Glow intensity multiplier. Compatibility glow measures ~2x Forward+ with identical settings (DECISIONS.md)."
+          }
         }
       }
     }
