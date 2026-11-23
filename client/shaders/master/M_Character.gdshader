@@ -12,6 +12,8 @@ render_mode blend_mix, depth_draw_opaque, cull_back;
 global uniform vec4 team_enemy_color;
 // Per-map readability lift (MapRuntime.character_lift): self-illumination as a fraction of albedo.
 global uniform float character_lift;
+// Per-map value floor (MapRuntime.character_value_floor): alb' = floor + (1 - floor)·alb.
+global uniform float character_value_floor;
 
 uniform vec4 base_color : source_color = vec4(0.8, 0.8, 0.8, 1.0);
 uniform sampler2D albedo_tex : source_color, hint_default_white, filter_linear_mipmap;
@@ -45,6 +47,7 @@ void fragment() {
 	if (use_albedo_tex) alb *= texture(albedo_tex, UV).rgb;
 	// Vertex alpha < 1 marks bevelled edges: paint a lighter worn edge.
 	alb = mix(alb, min(alb * 1.35 + 0.04, vec3(1.0)), (1.0 - COLOR.a) * edge_wear);
+	alb = character_value_floor + (1.0 - character_value_floor) * alb;
 	ALBEDO = saturate_color(alb, saturation_boost);
 	ROUGHNESS = roughness;
 	METALLIC = metallic;

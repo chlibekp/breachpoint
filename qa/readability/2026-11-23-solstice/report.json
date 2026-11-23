@@ -1,0 +1,243 @@
+{
+  "agent": "kestrel",
+  "map": "solstice",
+  "pass_ratio": 3.0,
+  "renderer": "forward_plus",
+  "results": [
+    {
+      "agent": "kestrel",
+      "agent_l": 0.0549386027272128,
+      "behind_l": 0.0753680442989914,
+      "bookmark": "B Main entry",
+      "pass": false,
+      "pixels": 4115,
+      "ratio": 1.19467994656728
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.118489283898865,
+      "behind_l": 0.147073375464851,
+      "bookmark": "B Main arch",
+      "pass": false,
+      "pixels": 6388,
+      "ratio": 1.16964931480831
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.144816976083255,
+      "behind_l": 0.160749793080642,
+      "bookmark": "Fountain to cathedral",
+      "pass": false,
+      "pixels": 4638,
+      "ratio": 1.08178351454638
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.178114324002421,
+      "behind_l": 0.190998606472342,
+      "bookmark": "Cathedral steps",
+      "pass": false,
+      "pixels": 7473,
+      "ratio": 1.05648168972407
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.111145972873334,
+      "behind_l": 0.0783083393122302,
+      "bookmark": "Balcony stairs",
+      "pass": false,
+      "pixels": 8175,
+      "ratio": 1.25592750819723
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.16868884336601,
+      "behind_l": 0.196299123751248,
+      "bookmark": "B Lobby push",
+      "pass": false,
+      "pixels": 5067,
+      "ratio": 1.12625372177321
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.153216290314734,
+      "behind_l": 0.161496821844774,
+      "bookmark": "Market stall west",
+      "pass": false,
+      "pixels": 9150,
+      "ratio": 1.04074738062197
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.0859721468170789,
+      "behind_l": 0.0612854805976116,
+      "bookmark": "Crate stack",
+      "pass": false,
+      "pixels": 10875,
+      "ratio": 1.22183186959249
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.106536804512828,
+      "behind_l": 0.145887511970446,
+      "bookmark": "Sea balustrade",
+      "pass": false,
+      "pixels": 15078,
+      "ratio": 1.25138310175735
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.0990093266676238,
+      "behind_l": 0.131436589774904,
+      "bookmark": "Default plant",
+      "pass": false,
+      "pixels": 16337,
+      "ratio": 1.21761901642312
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.112852454857344,
+      "behind_l": 0.124245526143694,
+      "bookmark": "Fountain close",
+      "pass": false,
+      "pixels": 19065,
+      "ratio": 1.0699594691178
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.10593544817104,
+      "behind_l": 0.114671412974419,
+      "bookmark": "Corner low wall",
+      "pass": false,
+      "pixels": 5809,
+      "ratio": 1.05602295633125
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.177241906628028,
+      "behind_l": 0.193146376637427,
+      "bookmark": "Overview east",
+      "pass": false,
+      "pixels": 3617,
+      "ratio": 1.06998915932981
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.0417074551473516,
+      "behind_l": 0.0660250395870092,
+      "bookmark": "Doorway R1 study",
+      "pass": false,
+      "pixels": 50170,
+      "ratio": 1.26516475024397
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.147301080892797,
+      "behind_l": 0.168589490777327,
+      "bookmark": "Attacker spawn",
+      "pass": false,
+      "pixels": 4703,
+      "ratio": 1.10789809051323
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.16890920332507,
+      "behind_l": 0.240458997535415,
+      "bookmark": "A Lobby",
+      "pass": false,
+      "pixels": 5227,
+      "ratio": 1.32684689873041
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.110252203271532,
+      "behind_l": 0.124298439649763,
+      "bookmark": "A Main push",
+      "pass": false,
+      "pixels": 3125,
+      "ratio": 1.08765081597307
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.16294633990095,
+      "behind_l": 0.191382061083495,
+      "bookmark": "A site from main",
+      "pass": false,
+      "pixels": 5424,
+      "ratio": 1.13353467918618
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.203118213443218,
+      "behind_l": 0.207320270078875,
+      "bookmark": "A containers",
+      "pass": false,
+      "pixels": 3992,
+      "ratio": 1.01660116266821
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.145934284808545,
+      "behind_l": 0.196504293260019,
+      "bookmark": "A Link",
+      "pass": false,
+      "pixels": 4996,
+      "ratio": 1.2580967823007
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.0818365354237237,
+      "behind_l": 0.0884507703260195,
+      "bookmark": "Mid stepped alley",
+      "pass": false,
+      "pixels": 5874,
+      "ratio": 1.05016996905325
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.119025570303385,
+      "behind_l": 0.146093969539706,
+      "bookmark": "Mid bridge",
+      "pass": false,
+      "pixels": 5592,
+      "ratio": 1.16014381248787
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.173843742758997,
+      "behind_l": 0.201182912935121,
+      "bookmark": "Mid top",
+      "pass": false,
+      "pixels": 5957,
+      "ratio": 1.12213506546644
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.208576529741992,
+      "behind_l": 0.236351243249217,
+      "bookmark": "Defender spawn",
+      "pass": false,
+      "pixels": 8312,
+      "ratio": 1.10741389999679
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.14583942638487,
+      "behind_l": 0.158008638839711,
+      "bookmark": "B Back",
+      "pass": false,
+      "pixels": 3056,
+      "ratio": 1.06213872599343
+    },
+    {
+      "agent": "kestrel",
+      "agent_l": 0.112631241111525,
+      "behind_l": 0.119181819992038,
+      "bookmark": "B Long",
+      "pass": false,
+      "pixels": 8243,
+      "ratio": 1.04027872403692
+    }
+  ],
+  "worst": 1.01660116266821
+}

@@ -6,121 +6,121 @@
   "results": [
     {
       "agent": "kestrel",
-      "agent_l": 0.272027730792246,
-      "behind_l": 0.0428163759357863,
+      "agent_l": 0.242072658547738,
+      "behind_l": 0.0463195739283731,
       "bookmark": "Attacker spawn",
       "pass": true,
-      "pixels": 3372,
-      "ratio": 3.46951416218876
+      "pixels": 4491,
+      "ratio": 3.03232922069334
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.311939624467019,
-      "behind_l": 0.0603795280403269,
+      "agent_l": 0.353589147426,
+      "behind_l": 0.059911830070367,
       "bookmark": "A Long",
       "pass": true,
-      "pixels": 2820,
-      "ratio": 3.27904667552832
+      "pixels": 2840,
+      "ratio": 3.67193547016383
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.282424618445395,
-      "behind_l": 0.0547816769699387,
+      "agent_l": 0.325332430764798,
+      "behind_l": 0.0543274200691144,
       "bookmark": "A Ramp",
       "pass": true,
-      "pixels": 3050,
-      "ratio": 3.17254531573079
+      "pixels": 3080,
+      "ratio": 3.59763934079985
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.325395520433693,
-      "behind_l": 0.0743727926403485,
+      "agent_l": 0.367646850270709,
+      "behind_l": 0.0743528078474126,
       "bookmark": "A Concourse",
       "pass": true,
-      "pixels": 2810,
-      "ratio": 3.01830900846001
+      "pixels": 2811,
+      "ratio": 3.35856389172317
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.488492049431669,
-      "behind_l": 0.057053824004937,
+      "agent_l": 0.559344126541241,
+      "behind_l": 0.0570716903666998,
       "bookmark": "Metro train",
       "pass": true,
       "pixels": 1764,
-      "ratio": 5.03010569157096
+      "ratio": 5.69099193684489
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.254812977688599,
-      "behind_l": 0.0880829025666777,
+      "agent_l": 0.280096494846601,
+      "behind_l": 0.0878363279174507,
       "bookmark": "Turnstiles",
       "pass": false,
-      "pixels": 3334,
-      "ratio": 2.20746357458274
+      "pixels": 3346,
+      "ratio": 2.394843941608
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.420938350859817,
-      "behind_l": 0.0374310517876875,
+      "agent_l": 0.478069610220936,
+      "behind_l": 0.037277072170497,
       "bookmark": "Mid Arcade",
       "pass": true,
-      "pixels": 1845,
-      "ratio": 5.38639695200529
+      "pixels": 1855,
+      "ratio": 6.05049639141589
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.424690750739471,
-      "behind_l": 0.0433410208206102,
+      "agent_l": 0.498244354762414,
+      "behind_l": 0.0437985502942049,
       "bookmark": "Noodle bar",
       "pass": true,
-      "pixels": 1804,
-      "ratio": 5.08555345298578
+      "pixels": 1805,
+      "ratio": 5.84491288023975
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.702140029115195,
-      "behind_l": 0.0103143379833787,
+      "agent_l": 0.798893262147913,
+      "behind_l": 0.0102971832891915,
       "bookmark": "Mid S-bend",
       "pass": true,
-      "pixels": 9684,
-      "ratio": 12.4703354834545
+      "pixels": 9735,
+      "ratio": 14.078489505497
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.227644738796249,
-      "behind_l": 0.0701306003256738,
+      "agent_l": 0.254843694018174,
+      "behind_l": 0.0697566388083834,
       "bookmark": "B Alley",
       "pass": false,
-      "pixels": 4481,
-      "ratio": 2.31119080437087
+      "pixels": 4490,
+      "ratio": 2.54552646977625
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.226864242863724,
-      "behind_l": 0.0566564260294523,
+      "agent_l": 0.253564779485863,
+      "behind_l": 0.0564973436253106,
       "bookmark": "B Market",
       "pass": false,
-      "pixels": 4305,
-      "ratio": 2.59585149409817
+      "pixels": 4306,
+      "ratio": 2.85044461347218
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.23729882552095,
-      "behind_l": 0.0673965707636974,
+      "agent_l": 0.280356335596126,
+      "behind_l": 0.0860081697358685,
       "bookmark": "Market stalls",
       "pass": false,
-      "pixels": 4135,
-      "ratio": 2.44725057684387
+      "pixels": 4373,
+      "ratio": 2.42894479234362
     },
     {
       "agent": "kestrel",
-      "agent_l": 0.273942731658548,
-      "behind_l": 0.0649569395740512,
+      "agent_l": 0.307088315429161,
+      "behind_l": 0.0643715492767657,
       "bookmark": "Defender spawn",
-      "pass": false,
-      "pixels": 3598,
-      "ratio": 2.81794846712908
+      "pass": true,
+      "pixels": 3594,
+      "ratio": 3.12217782907748
     }
   ],
-  "worst": 2.20746357458274
+  "worst": 2.394843941608
 }

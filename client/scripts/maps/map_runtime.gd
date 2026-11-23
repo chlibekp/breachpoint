@@ -12,6 +12,8 @@ extends Node3D
 ## Self-illumination for characters as a fraction of albedo (global `character_lift`), lifting the
 ## dark parts of outfits that a fill light barely moves.
 @export var character_lift: float = 0.0
+## Raises dark character albedo toward mid-tones on dark maps (global `character_value_floor`).
+@export var character_value_floor: float = 0.0
 
 const SPIN_RATE := 0.08
 
@@ -34,6 +36,7 @@ func _ready() -> void:
 		if c.name.begins_with("Spin_") and c is Node3D:
 			_spinners.append(c)
 	RenderingServer.global_shader_parameter_set("character_lift", character_lift)
+	RenderingServer.global_shader_parameter_set("character_value_floor", character_value_floor)
 	if character_fill > 0.0:
 		_fill = DirectionalLight3D.new()
 		_fill.name = "CharacterFill"
@@ -49,6 +52,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	RenderingServer.global_shader_parameter_set("character_lift", 0.0)
+	RenderingServer.global_shader_parameter_set("character_value_floor", 0.0)
 
 
 ## Stops ambient animation (QA captures that diff frames).

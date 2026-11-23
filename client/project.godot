@@ -76,6 +76,11 @@ environment/defaults/default_clear_color=Color(0.0588235, 0.0980392, 0.137255, 1
 
 [shader_globals]
 
+character_value_floor={
+"type": "float",
+"value": 0.0
+}
+
 character_lift={
 "type": "float",
 "value": 0.0

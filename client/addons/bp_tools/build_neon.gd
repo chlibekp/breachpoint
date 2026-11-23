@@ -56,7 +56,7 @@ func _init() -> void:
 	_lighting()
 	mb.finalize(ProjectSettings.globalize_path("res://").path_join("../shared/maps").simplify_path(), 0.22)
 	var err := SceneIO.save(map_root, OUT, "res://scripts/maps/map_runtime.gd")
-	var text := FileAccess.get_file_as_string(OUT).replace('script = ExtResource("bp_root_script")\n', 'script = ExtResource("bp_root_script")\nmap_id = "neon"\ncharacter_fill = 7.0\ncharacter_lift = 3.0\n')
+	var text := FileAccess.get_file_as_string(OUT).replace('script = ExtResource("bp_root_script")\n', 'script = ExtResource("bp_root_script")\nmap_id = "neon"\ncharacter_fill = 7.0\ncharacter_lift = 3.0\ncharacter_value_floor = 0.3\n')
 	var f := FileAccess.open(OUT, FileAccess.WRITE)
 	f.store_string(text)
 	f.close()

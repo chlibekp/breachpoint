@@ -59,22 +59,12 @@ func bone(bone_name: String) -> Node3D:
 
 
 ## Character material by id; created lazily from a palette entry {color, roughness, metallic, emissive}.
-## Readability value floor (definition of done: character contrast ≥ 3:1 on every map). Raises HSV
-## value as v' = VALUE_FLOOR + (1 - VALUE_FLOOR)·v: near-black outfit parts become dark mid-tones, light
-## parts barely move, hue and saturation are kept. Measured with scenes/dev/readability.tscn.
-const VALUE_FLOOR := 0.30
-
-
-static func value_floor(c: Color) -> Color:
-	return Color.from_hsv(c.h, c.s, VALUE_FLOOR + (1.0 - VALUE_FLOOR) * c.v, c.a)
-
-
 func material(id: String, spec: Dictionary) -> ShaderMaterial:
 	if materials.has(id):
 		return materials[id]
 	var m := ShaderMaterial.new()
 	m.shader = load("res://shaders/master/M_Character.gdshader")
-	m.set_shader_parameter("base_color", value_floor(spec.get("color", Color(0.7, 0.7, 0.7))))
+	m.set_shader_parameter("base_color", spec.get("color", Color(0.7, 0.7, 0.7)))
 	m.set_shader_parameter("roughness", spec.get("roughness", 0.6))
 	m.set_shader_parameter("metallic", spec.get("metallic", 0.0))
 	if spec.has("emissive"):
