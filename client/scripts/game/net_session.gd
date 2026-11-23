@@ -12,6 +12,7 @@ var map_id := ""
 var map: MapRuntime
 var world: SimWorld
 var effects: Effects
+var ability_fx: AbilityFx
 var player: LocalPlayer
 var hud: Hud
 var buy_menu: BuyMenu
@@ -40,6 +41,9 @@ var _spectate_idx := 0
 func _ready() -> void:
 	effects = Effects.new()
 	add_child(effects)
+	ability_fx = AbilityFx.new()
+	ability_fx.session = self
+	add_child(ability_fx)
 	for w: Dictionary in SharedConfig.read_json("res://data/config/weapons.json")["weapons"]:
 		weapon_ids.append(w["id"])
 	hud = Hud.new()
@@ -148,6 +152,8 @@ func _on_message(msg: Dictionary) -> void:
 				_show_recap(killer)
 		"ShotEvent":
 			_on_remote_shot(msg)
+		"AbilityEvent":
+			ability_fx.handle(msg)
 		"SoundEvent":
 			if int(msg["kind"]) == 1:
 				Sfx.play_3d("footsteps", str(msg["param"]), msg["pos"], -6.0, "Footsteps", 40.0)
@@ -226,6 +232,8 @@ func _on_status(msg: Dictionary) -> void:
 		st.ammo = int(msg["ammo"])
 		st.reserve = int(msg["reserve"])
 	player.shield = float(msg["shield"])
+	hud.set_abilities(str(msg["agent"]), msg["charges"], int(msg["ultPoints"]))
+	buy_menu.set_agent(str(msg["agent"]))
 
 
 func _on_charge(msg: Dictionary) -> void:
@@ -320,6 +328,7 @@ func _process(delta: float) -> void:
 		if not r.buffer.is_empty():
 			r.render_at(rt, weapon_ids)
 	if hud != null:
+		hud.abilities.modulate.a = 0.15 if ability_fx.blackout_t > 0.0 else 1.0
 		var secs := maxf(0.0, (phase_ends_tick - server_tick_now()) / 64.0)
 		var timer_text := "%d:%02d" % [int(secs) / 60, int(secs) % 60] if phase != 2 else "◆"
 		hud.set_round_info(timer_text, "%d  ·  ROUND %d  ·  %d" % [scores[0] if my_team == 0 else scores[1], round_num, scores[1] if my_team == 0 else scores[0]])

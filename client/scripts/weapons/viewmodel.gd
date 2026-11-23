@@ -90,6 +90,20 @@ static func _arm_look(agent_id: String) -> Dictionary:
 	match agent_id:
 		"kestrel":
 			return {"sleeve": Color("#F2741E"), "cuff": Color("#E9E1D0"), "glove": Color("#30343A"), "skin": Color("#E9C2A6")}
+		"mamba":
+			return {"sleeve": Color("#22272C"), "cuff": Color("#9BE22B"), "glove": Color("#1C1F22"), "skin": Color("#5E3A27")}
+		"vesper":
+			return {"sleeve": Color("#3A2A6E"), "cuff": Color("#C9A04A"), "glove": Color("#22202C"), "skin": Color("#D9A984")}
+		"haldor":
+			return {"sleeve": Color("#D9D4CA"), "cuff": Color("#2A2A2D"), "glove": Color("#2A2A2D"), "skin": Color("#E9C2A6")}
+		"orin":
+			return {"sleeve": Color("#5A4A38"), "cuff": Color("#C8913A"), "glove": Color("#4A3A2A"), "skin": Color("#B9825C")}
+		"sable":
+			return {"sleeve": Color("#2F8CFF"), "cuff": Color("#F4F6FA"), "glove": Color("#1A1C20"), "skin": Color("#D9A984")}
+		"imani":
+			return {"sleeve": Color("#2E3A33"), "cuff": Color("#F2B632"), "glove": Color("#EDEBE6"), "skin": Color("#5E3A27")}
+		"tomas":
+			return {"sleeve": Color("#C8743A"), "cuff": Color("#3A4250"), "glove": Color("#3A2E28"), "skin": Color("#B9825C")}
 	return {"sleeve": Color("#2B3440"), "cuff": Color("#5B6673"), "glove": Color("#30343A"), "skin": Color("#D9A984")}
 
 

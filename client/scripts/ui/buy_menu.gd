@@ -11,6 +11,8 @@ var _root: Control
 var _credits_label: Label
 var _predict_label: Label
 var _buttons: Dictionary = {}  ## item -> Button
+var _ability_col: VBoxContainer
+var _agent := ""
 
 
 func _ready() -> void:
@@ -73,6 +75,9 @@ func _ready() -> void:
 	for s: Dictionary in SharedConfig.read_json("res://data/config/economy.json")["shields"]:
 		shields.add_child(_item_button(s["id"], str(s["name"]), int(s["cost"])))
 	cols.add_child(shields)
+	_ability_col = VBoxContainer.new()
+	_ability_col.add_theme_constant_override("separation", 8)
+	cols.add_child(_ability_col)
 	var hint := Label.new()
 	hint.text = "B  close    ·    purchases carry over if you survive"
 	hint.theme_type_variation = &"MutedLabel"
@@ -91,6 +96,22 @@ func _item_button(item: String, label: String, cost: int) -> Button:
 	b.mouse_entered.connect(func() -> void: Sfx.play_2d("ui", "hover", -10.0))
 	_buttons[item] = b
 	return b
+
+
+## Agent-specific purchasable abilities (C and Q, spec §10.5).
+func set_agent(agent_id: String) -> void:
+	if agent_id == _agent or _ability_col == null:
+		return
+	_agent = agent_id
+	for c: Node in _ability_col.get_children():
+		c.queue_free()
+	var l := Label.new()
+	l.text = "ABILITIES"
+	l.theme_type_variation = &"AccentLabel"
+	_ability_col.add_child(l)
+	for ab: Dictionary in Data.get_agent(agent_id).get("abilities", []):
+		if ab["slot"] in ["C", "Q"]:
+			_ability_col.add_child(_item_button("ability_%s" % ab["slot"], "%s · %s" % [ab["slot"], ab["name"]], int(ab["cost"])))
 
 
 func toggle() -> void:

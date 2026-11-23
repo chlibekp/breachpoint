@@ -160,6 +160,28 @@ func _build_top() -> void:
 	top.add_child(_score)
 
 
+## Ability bar: icon glyph, key, charges as pips; X shows ult points / cost.
+func set_abilities(agent_id: String, charges: Array, ult_points: int) -> void:
+	var agent: Dictionary = Data.get_agent(agent_id)
+	var list: Array = agent.get("abilities", [])
+	for i: int in mini(4, list.size()):
+		var ab: Dictionary = list[i]
+		var p := abilities.get_child(i) as PanelContainer
+		var v := p.get_child(0) as VBoxContainer
+		var glyph := v.get_child(0) as Label
+		var key := v.get_child(1) as Label
+		glyph.text = str(ab["name"]).substr(0, 2).to_upper()
+		var have := int(charges[i]) if i < charges.size() else 0
+		if ab["slot"] == "X":
+			var need := int(ab.get("ultPoints", 7))
+			key.text = "X  %d/%d" % [mini(ult_points, need), need]
+			p.modulate = Color(1, 1, 1, 1.0 if ult_points >= need else 0.55)
+		else:
+			key.text = "%s  %s" % [ab["slot"], "●".repeat(have) + "○".repeat(maxi(0, int(ab["charges"]) - have))]
+			p.modulate = Color(1, 1, 1, 1.0 if have > 0 else 0.45)
+		p.tooltip_text = str(ab["name"])
+
+
 func set_round_info(timer_text: String, score_text: String) -> void:
 	_timer.text = timer_text
 	_score.text = score_text
