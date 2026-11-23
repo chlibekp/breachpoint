@@ -28,7 +28,14 @@ func _ready() -> void:
 	map = (load("res://scenes/maps/%s.tscn" % map_id) as PackedScene).instantiate() as MapRuntime
 	add_child(map)
 	# Freeze everything that animates so the only change between the two renders is the agent.
-	map.set_process(false)
+	map.freeze_ambient()
+	var we := map.get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if we != null:
+		# Glow halos and SSR reflections of the agent are not the agent: keep them out of the mask.
+		we.environment.glow_enabled = false
+		we.environment.ssr_enabled = false
+	if we != null and we.environment.sky != null and we.environment.sky.sky_material is ShaderMaterial:
+		(we.environment.sky.sky_material as ShaderMaterial).set_shader_parameter("cloud_speed", 0.0)
 	for n: Node in map.find_children("*", "GPUParticles3D", true, false) + map.find_children("*", "CPUParticles3D", true, false):
 		(n as Node3D).visible = false
 	camera = Camera3D.new()
@@ -42,6 +49,9 @@ func _ready() -> void:
 	anim.attach_weapon(WeaponBuilder.build("saber"))
 	rig.add_child(anim)
 	rig.set_rim(Color(1, 0.95, 0.88), 0.3)  # enemy look: neutral rim, no team highlight
+	# The agent's shadow is not the agent: keep it out of the diff mask.
+	for mi: Node in rig.find_children("*", "GeometryInstance3D", true, false):
+		(mi as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# Let shaders compile and the lightmap stream in before measuring.
 	for _i: int in 20:
 		await get_tree().process_frame
@@ -56,7 +66,10 @@ func _ready() -> void:
 		camera.position = MapRuntime.vec(m["pos"])
 		camera.look_at(MapRuntime.vec(m["lookAt"]))
 		camera.fov = float(m.get("fov", 75.0))
-		if not _place(rig):
+		if camera.global_rotation.x > 0.5:
+			continue  # sky shots (e.g. the monolith): nobody stands in that view
+		if not _place(rig) or not _in_sight(rig):
+			print("[readability] %-18s skipped (no clear spot in view)" % m["name"])
 			continue
 		var box := Rect2i(0, 0, 100000, 100000)
 		var with_agent := await _grab()
@@ -107,6 +120,14 @@ func _place(rig: Node3D) -> bool:
 	rig.global_position = (down["position"] as Vector3)
 	rig.look_at(Vector3(from.x, rig.global_position.y, from.z), Vector3.UP, true)
 	return true
+
+
+## Clear line from the camera to the agent's chest (placement did not drop it behind cover).
+func _in_sight(rig: Node3D) -> bool:
+	var chest := rig.global_position + Vector3(0, 1.3, 0)
+	var q := PhysicsRayQueryParameters3D.create(camera.global_position, chest)
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	return hit.is_empty() or (hit["position"] as Vector3).distance_to(chest) < 0.8
 
 
 func _grab() -> Image:

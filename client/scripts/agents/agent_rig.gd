@@ -5,6 +5,9 @@
 class_name AgentRig
 extends Node3D
 
+## Render layer bit for character meshes; MapRuntime's character fill light only lights this layer.
+const CHARACTER_LAYER := 4
+
 ## bone -> [parent, local rest position]
 const BONES: Dictionary = {
 	"hips": ["", Vector3(0, 0.96, 0)],
@@ -81,6 +84,7 @@ func part(bone_name: String, mat: ShaderMaterial, fn: Callable, part_name: Strin
 	mi.name = part_name if part_name != "" else "part_%d" % bones[bone_name].get_child_count()
 	mi.mesh = k.commit(mat)
 	mi.gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
+	mi.layers = 1 | CHARACTER_LAYER  # world + character-only fill light (MapRuntime)
 	bones[bone_name].add_child(mi)
 	return mi
 

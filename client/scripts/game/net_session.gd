@@ -141,6 +141,7 @@ func _on_message(msg: Dictionary) -> void:
 	match str(msg["type"]):
 		"MatchState":
 			round_seed = int(msg["seed"])
+			roster.clear()  # authoritative roster: players who left disappear
 			for r: Dictionary in msg["roster"]:
 				roster[int(r["playerId"])] = {"name": r["name"], "team": int(r["team"]), "agent": r["agent"]}
 			if roster.has(my_id):
@@ -277,10 +278,16 @@ func _on_snapshot(msg: Dictionary) -> void:
 			rp.setup(id, int(info["team"]), str(info["agent"]), str(info["name"]), int(info["team"]) == my_team)
 			remotes[id] = rp
 		rp.push(tick, st)
-	# Enemies culled by the server's fog of war disappear (no stale ghosts).
-	for id: int in remotes:
+	# Enemies culled by the server's fog of war disappear (no stale ghosts). Allies are always sent,
+	# so a missing ally has left the match (e.g. a bot replaced by a joining human): remove it.
+	for id: int in remotes.keys():
 		var r: RemotePlayer = remotes[id]
-		if not seen.has(id) and not r.ally:
+		if seen.has(id):
+			continue
+		if r.ally or not roster.has(id):
+			r.queue_free()
+			remotes.erase(id)
+		else:
 			r.visible = false
 			r.buffer.clear()
 

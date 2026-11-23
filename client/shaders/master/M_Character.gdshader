@@ -10,6 +10,8 @@ render_mode blend_mix, depth_draw_opaque, cull_back;
 #include "res://shaders/include/viewmodel.gdshaderinc"
 
 global uniform vec4 team_enemy_color;
+// Per-map readability lift (MapRuntime.character_lift): self-illumination as a fraction of albedo.
+global uniform float character_lift;
 
 uniform vec4 base_color : source_color = vec4(0.8, 0.8, 0.8, 1.0);
 uniform sampler2D albedo_tex : source_color, hint_default_white, filter_linear_mipmap;
@@ -47,7 +49,7 @@ void fragment() {
 	ROUGHNESS = roughness;
 	METALLIC = metallic;
 	float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), rim_power);
-	vec3 emit = emissive_color.rgb * emissive_energy;
+	vec3 emit = emissive_color.rgb * emissive_energy + ALBEDO * character_lift;
 	emit += rim_color.rgb * fres * rim_strength * 0.25;
 	emit += team_enemy_color.rgb * smoothstep(0.35, 0.9, fres) * reveal * 2.5;
 	EMISSION = emit;

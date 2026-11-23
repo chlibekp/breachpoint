@@ -1,0 +1,13 @@
+{
+  "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+  "avg_frame_ms": 5608.2316,
+  "engine": "4.7-stable (official)",
+  "frames": 30,
+  "renderer": "forward_plus",
+  "scene": "res://scenes/dev/lookdev.tscn",
+  "size": [
+    1600,
+    900
+  ],
+  "tier": "medium"
+}
