@@ -74,7 +74,7 @@ GODOT_BIN=… bash tools/bake-lightmaps.sh  # needs a display (Xvfb ok) + Vulkan
 4. **WASM SIMD**: needs custom web templates; deferred until profiling.
 5. Perf numbers so far are from software rendering only; real-hardware capture needed.
 6. Reliable channel (seq/ack inside the socket), snapshot deltas, JWT auth — scheduled for M4/M8.
-7. CI has not yet run on GitHub (first push of the workflow); watch the first run.
+7. ~~CI first run~~ — passed on GitHub (run #1: node, godot tests + exports, docker all green).
 
 ## Milestone 2 — next steps (once M1 is approved)
 
