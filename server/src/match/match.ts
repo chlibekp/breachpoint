@@ -36,6 +36,7 @@ import {
 import { FixedTickLoop } from "./fixed-tick-loop.ts";
 import { BotBrain, NavGraph, type BotGoal } from "./bot-brain.ts";
 import { inBox, loadMeta, loadWorld, type MapMeta, type V3 } from "./world-data.ts";
+import { AbilityEngine, type AbilityPlayer, type AgentDef, type Effect } from "./abilities.ts";
 
 export interface MatchOptions {
   matchId: string;
@@ -65,8 +66,14 @@ const FLAG = {
   PLANTING: 16,
   DEFUSING: 32,
   HAS_CHARGE: 64,
-  WALKING: 128,
+  REVEALED: 128,
 };
+const ABILITY_BUTTONS: [number, "C" | "Q" | "E" | "X"][] = [
+  [B.ABILITY_C, "C"],
+  [B.ABILITY_Q, "Q"],
+  [B.ABILITY_E, "E"],
+  [B.ABILITY_X, "X"],
+];
 const HISTORY = 32;
 const MAX_REWIND_TICKS = 16; // 250 ms (spec §13.4)
 
@@ -88,7 +95,7 @@ interface MatchConfig {
   breachCharge: { plantTime: number; defuseTime: number; defuseCheckpoint: number };
 }
 
-export interface ServerPlayer {
+export interface ServerPlayer extends AbilityPlayer {
   id: number;
   name: string;
   team: number;
@@ -119,6 +126,7 @@ export interface ServerPlayer {
   stepDist: number;
   plantProgress: number;
   defuseProgress: number;
+  eRechargeAt: number;
 }
 
 export class Match {
@@ -144,6 +152,7 @@ export class Match {
   roundSeed = 1;
   orbsTaken: boolean[] = [];
   winner = -1;
+  readonly abilities: AbilityEngine;
   private readonly mv: MovementConfig;
   private readonly weapons = new Map<string, WeaponDef>();
   private readonly econ: EconomyConfig;
@@ -163,7 +172,10 @@ export class Match {
       this.weapons.set(w.id, w);
     this.econ = loadRawConfig("economy") as EconomyConfig;
     this.rules = { ...(loadRawConfig("match") as MatchConfig) };
-    if (options.roundsToWin !== undefined) this.rules.roundsToWin = options.roundsToWin;
+    if (options.roundsToWin !== undefined) {
+      this.rules.roundsToWin = options.roundsToWin;
+      this.rules.halftimeAfterRound = Math.max(1, options.roundsToWin - 1);
+    }
     if (options.phaseScale !== undefined) {
       const s = options.phaseScale;
       this.rules.phases = {
@@ -177,6 +189,64 @@ export class Match {
     this.tags = (loadRawConfig("materials") as { tags: MaterialTag[] }).tags;
     this.nav = new NavGraph(this.meta);
     this.rand = mulberry32(options.seed);
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    this.abilities = new AbilityEngine((loadRawConfig("agents") as { agents: AgentDef[] }).agents, {
+      get tick() {
+        return self.tick;
+      },
+      world: this.world,
+      players: () => this.players.values(),
+      damage: (attacker, victim, amount, source) =>
+        this.abilityDamage(attacker, victim, amount, source),
+      emit: (effect, caster, ability, event, x, y, z, data) =>
+        this.emitAbility(effect, caster, ability, event, x, y, z, data),
+      toPlayer: (id, ability, event, data) =>
+        this.send(id, {
+          type: "AbilityEvent",
+          casterId: 0,
+          ability,
+          event,
+          pos: { x: 0, y: 0, z: 0 },
+          data: new TextEncoder().encode(JSON.stringify(data)),
+        }),
+    });
+  }
+
+  private emitAbility(
+    effect: Effect | null,
+    caster: number,
+    ability: string,
+    event: number,
+    x: number,
+    y: number,
+    z: number,
+    data: Record<string, unknown>,
+  ): void {
+    const bytes = new TextEncoder().encode(JSON.stringify({ ...data, eid: effect?.id ?? 0 }));
+    this.broadcast({
+      type: "AbilityEvent",
+      casterId: caster,
+      ability,
+      event,
+      pos: { x, y, z },
+      data: bytes,
+    });
+  }
+
+  private abilityDamage(
+    attackerId: number,
+    victimId: number,
+    amount: number,
+    source: string,
+  ): void {
+    const a = this.players.get(attackerId);
+    if (!a) return;
+    const v = this.players.get(victimId);
+    if (!v || !v.alive) return;
+    const def = { ...this.def("knife"), id: source, tagSlow: { amount: 0.3, duration: 0.1 } };
+    const vulnerable = v.status.vulnerable > this.tick ? 2 : 1;
+    this.applyDamage(a, victimId, amount * vulnerable, "body", false, def);
   }
 
   setTransport(send: (playerId: number, msg: Message) => void): void {
@@ -251,6 +321,22 @@ export class Match {
       stepDist: 0,
       plantProgress: 0,
       defuseProgress: 0,
+      eRechargeAt: 0,
+      killsSinceE: 0,
+      status: {
+        blind: 0,
+        revealed: 0,
+        detained: 0,
+        speedMult: 1,
+        speedUntil: 0,
+        silentUntil: 0,
+        redlineUntil: 0,
+        nearsight: 0,
+        blackout: 0,
+        vulnerable: 0,
+        healPerTick: 0,
+        healUntil: 0,
+      },
     };
     this.players.set(id, p);
     if (this.round > 0) this.spawn(p);
@@ -316,6 +402,12 @@ export class Match {
     );
     if (zone && !inBox(p.move.x, p.move.y, p.move.z, zone.center, zone.size))
       return reply(false, "not_in_buy_zone");
+    if (item === "ability_C" || item === "ability_Q") {
+      const r = this.abilities.buyCharge(p, item === "ability_C" ? "C" : "Q");
+      reply(r === "", r);
+      this.sendStatus(p);
+      return;
+    }
     const shield = this.econ.shields.find((s) => s.id === item);
     if (shield) {
       if (p.shield >= shield.amount) return reply(false, "already_owned");
@@ -405,12 +497,27 @@ export class Match {
           w.reserve = d.reserveAmmo;
         }
       }
-      p.charges[2] = 1;
+      this.abilities.resetRound(p);
+      p.status = {
+        blind: 0,
+        revealed: 0,
+        detained: 0,
+        speedMult: 1,
+        speedUntil: 0,
+        silentUntil: 0,
+        redlineUntil: 0,
+        nearsight: 0,
+        blackout: 0,
+        vulnerable: 0,
+        healPerTick: 0,
+        healUntil: 0,
+      };
       p.damageTaken.clear();
       this.spawn(p);
     }
     if (halftime) this.lossStreak = [0, 0];
     this.orbsTaken = this.meta.riftOrbs.map(() => false);
+    this.abilities.clearAll();
     // Breach Charge to a random attacker.
     const attackers = [...this.players.values()].filter((p) => this.isAttacking(p.team));
     const carrier =
@@ -552,6 +659,8 @@ export class Match {
       const cmd = p.bot ? this.botInput(p) : this.nextInput(p);
       this.simulate(p, cmd, dt);
     }
+    this.abilities.update();
+    this.reviveCheck();
     for (const p of this.players.values()) {
       p.history.push({
         tick: this.tick,
@@ -652,10 +761,23 @@ export class Match {
       this.buy(p.id, "halcyon");
     if (this.phase === Phase.BUY && p.shield === 0 && p.credits >= 1000)
       this.buy(p.id, "heavy_shield");
+    // Bots use utility: occasionally on contact, the ultimate as soon as it is ready.
+    let botButtons = out.buttons;
+    const engaged = targets.some((t) => t.visible);
+    if (this.phase === Phase.COMBAT || this.phase === Phase.POSTPLANT) {
+      const r = this.rand();
+      if (engaged && r < 0.004 && (p.charges[1] ?? 0) > 0) botButtons |= B.ABILITY_Q;
+      else if (engaged && r < 0.008 && (p.charges[0] ?? 0) > 0) botButtons |= B.ABILITY_C;
+      else if (r < 0.002 && (p.charges[2] ?? 0) > 0) botButtons |= B.ABILITY_E;
+      const ult = this.abilities.agent(p.agent)?.abilities.find((a) => a.slot === "X");
+      if (engaged && ult && p.ult >= (ult.ultPoints ?? 7) && r > 0.99) botButtons |= B.ABILITY_X;
+    }
+    if (this.phase === Phase.BUY && p.credits >= 600 && (p.charges[0] ?? 0) === 0)
+      this.buy(p.id, "ability_C");
     const cmd: InputCmd = {
       seq: p.lastSeq + 1,
       tick: this.tick,
-      buttons: out.buttons,
+      buttons: botButtons,
       yaw: out.yaw,
       pitch: out.pitch,
       weaponSlot: p.weapons.primary ? 0 : 1,
@@ -692,15 +814,35 @@ export class Match {
     const prevX = p.move.x;
     const prevZ = p.move.z;
     const planting = (p.plantProgress > 0 || p.defuseProgress > 0) && (buttons & B.USE) !== 0;
+    // Abilities (edge-triggered casts; the server validates everything).
+    const combat = this.phase === Phase.COMBAT || this.phase === Phase.POSTPLANT;
+    for (const [bit, slot] of ABILITY_BUTTONS) {
+      if (
+        (buttons & bit) !== 0 &&
+        (prevButtons & bit) === 0 &&
+        this.abilities.cast(p, slot, combat)
+      ) {
+        if (slot === "E") p.eRechargeAt = 0;
+        this.sendStatus(p);
+      }
+    }
+    this.eRecharge(p);
+    const speedMult = p.status.speedUntil > this.tick ? p.status.speedMult : 1;
     stepMovement(this.mv, this.world, p.move, {
       buttons: planting ? buttons & ~(B.FORWARD | B.BACK | B.LEFT | B.RIGHT | B.JUMP) : buttons,
       yaw: p.yaw,
-      runSpeed: def.runSpeed,
+      runSpeed: def.runSpeed * speedMult,
     });
     if (this.phase === Phase.BUY) this.enforceBarriers(p, prevX, prevZ);
     // Footstep sound events (audible within 40 m when running, never when walking/crouching).
     const sp = Math.hypot(p.move.vx, p.move.vz);
-    if (p.move.grounded && sp > 3.5 && !(buttons & B.WALK) && p.move.crouch < 0.5) {
+    if (
+      p.move.grounded &&
+      sp > 3.5 &&
+      !(buttons & B.WALK) &&
+      p.move.crouch < 0.5 &&
+      p.status.silentUntil <= this.tick
+    ) {
       p.stepDist += sp * dt;
       if (p.stepDist > 2.1) {
         p.stepDist = 0;
@@ -708,10 +850,18 @@ export class Match {
       }
     }
     // Weapons.
-    const held = (buttons & B.FIRE) !== 0 && this.phase !== Phase.BUY;
+    const held =
+      (buttons & B.FIRE) !== 0 && this.phase !== Phase.BUY && p.status.detained <= this.tick;
     const pressed = held && (prevButtons & B.FIRE) === 0;
+    const blades = this.abilities.bladeReady(p.id);
+    if (blades && pressed) {
+      this.throwBlade(p, blades);
+      this.objective(p, buttons, dt);
+      return;
+    }
     updateWeapon(def, w, this.now(), dt, held);
-    if (buttons & B.RELOAD) startReload(def, w, this.now());
+    if (buttons & B.RELOAD && startReload(def, w, this.now()) && p.status.redlineUntil > this.tick)
+      w.reloadEnd = this.now() + def.reloadTime * 0.6;
     if (held) {
       const shot = tryFire(
         def,
@@ -817,6 +967,8 @@ export class Match {
       );
       if (!firstHit)
         firstHit = { x: hit.x, y: hit.y, z: hit.z, tag: hit.kind === "player" ? 99 : hit.tag };
+      if (hit.kind === "world")
+        this.abilities.damageUtility(hit.x, hit.y, hit.z, damageAt(def, hit.t, "body"), p.team);
       if (hit.kind !== "player") continue;
       const dmg = damageAt(def, hit.t, hit.zone) * hit.damageScale;
       const prev = dmgBy.get(hit.playerId);
@@ -896,6 +1048,8 @@ export class Match {
       killer.score += 200 + (headshot ? 50 : 0);
       killer.credits = Math.min(this.econ.maxCredits, killer.credits + this.econ.killReward);
       killer.ult = Math.min(8, killer.ult + 1);
+      killer.killsSinceE++;
+      if (killer.status.redlineUntil > this.tick) killer.health = Math.min(100, killer.health + 50);
     }
     const assisters = [...v.damageTaken.keys()].filter((id) => id !== killer.id).slice(0, 4);
     for (const a of assisters) {
@@ -1031,6 +1185,7 @@ export class Match {
   }
 
   private computeSight(viewer: ServerPlayer, target: ServerPlayer): boolean {
+    if (viewer.status.blind > this.tick && viewer.bot) return false;
     const ex = viewer.move.x;
     const ey = this.eye(viewer);
     const ez = viewer.move.z;
@@ -1065,7 +1220,8 @@ export class Match {
           dz / dist,
           dist,
           this.blocksSight,
-        )
+        ) &&
+        !this.abilities.sightBlocked(ex, ey, ez, px, py, pz)
       )
         return true;
     }
@@ -1084,6 +1240,7 @@ export class Match {
       if (q.plantProgress > 0) flags |= FLAG.PLANTING;
       if (q.defuseProgress > 0) flags |= FLAG.DEFUSING;
       if (this.charge.carrier === q.id) flags |= FLAG.HAS_CHARGE;
+      if (q.status.revealed > this.tick) flags |= FLAG.REVEALED;
       flags |= Math.round(q.move.crouch * 255) << 8;
       states.set(q.id, {
         playerId: q.id,
@@ -1106,7 +1263,10 @@ export class Match {
           const vis = this.canSee(viewer, q);
           if (vis) viewer.visibleTicks.set(q.id, this.tick);
           // Short grace window avoids pop-out flicker at corners.
-          send = vis || this.tick - (viewer.visibleTicks.get(q.id) ?? -999) < 6;
+          send =
+            vis ||
+            this.tick - (viewer.visibleTicks.get(q.id) ?? -999) < 6 ||
+            q.status.revealed > this.tick;
         }
         if (send) players.push(states.get(q.id)!);
       }
@@ -1130,6 +1290,102 @@ export class Match {
           pos: { x: p.move.x, y: p.move.y, z: p.move.z },
           playerId: p.id,
           param,
+        });
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------ ability helpers
+
+  /** E recharge: timer-based or kill-based (KESTREL Slipstream: 2 kills). */
+  private eRecharge(p: ServerPlayer): void {
+    const e = this.abilities.agent(p.agent)?.abilities.find((a) => a.slot === "E");
+    if (!e || !e.recharge || (p.charges[2] ?? 0) >= e.charges) return;
+    if (e.recharge.type === "kills") {
+      if (p.killsSinceE >= e.recharge.amount) {
+        p.charges[2] = (p.charges[2] ?? 0) + 1;
+        p.killsSinceE = 0;
+        this.sendStatus(p);
+      }
+    } else if (e.recharge.amount > 0) {
+      if (p.eRechargeAt === 0)
+        p.eRechargeAt = this.tick + Math.round(e.recharge.amount * TICK_RATE);
+      else if (this.tick >= p.eRechargeAt) {
+        p.charges[2] = (p.charges[2] ?? 0) + 1;
+        p.eRechargeAt = 0;
+        this.sendStatus(p);
+      }
+    }
+  }
+
+  /** KESTREL Talon Barrage blade: one-shot to body under 15 m; refunds the blade on a kill. */
+  private throwBlade(p: ServerPlayer, e: Effect): void {
+    e.data["left"] = (e.data["left"] ?? 1) - 1;
+    const [dx, dy, dz] = viewDir(p.yaw, p.pitch);
+    const poses = this.posesAt(this.tick).filter(
+      (t) => this.players.get(t.playerId)?.team !== p.team,
+    );
+    const hit = traceShot(
+      this.world,
+      this.tags,
+      this.hitboxes,
+      poses,
+      p.id,
+      "low",
+      p.move.x,
+      this.eye(p),
+      p.move.z,
+      dx,
+      dy,
+      dz,
+      60,
+    );
+    this.broadcast({
+      type: "ShotEvent",
+      playerId: p.id,
+      weapon: "talon_barrage",
+      origin: { x: p.move.x, y: this.eye(p), z: p.move.z },
+      hit: { x: hit.x, y: hit.y, z: hit.z },
+      impact: hit.kind === "player" ? 99 : Math.max(0, hit.tag),
+    });
+    if (hit.kind === "player") {
+      const victim = this.players.get(hit.playerId);
+      const range = e.data["range"] ?? 15;
+      const dmg = hit.t < range ? (e.data["dmg"] ?? 150) : (e.data["dmg"] ?? 150) * 0.5;
+      const wasAlive = victim?.alive ?? false;
+      this.applyDamage(p, hit.playerId, dmg * hit.damageScale, hit.zone, hit.wallbang, {
+        ...this.def("knife"),
+        id: "talon_barrage",
+      });
+      if (wasAlive && victim && !victim.alive) e.data["left"] = (e.data["left"] ?? 0) + 1;
+    }
+  }
+
+  /** IMANI Second Wind: revive the nearest fallen ally where they fell, with full health. */
+  private reviveCheck(): void {
+    for (const e of this.abilities.effects) {
+      if (e.kind !== "heal" || !e.data["reviveNow"]) continue;
+      e.data["reviveNow"] = 0;
+      e.data["revive"] = 0;
+      let best: ServerPlayer | null = null;
+      let bestD = 6;
+      for (const q of this.players.values()) {
+        if (q.team !== e.team || q.alive) continue;
+        const d = Math.hypot(q.move.x - e.x, q.move.z - e.z);
+        if (d < bestD) {
+          bestD = d;
+          best = q;
+        }
+      }
+      if (best) {
+        best.alive = true;
+        best.health = e.data["hp"] ?? 100;
+        this.broadcast({
+          type: "Spawn",
+          playerId: best.id,
+          pos: { x: best.move.x, y: best.move.y, z: best.move.z },
+          yaw: best.yaw,
+          team: best.team,
         });
       }
     }
@@ -1195,18 +1451,16 @@ export class Match {
   broadcastScoreboard(): void {
     this.broadcast({
       type: "Scoreboard",
-      entries: [...this.players.values()]
-        .slice(0, 10)
-        .map((p) => ({
-          playerId: p.id,
-          kills: p.kills,
-          deaths: p.deaths,
-          assists: p.assists,
-          score: p.score,
-          credits: p.credits,
-          ult: p.ult,
-          pingMs: p.pingMs,
-        })),
+      entries: [...this.players.values()].slice(0, 10).map((p) => ({
+        playerId: p.id,
+        kills: p.kills,
+        deaths: p.deaths,
+        assists: p.assists,
+        score: p.score,
+        credits: p.credits,
+        ult: p.ult,
+        pingMs: p.pingMs,
+      })),
     });
   }
 }

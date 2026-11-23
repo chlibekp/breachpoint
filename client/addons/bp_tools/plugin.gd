@@ -7,7 +7,7 @@ extends EditorPlugin
 ##   BP_BAKE_SCENES="res://scenes/dev/lightmap_test.tscn" godot --editor --path client
 ## (needs a display + a RenderingDevice renderer: Forward+ or Mobile; tools/bake-lightmaps.sh wraps it)
 
-const BAKE_TIMEOUT_S := 1800.0
+const BAKE_TIMEOUT_S := 10800.0
 
 
 func _enter_tree() -> void:

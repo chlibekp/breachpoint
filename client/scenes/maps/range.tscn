@@ -1,10 +1,9 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cmha08fas0anv"]
 
-[ext_resource type="Script" path="res://scripts/maps/map_runtime.gd" id="bp_root_script"]
-
-[ext_resource type="FontFile" path="res://assets/fonts/ChakraPetch-Bold.ttf" id="1_xwtov"]
-[ext_resource type="Shader" path="res://shaders/sky/S_Stylized.gdshader" id="2_bcn72"]
+[ext_resource type="FontFile" uid="uid://b7gjbl51pboup" path="res://assets/fonts/ChakraPetch-Bold.ttf" id="1_xwtov"]
+[ext_resource type="Shader" uid="uid://cp43yxm0s3g1k" path="res://shaders/sky/S_Stylized.gdshader" id="2_bcn72"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_floor.res" id="3_6hryj"]
+[ext_resource type="LightmapGIData" uid="uid://dj31e6bctkyjd" path="res://scenes/maps/range.lmbake" id="4_6hryj"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_floor_dark.res" id="4_nn8rs"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_panel.res" id="5_us40a"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_trim.res" id="6_8gbqy"]
@@ -13,18 +12,19 @@
 [ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_accent.res" id="9_i5uwk"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_metal.res" id="10_dstbm"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/range/meshes/SM_range_site_paint.res" id="11_grr2i"]
+[ext_resource type="Script" uid="uid://bjjpek3imclqb" path="res://scripts/maps/map_runtime.gd" id="bp_root_script"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_f2feq"]
 shader = ExtResource("2_bcn72")
-shader_parameter/zenith_color = null
-shader_parameter/horizon_color = null
-shader_parameter/ground_color = null
-shader_parameter/sun_color = null
-shader_parameter/cloud_light = null
-shader_parameter/cloud_shadow = null
+shader_parameter/zenith_color = Color(0.33, 0.52, 0.8, 1)
+shader_parameter/horizon_color = Color(0.8, 0.86, 0.9, 1)
+shader_parameter/ground_color = Color(0.55, 0.6, 0.62, 1)
+shader_parameter/sun_color = Color(1, 0.92, 0.78, 1)
+shader_parameter/cloud_light = Color(1, 0.97, 0.92, 1)
+shader_parameter/cloud_shadow = Color(0.66, 0.7, 0.82, 1)
 shader_parameter/cloud_cover = 0.3
-shader_parameter/cloud_speed = null
-shader_parameter/energy = null
+shader_parameter/cloud_speed = 0.004
+shader_parameter/energy = 1.0
 
 [sub_resource type="Sky" id="Sky_lr1bp"]
 sky_material = SubResource("ShaderMaterial_f2feq")
@@ -234,6 +234,7 @@ shadow_enabled = true
 quality = 0
 bounces = 2
 texel_scale = 0.6
+light_data = ExtResource("4_6hryj")
 
 [node name="Geometry" type="Node3D" parent="." unique_id=825858082]
 

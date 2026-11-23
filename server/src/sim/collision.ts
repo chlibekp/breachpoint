@@ -233,7 +233,14 @@ export function raycastAll(
   // the candidate order does not matter here).
   const ex = ox + dx * Math.min(maxT, 1e4);
   const ez = oz + dz * Math.min(maxT, 1e4);
-  const list = candidates(w, Math.min(ox, ex), Math.min(oz, ez), Math.max(ox, ex), Math.max(oz, ez), _rayScratch);
+  const list = candidates(
+    w,
+    Math.min(ox, ex),
+    Math.min(oz, ez),
+    Math.max(ox, ex),
+    Math.max(oz, ez),
+    _rayScratch,
+  );
   for (const i of list) {
     const b = w.boxes[i]!;
     const r = rayBox(b, ox, oy, oz, dx, dy, dz);

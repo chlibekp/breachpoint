@@ -359,7 +359,7 @@ func _lighting() -> void:
 
 	var lm := LightmapGI.new()
 	lm.name = "LightmapGI"
-	lm.quality = LightmapGI.BAKE_QUALITY_MEDIUM
+	lm.quality = LightmapGI.BAKE_QUALITY_LOW if OS.get_environment("BP_BAKE_QUALITY") != "high" else LightmapGI.BAKE_QUALITY_HIGH
 	lm.bounces = 3
 	lm.use_denoiser = true
 	lm.directional = false

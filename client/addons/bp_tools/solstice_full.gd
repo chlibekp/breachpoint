@@ -32,6 +32,11 @@ var walk: Array = [
 ]
 ## Extra nav rectangles for the hand-built B corner (its callouts are names, not a lane graph).
 const NAV_EXTRA: Array = [
+	[-10, 10.3, 0, 66, "Mid South"],
+	[-3, 9.5, 0, 10.5, "Mid Gap South"],
+	[-10, 4.3, 0, 9.7, "Mid Bend"],
+	[-10, 3.5, -7, 4.5, "Mid Gap North"],
+	[-10, -24, 0, 3.7, "Mid North"],
 	[10, -32, 50, 8, "B Plaza"],
 	[-4, -10, 10, -6, "B Main Passage"],
 	[20, 8, 28, 20, "B Lobby"],
@@ -179,6 +184,16 @@ func _mid_terrace() -> void:
 	for z: float in [14.0, 16.4]:
 		SolsticeKit.arch_gate(mb, Vector3(cx, top, z), Vector3(0, 0, 1), x1 - x0 - 1.4, 2.6, 0.6)
 	mb.block("trim", Vector3(x1 - x0 + 0.4, 0.5, 3.0), Vector3(cx, top + 2.6 + (x1 - x0 - 1.4) * 0.5 + 0.5, 15.2), 0, "stone", 0.05, false)
+	# S-bend on the terrace: two offset walls so neither spawn can see down Mid (no ~130 m
+	# spawn-to-spawn sightline). Gaps: east side at z 10, west side at z 4.
+	for w: Array in [[-10.0, -3.0, 10.0], [-7.0, 0.0, 4.0]]:
+		var wx0: float = w[0]
+		var wx1: float = w[1]
+		var wz: float = w[2]
+		mb.block("plaster_sand", Vector3(wx1 - wx0, 3.4, 0.6), Vector3((wx0 + wx1) * 0.5, top + 1.7, wz), 0, "stone", 0.05)
+		mb.block("trim", Vector3(wx1 - wx0 + 0.2, 0.2, 0.8), Vector3((wx0 + wx1) * 0.5, top + 3.45, wz), 0, "stone", 0.04, false)
+	SolsticeKit.pot_plant(mb, Vector3(-9.3, top, 9.0), 0.4)
+	SolsticeKit.sign_board(mb, map_root, "Mid Bend", Vector3(-5.5, top + 2.3, 9.68), Vector3(0, 0, -1))
 	SolsticeKit.laundry_line(mb, Vector3(x0 + 0.1, 6.0, 24), Vector3(x1 - 0.1, 6.3, 24.5), 4, 31)
 	SolsticeKit.laundry_line(mb, Vector3(x0 + 0.1, 5.4, 6), Vector3(x1 - 0.1, 5.6, 6.2), 3, 32)
 	SolsticeKit.canopy(mb, Vector3(cx, 5.2, 40), Vector2(x1 - x0 - 0.4, 3.5), 0, "cloth")
@@ -296,7 +311,8 @@ func _markers() -> void:
 	for w: Array in walk:
 		if str(w[5]).begins_with("_"):
 			continue
-		mb.nav_rect(w[5], w[0], w[1], w[2], w[3])
+		if w[5] != "Mid":  # Mid is split around its S-bend in NAV_EXTRA
+			mb.nav_rect(w[5], w[0], w[1], w[2], w[3])
 		mb.callout(w[5], Vector3((w[0] + w[2]) * 0.5, 2, (w[1] + w[3]) * 0.5), Vector3(w[2] - w[0], 4, w[3] - w[1]))
 	for n: Array in NAV_EXTRA:
 		mb.nav_rect(n[4], n[0], n[1], n[2], n[3])

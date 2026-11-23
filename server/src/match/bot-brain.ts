@@ -90,18 +90,31 @@ export class NavGraph {
     return best;
   }
 
-  /** BFS path of node indices from a to b. */
+  /** Shortest path (Dijkstra over portal-to-portal distances) of node indices from a to b. */
   path(a: number, b: number): number[] {
     if (a < 0 || b < 0) return [];
+    const dist = new Map<number, number>([[a, 0]]);
     const prev = new Map<number, number>([[a, -1]]);
-    const q = [a];
-    while (q.length > 0) {
-      const n = q.shift()!;
-      if (n === b) break;
-      for (const e of this.nodes[n]!.edges) {
-        if (!prev.has(e)) {
+    const done = new Set<number>();
+    while (true) {
+      let n = -1;
+      let best = Infinity;
+      for (const [k, d] of dist) {
+        if (!done.has(k) && d < best) {
+          best = d;
+          n = k;
+        }
+      }
+      if (n < 0 || n === b) break;
+      done.add(n);
+      const na = this.nodes[n]!;
+      for (const e of na.edges) {
+        const [px, pz] = this.portal(n, e);
+        const nb = this.nodes[e]!;
+        const w = Math.hypot(px - na.cx, pz - na.cz) + Math.hypot(nb.cx - px, nb.cz - pz);
+        if (best + w < (dist.get(e) ?? Infinity)) {
+          dist.set(e, best + w);
           prev.set(e, n);
-          q.push(e);
         }
       }
     }
