@@ -13,7 +13,7 @@ config_version=5
 config/name="BREACHPOINT"
 config/description="5v5 tactical hero shooter"
 config/version="0.1.0"
-run/main_scene="res://scenes/boot/boot.tscn"
+run/main_scene="res://scenes/menu/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 boot_splash/bg_color=Color(0.0588235, 0.0980392, 0.137255, 1)
 boot_splash/show_image=false
@@ -26,6 +26,7 @@ Settings="*res://scripts/core/settings.gd"
 QualityManager="*res://scripts/core/quality_manager.gd"
 Audio="*res://scripts/core/audio.gd"
 Net="*res://scripts/core/net.gd"
+Api="*res://scripts/core/api.gd"
 Game="*res://scripts/core/game.gd"
 
 [debug]

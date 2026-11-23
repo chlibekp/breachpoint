@@ -5,7 +5,7 @@ import { decode, encode, type Message } from "@breachpoint/shared/protocol";
 import { Match, type MatchOptions } from "./match.ts";
 
 export type ToWorker =
-  | { cmd: "join"; playerId: number; name: string; agent: string }
+  | { cmd: "join"; playerId: number; name: string; agent: string; team: number; accountId: string }
   | { cmd: "leave"; playerId: number }
   | { cmd: "frame"; playerId: number; bytes: ArrayBuffer }
   | { cmd: "ping"; playerId: number; ms: number }
@@ -15,7 +15,8 @@ export type ToWorker =
 export type FromWorker =
   | { type: "frame"; playerId: number; bytes: ArrayBuffer }
   | { type: "stats"; tick: number; players: number; maxTickMs: number; lastTickMs: number }
-  | { type: "stopped" };
+  | { type: "stopped" }
+  | { type: "result"; result: unknown };
 
 const match = new Match(workerData as MatchOptions);
 const port = parentPort!;
@@ -35,12 +36,13 @@ match.setTransport((playerId: number, msg: Message) => {
   ) as ArrayBuffer;
   port.postMessage({ type: "frame", playerId, bytes: ab } satisfies FromWorker, [ab]);
 });
+match.onResult = (result) => port.postMessage({ type: "result", result } satisfies FromWorker);
 match.start();
 
 port.on("message", (m: ToWorker) => {
   switch (m.cmd) {
     case "join":
-      match.addPlayer(m.playerId, m.name, m.agent);
+      match.addPlayer(m.playerId, m.name, m.agent, false, m.team, m.accountId);
       break;
     case "leave":
       match.removePlayer(m.playerId);

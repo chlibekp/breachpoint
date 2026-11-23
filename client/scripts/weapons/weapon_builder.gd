@@ -39,7 +39,7 @@ static func material(skin: Dictionary, weapon_id: String) -> ShaderMaterial:
 	for key: String in ["base_roughness", "metal_roughness", "base_metallic", "emissive_energy", "clearcoat_amount"]:
 		if skin.has(key):
 			m.set_shader_parameter(key, skin[key])
-	if skin.has("pattern"):
+	if skin.has("pattern") and ResourceLoader.exists(str(skin["pattern"])):
 		m.set_shader_parameter("pattern_tex", load(skin["pattern"]))
 		m.set_shader_parameter("use_pattern", true)
 	return m

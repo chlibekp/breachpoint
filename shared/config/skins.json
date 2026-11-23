@@ -1,0 +1,10 @@
+{
+  "$schema": "../schemas/skins.schema.json",
+  "version": 1,
+  "comment": "Weapon skins (spec 7.4): pure data read by M_Weapon. Silhouette never changes. 'accent: class' uses the weapon class accent from weapons.json.",
+  "skins": [
+    { "id": "standard", "name": "PRISM Standard", "base_color": "#29292E", "metal_color": "#3D4045", "accent": "class", "emissive_color": "#FF8C40", "emissive_energy": 2.0, "base_roughness": 0.62, "metal_roughness": 0.38, "clearcoat_amount": 0.3 },
+    { "id": "lumen", "name": "Lumen", "base_color": "#ECE8E1", "metal_color": "#D7B46A", "accent": "#C9A04A", "emissive_color": "#FFE7A8", "emissive_energy": 3.0, "base_roughness": 0.25, "metal_roughness": 0.2, "clearcoat_amount": 0.8 },
+    { "id": "hazard", "name": "Hazard", "base_color": "#E7B91E", "metal_color": "#2A2A2C", "accent": "#1C1C1E", "emissive_color": "#FF6A00", "emissive_energy": 1.4, "base_roughness": 0.55, "metal_roughness": 0.45, "clearcoat_amount": 0.15, "stripes": true }
+  ]
+}

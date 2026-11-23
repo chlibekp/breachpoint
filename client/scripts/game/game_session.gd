@@ -138,4 +138,4 @@ func _process(_delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and (event as InputEventKey).keycode == KEY_F10:
-		Game.goto("boot")
+		Game.goto("menu")

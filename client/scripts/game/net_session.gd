@@ -66,7 +66,8 @@ func _ready() -> void:
 	my_id = Net.player_id
 	hud.message("JOINING MATCH…", 5.0)
 	var agent: String = str(Settings.get_value("gameplay", "agent"))
-	Net.send({"type": "JoinMatch", "ticket": agent})
+	Net.send({"type": "JoinMatch", "ticket": Net.pending_ticket if Net.pending_ticket != "" else agent})
+	Net.pending_ticket = ""
 
 
 func _load_map(id: String) -> void:
@@ -390,4 +391,4 @@ func _unhandled_input(event: InputEvent) -> void:
 		_spectate_idx += 1
 	elif event is InputEventKey and event.is_pressed() and (event as InputEventKey).keycode == KEY_F10:
 		Net.disconnect_from_server()
-		Game.goto("boot")
+		Game.goto("menu")

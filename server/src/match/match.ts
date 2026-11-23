@@ -39,6 +39,7 @@ import { inBox, loadMeta, loadWorld, type MapMeta, type V3 } from "./world-data.
 import { AbilityEngine, type AbilityPlayer, type AgentDef, type Effect } from "./abilities.ts";
 
 export interface MatchOptions {
+  mode?: string;
   matchId: string;
   map: string;
   seed: number;
@@ -127,6 +128,7 @@ export interface ServerPlayer extends AbilityPlayer {
   plantProgress: number;
   defuseProgress: number;
   eRechargeAt: number;
+  accountId: string;
 }
 
 export class Match {
@@ -271,7 +273,17 @@ export class Match {
 
   // ------------------------------------------------------------------ players
 
-  addPlayer(id: number, name: string, agent = "kestrel", isBot = false): ServerPlayer {
+  onResult: ((result: unknown) => void) | null = null;
+  private roundLog: { round: number; winner: number; reason: string }[] = [];
+
+  addPlayer(
+    id: number,
+    name: string,
+    agent = "kestrel",
+    isBot = false,
+    preferTeam = -1,
+    accountId = "",
+  ): ServerPlayer {
     // A human joining a full match replaces a bot (on the larger team, or any team).
     if (!isBot && this.players.size >= this.rules.teamSize * 2) {
       const bots = [...this.players.values()].filter((q) => q.bot);
@@ -282,7 +294,8 @@ export class Match {
     }
     const counts = [0, 0];
     for (const p of this.players.values()) counts[p.team]!++;
-    const team = counts[0]! <= counts[1]! ? 0 : 1;
+    const team =
+      preferTeam === 0 || preferTeam === 1 ? preferTeam : counts[0]! <= counts[1]! ? 0 : 1;
     const knife = newWeaponState(this.def("knife"), 0);
     const p: ServerPlayer = {
       id,
@@ -322,6 +335,7 @@ export class Match {
       plantProgress: 0,
       defuseProgress: 0,
       eRechargeAt: 0,
+      accountId,
       killsSinceE: 0,
       status: {
         blind: 0,
@@ -590,6 +604,7 @@ export class Match {
       p.credits = Math.min(this.econ.maxCredits, p.credits + reward);
     }
     this.broadcast({ type: "RoundEnd", round: this.round, winnerTeam, reason });
+    this.roundLog.push({ round: this.round, winner: winnerTeam, reason });
     const [a, b] = this.score;
     const total = this.rules.roundsToWin;
     const over =
@@ -598,6 +613,24 @@ export class Match {
     if (over) {
       this.winner = a > b ? 0 : 1;
       this.setPhase(Phase.MATCH_OVER, 10);
+      this.onResult?.({
+        matchId: this.options.matchId,
+        mode: this.options.mode ?? "quick",
+        map: this.options.map,
+        score: [this.score[0], this.score[1]],
+        winner: this.winner,
+        rounds: this.roundLog,
+        players: [...this.players.values()].map((p) => ({
+          accountId: p.accountId || null,
+          name: p.name,
+          team: p.team,
+          agent: p.agent,
+          kills: p.kills,
+          deaths: p.deaths,
+          assists: p.assists,
+          score: p.score,
+        })),
+      });
       this.broadcast({
         type: "RoundEnd",
         round: this.round,

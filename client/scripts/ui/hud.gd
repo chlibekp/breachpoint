@@ -35,6 +35,9 @@ func _ready() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
 	crosshair = Crosshair.new()
+	var saved: Variant = Settings.get_value("crosshair", "profile")
+	if saved is Dictionary:
+		crosshair.profile.merge(saved, true)
 	_root.add_child(crosshair)
 	_build_vitals()
 	_build_weapon()

@@ -9,6 +9,7 @@ const SCENES: Dictionary = {
 	"boot": "res://scenes/boot/boot.tscn",
 	"lightmap_test": "res://scenes/dev/lightmap_test.tscn",
 	"range": "res://scenes/game/range.tscn",
+	"menu": "res://scenes/menu/main_menu.tscn",
 	"online": "res://scenes/game/online.tscn",
 	"lookdev": "res://scenes/dev/lookdev.tscn",
 }

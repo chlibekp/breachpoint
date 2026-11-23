@@ -18,6 +18,8 @@ var display_name: String = ""
 var server_tick: int = 0
 var rtt_ms: float = -1.0
 var last_error: String = ""
+var token: String = ""  ## access token sent in Hello (empty = anonymous quick play)
+var pending_ticket: String = ""  ## matchmaking join ticket for the next JoinMatch
 
 var _ws: WebSocketPeer = null
 var _ping_timer: float = 0.0
@@ -66,7 +68,7 @@ func _process(delta: float) -> void:
 			if state == State.CONNECTING:
 				_set_state(State.HANDSHAKE)
 				var platform := "web" if OS.has_feature("web") else OS.get_name().to_lower()
-				send({"type": "Hello", "protocolVersion": Protocol.PROTOCOL_VERSION, "token": "", "platform": platform})
+				send({"type": "Hello", "protocolVersion": Protocol.PROTOCOL_VERSION, "token": token, "platform": platform})
 			while _ws.get_available_packet_count() > 0:
 				_handle(_ws.get_packet())
 			if state == State.ONLINE:

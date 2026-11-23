@@ -5,7 +5,7 @@ extends RefCounted
 
 const CONFIG_DIR := "res://data/config"
 const SCHEMA_DIR := "res://data/schemas"
-const NAMES: PackedStringArray = ["weapons", "agents", "economy", "movement", "match", "quality", "hitboxes", "materials"]
+const NAMES: PackedStringArray = ["weapons", "agents", "economy", "movement", "match", "quality", "hitboxes", "materials", "skins"]
 
 
 static func read_json(path: String) -> Variant:
