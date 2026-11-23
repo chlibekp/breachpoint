@@ -77,8 +77,10 @@ jobs:
         run: timeout 600 bash tools/godot.sh --headless --path client --import
       - name: GDScript tests (protocol parity, config schemas, quality tiers)
         run: bash tools/godot.sh --headless --path client -s res://tests/run_tests.gd
-      - name: Export Linux + Web + Windows
-        run: bash tools/export.sh Linux Web Windows
+      - name: Export Linux + Windows
+        run: bash tools/export.sh Linux Windows
+      - name: Export Web (half-res textures, hashed filenames)
+        run: bash tools/export-web.sh Web
       - uses: actions/upload-artifact@v4
         with:
           name: builds
