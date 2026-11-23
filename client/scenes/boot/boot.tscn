@@ -106,7 +106,7 @@ theme_type_variation = &"MutedLabel"
 text = "version"
 
 [node name="Panel" type="PanelContainer" parent="Margin/Columns"]
-custom_minimum_size = Vector2(700, 0)
+custom_minimum_size = Vector2(820, 0)
 layout_mode = 2
 size_flags_vertical = 4
 

@@ -35,7 +35,7 @@ func _build_rows() -> void:
 		var name_label := Label.new()
 		name_label.theme_type_variation = &"HeaderSmall"
 		name_label.text = key
-		name_label.custom_minimum_size = Vector2(190, 0)
+		name_label.custom_minimum_size = Vector2(176, 0)
 		var value := Label.new()
 		value.theme_type_variation = &"ValueLabel"
 		value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -77,9 +77,9 @@ func _refresh_static() -> void:
 	if t.is_empty():
 		_set_row("QUALITY TIER", "not selected", "FAIL")
 	else:
-		_set_row("QUALITY TIER", "%s · shadows %d×%d · MSAA %dx%s%s · %d fps target" % [
-			str(t["id"]).to_upper(), int(t["shadowCascades"]), int(t["shadowSize"]), int(t["msaa"]),
-			" + FXAA" if t["fxaa"] else "", " · TAA" if t["taa"] else "", int(t["targetFps"])], "OK")
+		_set_row("QUALITY TIER", "%s · %d fps · shadows %d×%d · AA %s" % [
+			str(t["id"]).to_upper(), int(t["targetFps"]), int(t["shadowCascades"]), int(t["shadowSize"]),
+			QualityManager.effective_aa()], "OK")
 
 	if Data.is_loaded:
 		_set_row("SHARED DATA", "%d weapons · %d agents · economy, movement, match, quality" % [Data.weapons.size(), Data.agents.size()], "OK")

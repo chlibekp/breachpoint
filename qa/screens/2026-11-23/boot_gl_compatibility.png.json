@@ -1,0 +1,13 @@
+{
+  "adapter": "llvmpipe (LLVM 20.1.2, 256 bits)",
+  "avg_frame_ms": 30.46505,
+  "engine": "4.7-stable (official)",
+  "frames": 60,
+  "renderer": "gl_compatibility",
+  "scene": "boot",
+  "size": [
+    1920,
+    1080
+  ],
+  "tier": "web"
+}

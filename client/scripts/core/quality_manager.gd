@@ -45,11 +45,28 @@ func tier_id() -> String:
 	return tier.get("id", "")
 
 
+## Human-readable anti-aliasing actually in effect on this renderer.
+func effective_aa() -> String:
+	var parts := PackedStringArray()
+	if int(tier.get("msaa", 0)) > 0:
+		parts.append("MSAA %dx" % int(tier["msaa"]))
+	if renderer == RENDERER_FORWARD:
+		if tier.get("fxaa", false):
+			parts.append("FXAA")
+		if tier.get("taa", false):
+			parts.append("TAA")
+		if tier.get("fsr2", false):
+			parts.append("FSR2")
+	return " + ".join(parts) if not parts.is_empty() else "off"
+
+
 func _apply_viewport(vp: Viewport) -> void:
 	var msaa: int = int(tier["msaa"])
 	vp.msaa_3d = {0: Viewport.MSAA_DISABLED, 2: Viewport.MSAA_2X, 4: Viewport.MSAA_4X, 8: Viewport.MSAA_8X}.get(msaa, Viewport.MSAA_DISABLED)
-	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if tier["fxaa"] else Viewport.SCREEN_SPACE_AA_DISABLED
 	if renderer == RENDERER_FORWARD:
+		# Godot 4.7's Compatibility renderer has no screen-space AA, so the web tier's FXAA is a
+		# no-op there (DECISIONS.md); MSAA 2x carries web anti-aliasing.
+		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if tier["fxaa"] else Viewport.SCREEN_SPACE_AA_DISABLED
 		vp.use_taa = tier["taa"]
 		if tier["fsr2"]:
 			vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR2
