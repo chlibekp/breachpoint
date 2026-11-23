@@ -48,7 +48,7 @@ func build_b_site() -> void:
 	# Plaza floor (blend: flagstone + cobble patches), 0.6 m thick slab.
 	mb.block("floor", Vector3(40, 0.6, 40), p(20, -0.3, 20), 0, "stone", 0.0)
 	# Passage floors outside the plaza (B Main to the west, B Lobby to the south, B Link to the east).
-	mb.block("floor", Vector3(14, 0.6, 4.4), p(-7, -0.3, 24), 0, "stone", 0.0)
+	mb.block("floor", Vector3(10, 0.6, 4.4), p(-5, -0.3, 24), 0, "stone", 0.0)
 	mb.block("floor", Vector3(8, 0.6, 12), p(14, -0.3, 46), 0, "stone", 0.0)
 	mb.block("floor", Vector3(12, 0.6, 4.4), p(46, -0.3, 34), 0, "stone", 0.0)
 
@@ -58,10 +58,10 @@ func build_b_site() -> void:
 	SolsticeKit.building(mb, Vector2(B.x - 8, B.z + 26.2), Vector2(B.x + 3, B.z + 40), 2, "plaster_terra", ["e", "s"], "tiles", 2)
 	SolsticeKit.arch_gate(mb, p(3.0, 0, 24), Vector3(1, 0, 0), 3.6, 2.6, 1.2)
 	# Passage walls continuing west (enclose the B Main corridor).
-	mb.block("plaster_sand", Vector3(11, 5.5, 0.6), p(-8.5, 2.75, 21.5), 0, "stone", 0.05)
-	mb.block("plaster_sand", Vector3(11, 5.5, 0.6), p(-8.5, 2.75, 26.5), 0, "stone", 0.05)
+	mb.block("plaster_sand", Vector3(7, 5.5, 0.6), p(-6.5, 2.75, 21.5), 0, "stone", 0.05)
+	mb.block("plaster_sand", Vector3(7, 5.5, 0.6), p(-6.5, 2.75, 26.5), 0, "stone", 0.05)
 	SolsticeKit.canopy(mb, p(-4.5, 4.8, 24), Vector2(4.8, 3.0), 90, "cloth")
-	SolsticeKit.laundry_line(mb, p(-9, 4.4, 21.8), p(-9, 4.6, 26.2), 4, 7)
+	SolsticeKit.laundry_line(mb, p(-7, 4.4, 21.8), p(-7, 4.6, 26.2), 4, 7)
 
 	# East block: three floors with B Balcony (heaven) walkway and stairs.
 	SolsticeKit.building(mb, Vector2(B.x + 37, B.z - 2), Vector2(B.x + 47, B.z + 31.8), 3, "plaster", ["w"], "flat", 3)
@@ -123,7 +123,7 @@ func build_b_site() -> void:
 
 
 func _cathedral() -> void:
-	var x0 := B.x + 5.0
+	var x0 := B.x + 9.0
 	var x1 := B.x + 35.0
 	var z0 := B.z - 10.0
 	var z1 := B.z + 3.0
@@ -245,7 +245,7 @@ func _bookmarks() -> void:
 	mb.bookmark("Corner low wall", p(26, eye, 29), p(14, 1, 14))
 	mb.bookmark("Overview high", p(-4, 14, 44), p(22, 0, 16), 70.0)
 	mb.bookmark("Overview east", p(46, 12, 46), p(18, 0, 14), 70.0)
-	mb.bookmark("Doorway R1 study", p(-11, eye, 24), p(8, 2.4, 24))
+	mb.bookmark("Doorway R1 study", p(-9, eye, 24), p(8, 2.4, 24))
 
 
 # ------------------------------------------------------------------ vista (spec §8.6)

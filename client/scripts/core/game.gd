@@ -8,6 +8,9 @@ enum ViewMode { LIT, GREYSCALE, SILHOUETTE }
 const SCENES: Dictionary = {
 	"boot": "res://scenes/boot/boot.tscn",
 	"lightmap_test": "res://scenes/dev/lightmap_test.tscn",
+	"range": "res://scenes/game/range.tscn",
+	"online": "res://scenes/game/online.tscn",
+	"lookdev": "res://scenes/dev/lookdev.tscn",
 }
 
 var view_mode: ViewMode = ViewMode.LIT

@@ -60,7 +60,8 @@
             "buttons": 11,
             "yaw": 1.25,
             "pitch": -0.3,
-            "weaponSlot": 1
+            "weaponSlot": 1,
+            "interpMs": 31
           },
           {
             "seq": 42,
@@ -68,11 +69,12 @@
             "buttons": 9,
             "yaw": -2.75,
             "pitch": 0.125,
-            "weaponSlot": 1
+            "weaponSlot": 1,
+            "interpMs": 47
           }
         ]
       },
-      "hex": "0529230000020029000000e80300000b000000ee32c7f3012a000000e903000009000000f48f180501"
+      "hex": "0529230000020029000000e80300000b000000ee32c7f3011f002a000000e903000009000000f48f1805012f00"
     },
     {
       "message": {
@@ -275,6 +277,118 @@
         "reason": "server_shutdown"
       },
       "hex": "150f007365727665725f73687574646f776e"
+    },
+    {
+      "message": {
+        "type": "PlayerStatus",
+        "playerId": 4,
+        "credits": 3900,
+        "primary": "saber",
+        "secondary": "wasp",
+        "slot": 0,
+        "ammo": 25,
+        "reserve": 75,
+        "shield": 50,
+        "ultPoints": 3,
+        "charges": [
+          1,
+          2,
+          1,
+          0
+        ],
+        "agent": "kestrel"
+      },
+      "hex": "16043c0f050073616265720400776173700019004b00320304000102010007006b65737472656c"
+    },
+    {
+      "message": {
+        "type": "RoundEnd",
+        "round": 7,
+        "winnerTeam": 1,
+        "reason": "elimination"
+      },
+      "hex": "1707010b00656c696d696e6174696f6e"
+    },
+    {
+      "message": {
+        "type": "ChargeState",
+        "state": 3,
+        "carrierId": 2,
+        "pos": {
+          "x": 30.5,
+          "y": 0.1,
+          "z": -12.25
+        },
+        "site": 1,
+        "plantedTick": 12345,
+        "progress": 0
+      },
+      "hex": "180302247700006400000026d0ffff013930000000"
+    },
+    {
+      "message": {
+        "type": "Spawn",
+        "playerId": 9,
+        "pos": {
+          "x": -8,
+          "y": 0.05,
+          "z": -55
+        },
+        "yaw": 3.14159,
+        "team": 1
+      },
+      "hex": "1909c0e0ffff320000002829ffff008001"
+    },
+    {
+      "message": {
+        "type": "SoundEvent",
+        "kind": 2,
+        "pos": {
+          "x": 1,
+          "y": 0,
+          "z": 2
+        },
+        "playerId": 3,
+        "param": "stone"
+      },
+      "hex": "1a02e803000000000000d007000003050073746f6e65"
+    },
+    {
+      "message": {
+        "type": "Scoreboard",
+        "entries": [
+          {
+            "playerId": 1,
+            "kills": 12,
+            "deaths": 4,
+            "assists": 3,
+            "score": 3120,
+            "credits": 4500,
+            "ult": 5,
+            "pingMs": 34
+          }
+        ]
+      },
+      "hex": "1b0100010c0403300c9411052200"
+    },
+    {
+      "message": {
+        "type": "ShotEvent",
+        "playerId": 2,
+        "weapon": "saber",
+        "origin": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "hit": {
+          "x": 10,
+          "y": 1.2,
+          "z": -30
+        },
+        "impact": 1
+      },
+      "hex": "1c020500736162657200000000400600000000000010270000b0040000d08affff01"
     }
   ]
 }

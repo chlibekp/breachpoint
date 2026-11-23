@@ -104,3 +104,7 @@ GODOT_BIN=… bash tools/bake-lightmaps.sh  # needs a display (Xvfb ok) + Vulkan
 
 - **2026-11-23** — Milestone 1 built and verified (this document). Pushed to `main` and
   `claude/confident-faraday-b81zqs`. Awaiting approval to start milestone 2.
+
+### TODO on next SOLSTICE rebuild (do not rebuild while a bake is running)
+- Mid has a straight ~130 m spawn-to-spawn sightline (x -10..0). Add a solid "Mid Kiosk" cover
+  block and a dog-leg near z 8–14 in `solstice_full.gd` so neither spawn can see the other.

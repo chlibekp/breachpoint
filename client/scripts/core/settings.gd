@@ -24,7 +24,7 @@ const DEFAULTS: Dictionary = {
 	"audio": {"master": 1.0, "sfx": 1.0, "voice": 1.0, "music": 0.6},
 	"controls": {"sensitivity": 0.35, "ads_multiplier": 1.0, "raw_input": true, "invert_y": false},
 	"accessibility": {"colorblind": "off", "reduced_shake": false, "subtitle_scale": 1.0},
-	"gameplay": {"viewmodel_sway": true, "strafe_tilt": true},
+	"gameplay": {"viewmodel_sway": true, "strafe_tilt": true, "agent": "kestrel"},
 	"net": {"server_url": "ws://127.0.0.1:7350", "show_net_graph": false},
 }
 

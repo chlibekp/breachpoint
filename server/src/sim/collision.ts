@@ -18,6 +18,97 @@ export interface Box {
 
 export interface World {
   boxes: Box[];
+  /** Lazily built uniform grid over box XZ bounds (broad phase). */
+  grid?: Grid;
+}
+
+export interface Grid {
+  cell: number;
+  minX: number;
+  minZ: number;
+  nx: number;
+  nz: number;
+  cells: number[][];
+  stamp: Uint32Array;
+  stampId: number;
+}
+
+const GRID_CELL = 4;
+
+export function grid(w: World): Grid {
+  if (w.grid) return w.grid;
+  let minX = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxZ = -Infinity;
+  for (const b of w.boxes) {
+    minX = Math.min(minX, b.cx - b.rxz);
+    minZ = Math.min(minZ, b.cz - b.rxz);
+    maxX = Math.max(maxX, b.cx + b.rxz);
+    maxZ = Math.max(maxZ, b.cz + b.rxz);
+  }
+  if (!Number.isFinite(minX)) {
+    minX = minZ = 0;
+    maxX = maxZ = 1;
+  }
+  const nx = Math.max(1, Math.ceil((maxX - minX) / GRID_CELL));
+  const nz = Math.max(1, Math.ceil((maxZ - minZ) / GRID_CELL));
+  const cells: number[][] = Array.from({ length: nx * nz }, () => []);
+  w.boxes.forEach((b, i) => {
+    const x0 = Math.max(0, Math.floor((b.cx - b.rxz - minX) / GRID_CELL));
+    const x1 = Math.min(nx - 1, Math.floor((b.cx + b.rxz - minX) / GRID_CELL));
+    const z0 = Math.max(0, Math.floor((b.cz - b.rxz - minZ) / GRID_CELL));
+    const z1 = Math.min(nz - 1, Math.floor((b.cz + b.rxz - minZ) / GRID_CELL));
+    for (let z = z0; z <= z1; z++) for (let x = x0; x <= x1; x++) cells[z * nx + x]!.push(i);
+  });
+  w.grid = {
+    cell: GRID_CELL,
+    minX,
+    minZ,
+    nx,
+    nz,
+    cells,
+    stamp: new Uint32Array(w.boxes.length),
+    stampId: 0,
+  };
+  return w.grid;
+}
+
+/**
+ * Box indices whose XZ bounds may touch the rectangle, in ascending index order — iterating these
+ * gives exactly the same results as a full scan for any query confined to the rectangle.
+ */
+export function candidates(
+  w: World,
+  x0: number,
+  z0: number,
+  x1: number,
+  z1: number,
+  out: number[] = [],
+): number[] {
+  const g = grid(w);
+  out.length = 0;
+  g.stampId = (g.stampId + 1) >>> 0;
+  if (g.stampId === 0) {
+    g.stamp.fill(0);
+    g.stampId = 1;
+  }
+  const cx0 = Math.max(0, Math.floor((x0 - g.minX) / g.cell));
+  const cx1 = Math.min(g.nx - 1, Math.floor((x1 - g.minX) / g.cell));
+  const cz0 = Math.max(0, Math.floor((z0 - g.minZ) / g.cell));
+  const cz1 = Math.min(g.nz - 1, Math.floor((z1 - g.minZ) / g.cell));
+  for (let z = cz0; z <= cz1; z++) {
+    for (let x = cx0; x <= cx1; x++) {
+      for (const i of g.cells[z * g.nx + x]!) {
+        if (g.stamp[i] !== g.stampId) {
+          g.stamp[i] = g.stampId;
+          out.push(i);
+        }
+      }
+    }
+  }
+  out.sort((a, b) => a - b);
+  return out;
 }
 
 export function makeBox(
@@ -72,6 +163,8 @@ export function toLocal(b: Box, x: number, z: number): [number, number] {
 export function toWorldDir(b: Box, lx: number, lz: number): [number, number] {
   return [lx * b.cos + lz * b.sin, -lx * b.sin + lz * b.cos];
 }
+
+const _rayScratch: number[] = [];
 
 export interface RayHit {
   t: number;
@@ -155,4 +248,68 @@ export function raycastAll(
   }
   hits.sort((a, b) => a.t - b.t || a.box - b.box);
   return hits;
+}
+
+/**
+ * True if the segment (o + d*t, 0 < t < dist) hits any box for which `blocks(tag)` is true.
+ * Walks the broad-phase grid cells along the ray (2D DDA in XZ) and exits on the first hit —
+ * the fast path for line-of-sight checks (fog of war, bots).
+ */
+export function segmentBlocked(
+  w: World,
+  ox: number,
+  oy: number,
+  oz: number,
+  dx: number,
+  dy: number,
+  dz: number,
+  dist: number,
+  blocks: (tag: number) => boolean,
+): boolean {
+  const g = grid(w);
+  g.stampId = (g.stampId + 1) >>> 0;
+  if (g.stampId === 0) {
+    g.stamp.fill(0);
+    g.stampId = 1;
+  }
+  let cx = Math.floor((ox - g.minX) / g.cell);
+  let cz = Math.floor((oz - g.minZ) / g.cell);
+  const stepX = dx > 0 ? 1 : -1;
+  const stepZ = dz > 0 ? 1 : -1;
+  const tDeltaX = Math.abs(dx) > 1e-12 ? g.cell / Math.abs(dx) : Infinity;
+  const tDeltaZ = Math.abs(dz) > 1e-12 ? g.cell / Math.abs(dz) : Infinity;
+  const nextX = g.minX + (cx + (stepX > 0 ? 1 : 0)) * g.cell;
+  const nextZ = g.minZ + (cz + (stepZ > 0 ? 1 : 0)) * g.cell;
+  let tMaxX = Math.abs(dx) > 1e-12 ? (nextX - ox) / dx : Infinity;
+  let tMaxZ = Math.abs(dz) > 1e-12 ? (nextZ - oz) / dz : Infinity;
+  let t = 0;
+  while (t <= dist) {
+    if (cx >= 0 && cz >= 0 && cx < g.nx && cz < g.nz) {
+      for (const i of g.cells[cz * g.nx + cx]!) {
+        if (g.stamp[i] === g.stampId) continue;
+        g.stamp[i] = g.stampId;
+        const b = w.boxes[i]!;
+        if (!blocks(b.tag)) continue;
+        const r = rayBox(b, ox, oy, oz, dx, dy, dz);
+        if (r !== null && r[1] > 0 && r[0] < dist) return true;
+      }
+    } else if (
+      (cx < 0 && stepX < 0) ||
+      (cz < 0 && stepZ < 0) ||
+      (cx >= g.nx && stepX > 0) ||
+      (cz >= g.nz && stepZ > 0)
+    ) {
+      return false;
+    }
+    if (tMaxX < tMaxZ) {
+      t = tMaxX;
+      tMaxX += tDeltaX;
+      cx += stepX;
+    } else {
+      t = tMaxZ;
+      tMaxZ += tDeltaZ;
+      cz += stepZ;
+    }
+  }
+  return false;
 }

@@ -28,6 +28,12 @@ func _ready() -> void:
 	add_child(camera)
 	var idx := int(args.get("bookmark", "0"))
 	set_bookmark(idx)
+	if args.has("topdown"):
+		camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+		camera.size = 170.0
+		camera.far = 400.0
+		camera.position = Vector3(2, 150, 13)
+		camera.rotation_degrees = Vector3(-90, 0, 0)
 	if args.has("fp"):
 		viewmodel = Viewmodel.new()
 		camera.add_child(viewmodel)

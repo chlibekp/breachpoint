@@ -117,6 +117,11 @@ func callout(callout_name: String, center: Vector3, size: Vector3) -> void:
 	(meta["callouts"] as Array).append({"name": callout_name, "center": _v(center), "size": _v(size)})
 
 
+## Navigation rectangle for server bots (walkable lanes; touching rectangles are connected).
+func nav_rect(nav_name: String, x0: float, z0: float, x1: float, z1: float) -> void:
+	(meta.get_or_add("nav", []) as Array).append({"name": nav_name, "center": _v(Vector3((x0 + x1) * 0.5, 1, (z0 + z1) * 0.5)), "size": _v(Vector3(x1 - x0, 2, z1 - z0))})
+
+
 func bookmark(bookmark_name: String, pos: Vector3, look_at: Vector3, fov: float = 75.0) -> void:
 	(meta["bookmarks"] as Array).append({"name": bookmark_name, "pos": _v(pos), "lookAt": _v(look_at), "fov": fov})
 

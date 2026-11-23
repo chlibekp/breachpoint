@@ -26,6 +26,13 @@ const MSG_CHAT: int = 18
 const MSG_PING: int = 19
 const MSG_PONG: int = 20
 const MSG_DISCONNECT: int = 21
+const MSG_PLAYER_STATUS: int = 22
+const MSG_ROUND_END: int = 23
+const MSG_CHARGE_STATE: int = 24
+const MSG_SPAWN: int = 25
+const MSG_SOUND_EVENT: int = 26
+const MSG_SCOREBOARD: int = 27
+const MSG_SHOT_EVENT: int = 28
 
 const MSG_NAMES: Dictionary = {
 	1: "Hello",
@@ -49,11 +56,20 @@ const MSG_NAMES: Dictionary = {
 	19: "Ping",
 	20: "Pong",
 	21: "Disconnect",
+	22: "PlayerStatus",
+	23: "RoundEnd",
+	24: "ChargeState",
+	25: "Spawn",
+	26: "SoundEvent",
+	27: "Scoreboard",
+	28: "ShotEvent",
 }
 
 const UNRELIABLE: Dictionary = {
 	5: true,
 	6: true,
+	26: true,
+	28: true,
 }
 
 static func _write_input_cmd(w: ProtocolCodec.Writer, v: Dictionary) -> void:
@@ -63,6 +79,7 @@ static func _write_input_cmd(w: ProtocolCodec.Writer, v: Dictionary) -> void:
 	w.put_angle(v["yaw"])
 	w.put_angle(v["pitch"])
 	w.put_u8(v["weaponSlot"])
+	w.put_u16(v["interpMs"])
 
 
 static func _read_input_cmd(r: ProtocolCodec.Reader) -> Dictionary:
@@ -73,6 +90,7 @@ static func _read_input_cmd(r: ProtocolCodec.Reader) -> Dictionary:
 	v["yaw"] = r.get_angle()
 	v["pitch"] = r.get_angle()
 	v["weaponSlot"] = r.get_u8()
+	v["interpMs"] = r.get_u16()
 	return v
 
 
@@ -115,6 +133,30 @@ static func _read_roster_entry(r: ProtocolCodec.Reader) -> Dictionary:
 	v["name"] = r.get_string()
 	v["team"] = r.get_u8()
 	v["agent"] = r.get_string()
+	return v
+
+
+static func _write_score_entry(w: ProtocolCodec.Writer, v: Dictionary) -> void:
+	w.put_u8(v["playerId"])
+	w.put_u8(v["kills"])
+	w.put_u8(v["deaths"])
+	w.put_u8(v["assists"])
+	w.put_u16(v["score"])
+	w.put_u16(v["credits"])
+	w.put_u8(v["ult"])
+	w.put_u16(v["pingMs"])
+
+
+static func _read_score_entry(r: ProtocolCodec.Reader) -> Dictionary:
+	var v: Dictionary = {}
+	v["playerId"] = r.get_u8()
+	v["kills"] = r.get_u8()
+	v["deaths"] = r.get_u8()
+	v["assists"] = r.get_u8()
+	v["score"] = r.get_u16()
+	v["credits"] = r.get_u16()
+	v["ult"] = r.get_u8()
+	v["pingMs"] = r.get_u16()
 	return v
 
 
@@ -250,6 +292,60 @@ static func encode(msg: Dictionary) -> PackedByteArray:
 		"Disconnect":
 			w.put_u8(21)
 			w.put_string(msg["reason"])
+		"PlayerStatus":
+			w.put_u8(22)
+			w.put_u8(msg["playerId"])
+			w.put_u16(msg["credits"])
+			w.put_string(msg["primary"])
+			w.put_string(msg["secondary"])
+			w.put_u8(msg["slot"])
+			w.put_u16(msg["ammo"])
+			w.put_u16(msg["reserve"])
+			w.put_u8(msg["shield"])
+			w.put_u8(msg["ultPoints"])
+			var arr0: Array = msg["charges"]
+			w.array_len(arr0.size(), 4)
+			for e0: Variant in arr0:
+				w.put_u8(e0)
+			w.put_string(msg["agent"])
+		"RoundEnd":
+			w.put_u8(23)
+			w.put_u8(msg["round"])
+			w.put_u8(msg["winnerTeam"])
+			w.put_string(msg["reason"])
+		"ChargeState":
+			w.put_u8(24)
+			w.put_u8(msg["state"])
+			w.put_u8(msg["carrierId"])
+			w.put_pos(msg["pos"])
+			w.put_u8(msg["site"])
+			w.put_u32(msg["plantedTick"])
+			w.put_u8(msg["progress"])
+		"Spawn":
+			w.put_u8(25)
+			w.put_u8(msg["playerId"])
+			w.put_pos(msg["pos"])
+			w.put_angle(msg["yaw"])
+			w.put_u8(msg["team"])
+		"SoundEvent":
+			w.put_u8(26)
+			w.put_u8(msg["kind"])
+			w.put_pos(msg["pos"])
+			w.put_u8(msg["playerId"])
+			w.put_string(msg["param"])
+		"Scoreboard":
+			w.put_u8(27)
+			var arr0: Array = msg["entries"]
+			w.array_len(arr0.size(), 10)
+			for e0: Variant in arr0:
+				_write_score_entry(w, e0)
+		"ShotEvent":
+			w.put_u8(28)
+			w.put_u8(msg["playerId"])
+			w.put_string(msg["weapon"])
+			w.put_pos(msg["origin"])
+			w.put_pos(msg["hit"])
+			w.put_u8(msg["impact"])
 		_:
 			push_error("Protocol.encode: unknown message type %s" % type_name)
 			return PackedByteArray()
@@ -394,6 +490,62 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		21:
 			msg["type"] = "Disconnect"
 			msg["reason"] = r.get_string()
+		22:
+			msg["type"] = "PlayerStatus"
+			msg["playerId"] = r.get_u8()
+			msg["credits"] = r.get_u16()
+			msg["primary"] = r.get_string()
+			msg["secondary"] = r.get_string()
+			msg["slot"] = r.get_u8()
+			msg["ammo"] = r.get_u16()
+			msg["reserve"] = r.get_u16()
+			msg["shield"] = r.get_u8()
+			msg["ultPoints"] = r.get_u8()
+			var n0: int = r.array_len(4)
+			var arr0: Array = []
+			for _i0: int in n0:
+				arr0.append(r.get_u8())
+			msg["charges"] = arr0
+			msg["agent"] = r.get_string()
+		23:
+			msg["type"] = "RoundEnd"
+			msg["round"] = r.get_u8()
+			msg["winnerTeam"] = r.get_u8()
+			msg["reason"] = r.get_string()
+		24:
+			msg["type"] = "ChargeState"
+			msg["state"] = r.get_u8()
+			msg["carrierId"] = r.get_u8()
+			msg["pos"] = r.get_pos()
+			msg["site"] = r.get_u8()
+			msg["plantedTick"] = r.get_u32()
+			msg["progress"] = r.get_u8()
+		25:
+			msg["type"] = "Spawn"
+			msg["playerId"] = r.get_u8()
+			msg["pos"] = r.get_pos()
+			msg["yaw"] = r.get_angle()
+			msg["team"] = r.get_u8()
+		26:
+			msg["type"] = "SoundEvent"
+			msg["kind"] = r.get_u8()
+			msg["pos"] = r.get_pos()
+			msg["playerId"] = r.get_u8()
+			msg["param"] = r.get_string()
+		27:
+			msg["type"] = "Scoreboard"
+			var n0: int = r.array_len(10)
+			var arr0: Array = []
+			for _i0: int in n0:
+				arr0.append(_read_score_entry(r))
+			msg["entries"] = arr0
+		28:
+			msg["type"] = "ShotEvent"
+			msg["playerId"] = r.get_u8()
+			msg["weapon"] = r.get_string()
+			msg["origin"] = r.get_pos()
+			msg["hit"] = r.get_pos()
+			msg["impact"] = r.get_u8()
 		_:
 			return {}
 	if not r.ok_and_finished():

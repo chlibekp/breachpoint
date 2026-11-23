@@ -62,6 +62,7 @@ describe("codec safety", () => {
         yaw: 0,
         pitch: 0,
         weaponSlot: 0,
+        interpMs: 0,
       })),
     };
     expect(() => encode(tooMany)).toThrow();

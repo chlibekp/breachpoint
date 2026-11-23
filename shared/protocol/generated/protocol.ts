@@ -27,6 +27,13 @@ export const MsgId = {
   Ping: 19,
   Pong: 20,
   Disconnect: 21,
+  PlayerStatus: 22,
+  RoundEnd: 23,
+  ChargeState: 24,
+  Spawn: 25,
+  SoundEvent: 26,
+  Scoreboard: 27,
+  ShotEvent: 28,
 } as const;
 
 export const MsgChannel: Record<number, "reliable" | "unreliable"> = {
@@ -51,6 +58,13 @@ export const MsgChannel: Record<number, "reliable" | "unreliable"> = {
   19: "reliable",
   20: "reliable",
   21: "reliable",
+  22: "reliable",
+  23: "reliable",
+  24: "reliable",
+  25: "reliable",
+  26: "unreliable",
+  27: "reliable",
+  28: "unreliable",
 };
 
 export interface InputCmd {
@@ -60,6 +74,7 @@ export interface InputCmd {
   yaw: number;
   pitch: number;
   weaponSlot: number;
+  interpMs: number;
 }
 function writeInputCmd(w: Writer, v: InputCmd): void {
   w.u32(v.seq);
@@ -68,6 +83,7 @@ function writeInputCmd(w: Writer, v: InputCmd): void {
   w.angle(v.yaw);
   w.angle(v.pitch);
   w.u8(v.weaponSlot);
+  w.u16(v.interpMs);
 }
 function readInputCmd(r: Reader): InputCmd {
   return {
@@ -77,6 +93,7 @@ function readInputCmd(r: Reader): InputCmd {
     yaw: r.angle(),
     pitch: r.angle(),
     weaponSlot: r.u8(),
+    interpMs: r.u16(),
   };
 }
 
@@ -134,6 +151,39 @@ function readRosterEntry(r: Reader): RosterEntry {
     name: r.string(),
     team: r.u8(),
     agent: r.string(),
+  };
+}
+
+export interface ScoreEntry {
+  playerId: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  score: number;
+  credits: number;
+  ult: number;
+  pingMs: number;
+}
+function writeScoreEntry(w: Writer, v: ScoreEntry): void {
+  w.u8(v.playerId);
+  w.u8(v.kills);
+  w.u8(v.deaths);
+  w.u8(v.assists);
+  w.u16(v.score);
+  w.u16(v.credits);
+  w.u8(v.ult);
+  w.u16(v.pingMs);
+}
+function readScoreEntry(r: Reader): ScoreEntry {
+  return {
+    playerId: r.u8(),
+    kills: r.u8(),
+    deaths: r.u8(),
+    assists: r.u8(),
+    score: r.u16(),
+    credits: r.u16(),
+    ult: r.u8(),
+    pingMs: r.u16(),
   };
 }
 
@@ -274,6 +324,61 @@ export interface DisconnectMsg {
   type: "Disconnect";
   reason: string;
 }
+export interface PlayerStatusMsg {
+  type: "PlayerStatus";
+  playerId: number;
+  credits: number;
+  primary: string;
+  secondary: string;
+  slot: number;
+  ammo: number;
+  reserve: number;
+  shield: number;
+  ultPoints: number;
+  charges: number[];
+  agent: string;
+}
+export interface RoundEndMsg {
+  type: "RoundEnd";
+  round: number;
+  winnerTeam: number;
+  reason: string;
+}
+export interface ChargeStateMsg {
+  type: "ChargeState";
+  state: number;
+  carrierId: number;
+  pos: Vec3;
+  site: number;
+  plantedTick: number;
+  progress: number;
+}
+export interface SpawnMsg {
+  type: "Spawn";
+  playerId: number;
+  pos: Vec3;
+  yaw: number;
+  team: number;
+}
+export interface SoundEventMsg {
+  type: "SoundEvent";
+  kind: number;
+  pos: Vec3;
+  playerId: number;
+  param: string;
+}
+export interface ScoreboardMsg {
+  type: "Scoreboard";
+  entries: ScoreEntry[];
+}
+export interface ShotEventMsg {
+  type: "ShotEvent";
+  playerId: number;
+  weapon: string;
+  origin: Vec3;
+  hit: Vec3;
+  impact: number;
+}
 
 export type Message =
   | HelloMsg
@@ -296,7 +401,14 @@ export type Message =
   | ChatMsg
   | PingMsg
   | PongMsg
-  | DisconnectMsg;
+  | DisconnectMsg
+  | PlayerStatusMsg
+  | RoundEndMsg
+  | ChargeStateMsg
+  | SpawnMsg
+  | SoundEventMsg
+  | ScoreboardMsg
+  | ShotEventMsg;
 
 export function encode(msg: Message, w: Writer = new Writer()): Uint8Array {
   switch (msg.type) {
@@ -456,6 +568,68 @@ export function encode(msg: Message, w: Writer = new Writer()): Uint8Array {
     case "Disconnect": {
       w.u8(21);
       w.string(msg.reason);
+      break;
+    }
+    case "PlayerStatus": {
+      w.u8(22);
+      w.u8(msg.playerId);
+      w.u16(msg.credits);
+      w.string(msg.primary);
+      w.string(msg.secondary);
+      w.u8(msg.slot);
+      w.u16(msg.ammo);
+      w.u16(msg.reserve);
+      w.u8(msg.shield);
+      w.u8(msg.ultPoints);
+      w.arrayLen(msg.charges.length, 4); for (const e0 of msg.charges) { w.u8(e0); }
+      w.string(msg.agent);
+      break;
+    }
+    case "RoundEnd": {
+      w.u8(23);
+      w.u8(msg.round);
+      w.u8(msg.winnerTeam);
+      w.string(msg.reason);
+      break;
+    }
+    case "ChargeState": {
+      w.u8(24);
+      w.u8(msg.state);
+      w.u8(msg.carrierId);
+      w.pos(msg.pos);
+      w.u8(msg.site);
+      w.u32(msg.plantedTick);
+      w.u8(msg.progress);
+      break;
+    }
+    case "Spawn": {
+      w.u8(25);
+      w.u8(msg.playerId);
+      w.pos(msg.pos);
+      w.angle(msg.yaw);
+      w.u8(msg.team);
+      break;
+    }
+    case "SoundEvent": {
+      w.u8(26);
+      w.u8(msg.kind);
+      w.pos(msg.pos);
+      w.u8(msg.playerId);
+      w.string(msg.param);
+      break;
+    }
+    case "Scoreboard": {
+      w.u8(27);
+      w.arrayLen(msg.entries.length, 10); for (const e0 of msg.entries) { writeScoreEntry(w, e0); }
+      break;
+    }
+    case "ShotEvent": {
+      w.u8(28);
+      w.u8(msg.playerId);
+      w.string(msg.weapon);
+      w.pos(msg.origin);
+      w.pos(msg.hit);
+      w.u8(msg.impact);
       break;
     }
   }
@@ -644,6 +818,75 @@ export function decode(bytes: Uint8Array): Message {
       msg = {
         type: "Disconnect",
         reason: r.string(),
+      };
+      break;
+    case 22:
+      msg = {
+        type: "PlayerStatus",
+        playerId: r.u8(),
+        credits: r.u16(),
+        primary: r.string(),
+        secondary: r.string(),
+        slot: r.u8(),
+        ammo: r.u16(),
+        reserve: r.u16(),
+        shield: r.u8(),
+        ultPoints: r.u8(),
+        charges: (() => { const n0 = r.arrayLen(4); const a: number[] = []; for (let i = 0; i < n0; i++) a.push(r.u8()); return a; })(),
+        agent: r.string(),
+      };
+      break;
+    case 23:
+      msg = {
+        type: "RoundEnd",
+        round: r.u8(),
+        winnerTeam: r.u8(),
+        reason: r.string(),
+      };
+      break;
+    case 24:
+      msg = {
+        type: "ChargeState",
+        state: r.u8(),
+        carrierId: r.u8(),
+        pos: r.pos(),
+        site: r.u8(),
+        plantedTick: r.u32(),
+        progress: r.u8(),
+      };
+      break;
+    case 25:
+      msg = {
+        type: "Spawn",
+        playerId: r.u8(),
+        pos: r.pos(),
+        yaw: r.angle(),
+        team: r.u8(),
+      };
+      break;
+    case 26:
+      msg = {
+        type: "SoundEvent",
+        kind: r.u8(),
+        pos: r.pos(),
+        playerId: r.u8(),
+        param: r.string(),
+      };
+      break;
+    case 27:
+      msg = {
+        type: "Scoreboard",
+        entries: (() => { const n0 = r.arrayLen(10); const a: ScoreEntry[] = []; for (let i = 0; i < n0; i++) a.push(readScoreEntry(r)); return a; })(),
+      };
+      break;
+    case 28:
+      msg = {
+        type: "ShotEvent",
+        playerId: r.u8(),
+        weapon: r.string(),
+        origin: r.pos(),
+        hit: r.pos(),
+        impact: r.u8(),
       };
       break;
     default:

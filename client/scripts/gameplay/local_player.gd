@@ -46,8 +46,14 @@ var _was_grounded := true
 var _fire_prev := false
 var _ads_held := false
 var buttons: int = 0
-var input_history: Array = []  ## [{seq, tick, buttons, yaw, pitch, slot}]
+var input_history: Array = []  ## [{seq, tick, buttons, yaw, pitch, slot, state: SimMovement.State}]
 var seq: int = 0
+var online := false
+var server_tick_estimate := 0.0  ## set by the net session (clock sync)
+var render_tick := 0.0  ## server tick remote players are rendered at
+var _correction := Vector3.ZERO  ## visual offset smoothing small reconciliation errors
+var reconcile_count := 0
+var last_correction_m := 0.0
 
 
 func setup(p_session: Node, p_world: SimWorld, spawn: Vector3, spawn_yaw: float) -> void:
@@ -177,7 +183,7 @@ func simulate_tick(b: int) -> void:
 	tick += 1
 	sim_time += dt
 	seq += 1
-	input_history.append({"seq": seq, "tick": tick, "buttons": b, "yaw": yaw, "pitch": pitch, "slot": SLOTS.find(slot)})
+	input_history.append({"seq": seq, "tick": int(server_tick_estimate) if online else tick, "buttons": b, "yaw": yaw, "pitch": pitch, "slot": SLOTS.find(slot), "state": move.copy()})
 	if input_history.size() > 128:
 		input_history.pop_front()
 	if move.grounded and not _was_grounded:
@@ -256,7 +262,8 @@ func _process(delta: float) -> void:
 		return
 	var f := Engine.get_physics_interpolation_fraction()
 	var cur := Vector3(move.x, move.y, move.z)
-	position = prev_pos.lerp(cur, f)
+	_correction = _correction.lerp(Vector3.ZERO, 1.0 - exp(-delta / 0.1 * 3.0))
+	position = prev_pos.lerp(cur, f) + _correction
 	var eye_h := lerpf(1.62, 1.05, move.crouch)
 	head.position = Vector3(0, eye_h, 0)
 	# Visual punch decays; shake is a small high-frequency jitter.
@@ -273,6 +280,67 @@ func _process(delta: float) -> void:
 	var def: Dictionary = current().get("def", {})
 	viewmodel.visible = not (def.get("ads") is Dictionary and def["ads"].get("scoped", false) and vm_anim.ads > 0.6)
 	vm_anim.update(delta, _frame_mouse, vel_local, move.grounded, SimMovement.speed_fraction(move, 6.75), _ads_held)
+
+
+## Server reconciliation (spec §13.3): rewind to the authoritative state for `last_seq` and replay
+## the inputs the server has not processed yet. Errors under 2 cm are smoothed over 100 ms.
+func reconcile(last_seq: int, st: Dictionary) -> void:
+	var idx := -1
+	for i: int in input_history.size():
+		if int(input_history[i]["seq"]) == last_seq:
+			idx = i
+			break
+	if idx < 0:
+		return
+	var predicted: SimMovement.State = input_history[idx]["state"]
+	var server_pos: Vector3 = st["pos"]
+	var err := Vector3(predicted.x, predicted.y, predicted.z).distance_to(server_pos)
+	# Quantisation (1 mm) means we never match exactly; only act on real divergence.
+	if err < 0.004 and not (st.has("force") and st["force"]):
+		input_history = input_history.slice(idx)
+		return
+	reconcile_count += 1
+	last_correction_m = err
+	var before := Vector3(move.x, move.y, move.z)
+	var s := SimMovement.State.new()
+	s.x = server_pos.x
+	s.y = server_pos.y
+	s.z = server_pos.z
+	var v: Vector3 = st["vel"]
+	s.vx = v.x
+	s.vy = v.y
+	s.vz = v.z
+	var flags := int(st["flags"])
+	s.grounded = (flags & 1) != 0
+	s.crouch = float((flags >> 8) & 0xFF) / 255.0
+	s.prev_buttons = int(input_history[idx]["buttons"])
+	s.landing_timer = predicted.landing_timer
+	s.tag_timer = predicted.tag_timer
+	s.tag_amount = predicted.tag_amount
+	input_history[idx]["state"] = s.copy()
+	for i: int in range(idx + 1, input_history.size()):
+		var e: Dictionary = input_history[i]
+		SimMovement.step(cfg, world, s, int(e["buttons"]), float(e["yaw"]), run_speed())
+		e["state"] = s.copy()
+	move = s
+	var after := Vector3(move.x, move.y, move.z)
+	if err < 0.02:
+		_correction += before - after  # smoothed: rendered position eases back over ~100 ms
+	else:
+		prev_pos = after  # large error: snap
+	input_history = input_history.slice(idx)
+
+
+## Teleport (spawn/round start): resets prediction history.
+func teleport(pos: Vector3, new_yaw: float) -> void:
+	move = SimMovement.new_state(pos.x, pos.y, pos.z)
+	prev_pos = pos
+	yaw = new_yaw
+	pitch = 0.0
+	input_history.clear()
+	_correction = Vector3.ZERO
+	alive = true
+	health = 100.0
 
 
 func take_damage(amount: float, _from: Vector3) -> void:

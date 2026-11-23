@@ -6,6 +6,8 @@ import { hashSeed, mulberry32 } from "./rng.ts";
 export interface WeaponDef {
   id: string;
   class: string;
+  cost: number;
+  runSpeed: number;
   fireRate: number;
   fireMode: "semi" | "auto" | "burst";
   magazine: number;

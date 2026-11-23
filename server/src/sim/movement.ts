@@ -4,7 +4,10 @@
 //
 // Player = vertical cylinder (radius r, height h) standing on yaw-only boxes. Units: m, s, rad.
 import type { World } from "./collision.ts";
-import { toLocal, toWorldDir } from "./collision.ts";
+import { candidates, toLocal, toWorldDir } from "./collision.ts";
+
+const _near: number[] = [];
+const _near2: number[] = [];
 
 export const Buttons = {
   FORWARD: 1,
@@ -161,9 +164,11 @@ export function stepMovement(
   const r = cfg.capsule.radius;
   s.x += s.vx * dt;
   s.z += s.vz * dt;
+  // Broad phase (identical results to a full scan: candidates are in ascending index order).
+  const near = candidates(w, s.x - r - 1, s.z - r - 1, s.x + r + 1, s.z + r + 1, _near);
   for (let pass = 0; pass < 3; pass++) {
     let moved = false;
-    for (let i = 0; i < w.boxes.length; i++) {
+    for (const i of near) {
       const bx = w.boxes[i]!;
       const top = bx.cy + bx.hy;
       const bottom = bx.cy - bx.hy;
@@ -236,7 +241,7 @@ export function stepMovement(
 /** Highest box top at or below `maxY` under the cylinder footprint, or -1e9. */
 export function groundHeight(w: World, x: number, maxY: number, z: number, r: number): number {
   let best = -1e9;
-  for (let i = 0; i < w.boxes.length; i++) {
+  for (const i of candidates(w, x - r, z - r, x + r, z + r, _near2)) {
     const bx = w.boxes[i]!;
     const top = bx.cy + bx.hy;
     if (top > maxY || top <= best) continue;

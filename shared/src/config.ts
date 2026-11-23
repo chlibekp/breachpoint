@@ -13,6 +13,8 @@ export const CONFIG_NAMES = [
   "movement",
   "match",
   "quality",
+  "hitboxes",
+  "materials",
 ] as const;
 export type ConfigName = (typeof CONFIG_NAMES)[number];
 
