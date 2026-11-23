@@ -22,6 +22,8 @@ var chat: ChatBox
 var announcer: Announcer
 var ping_wheel: PingWheel
 var _last_alive_round := -1
+var end_screen: EndScreen
+var round_log: Array = []
 var remotes: Dictionary = {}  ## id -> RemotePlayer
 var roster: Dictionary = {}  ## id -> {name, team, agent}
 var my_id := -1
@@ -61,6 +63,11 @@ func _ready() -> void:
 	voice = VoiceChat.new()
 	voice.send_message = Net.send
 	add_child(voice)
+	end_screen = EndScreen.new()
+	add_child(end_screen)
+	end_screen.leave.connect(func() -> void:
+		Net.disconnect_from_server()
+		Game.goto("menu"))
 	announcer = Announcer.new()
 	add_child(announcer)
 	ping_wheel = PingWheel.new()
@@ -144,6 +151,9 @@ func _on_message(msg: Dictionary) -> void:
 			phase = int(msg["phase"])
 			phase_ends_tick = int(msg["endsAtTick"])
 			scores = [int(msg["scoreAttack"]), int(msg["scoreDefense"])]
+			if phase == 0 and round_num == 1:
+				round_log.clear()  # quick servers roll into a new match
+				end_screen.visible = false
 			if phase == 0:
 				hud.message("ROUND %d  ·  BUY PHASE" % round_num, 2.5)
 				announcer.say("announcer", "buy_phase")
@@ -159,10 +169,14 @@ func _on_message(msg: Dictionary) -> void:
 			if msg["reason"] == "match":
 				hud.message("VICTORY" if won else "DEFEAT", 8.0)
 				announcer.say("announcer", "match_won" if won else "match_lost")
+				# Let the final Scoreboard arrive, then show the summary.
+				get_tree().create_timer(2.5).timeout.connect(func() -> void:
+					end_screen.show_result(won, my_team, round_log, scoreboard.entries, roster))
 				Sfx.play_2d("music", "win" if won else "loss", -4.0, "Music")
 			else:
 				hud.message("ROUND WON" if won else "ROUND LOST", 4.0)
 				announcer.say("announcer", "round_won" if won else "round_lost")
+				round_log.append({"round": int(msg["round"]), "winnerTeam": int(msg["winnerTeam"]), "reason": str(msg["reason"])})
 		"HitConfirm":
 			hud.hit("head" if int(msg["hitZone"]) == 0 else "body")
 		"Damage":

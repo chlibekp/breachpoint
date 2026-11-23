@@ -120,7 +120,7 @@ func _screen_box(rig: Node3D) -> Rect2i:
 	var r := Rect2(pts[0], Vector2.ZERO)
 	for p: Vector2 in pts:
 		r = r.expand(p)
-	return Rect2i(r).intersection(Rect2i(Vector2i.ZERO, Vector2i(get_viewport().get_visible_rect().size)))
+	return Rect2i(r)
 
 
 func _lum(d: PackedByteArray, i: int) -> float:
@@ -133,6 +133,10 @@ func _measure(a: Image, b: Image, box: Rect2i) -> Dictionary:
 	var da := a.get_data()
 	var db := b.get_data()
 	var w := a.get_width()
+	# The box is in viewport (stretch) space; the grabbed image is in window pixels.
+	var k := Vector2(a.get_size()) / get_viewport().get_visible_rect().size
+	box = Rect2i(Vector2i(Vector2(box.position) * k), Vector2i((Vector2(box.size) * k).ceil()))
+	box = box.intersection(Rect2i(Vector2i.ZERO, a.get_size()))
 	var la := 0.0
 	var lb := 0.0
 	var n := 0
