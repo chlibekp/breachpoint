@@ -9,7 +9,7 @@ static func _from_json(v: Variant, key: String = "") -> Variant:
 		var d: Dictionary = v
 		if d.has("$bytes"):
 			return str(d["$bytes"]).hex_decode()
-		if key in ["pos", "vel", "origin", "target", "fromPos"]:
+		if key in ["pos", "vel", "origin", "target", "fromPos", "hit"]:
 			return Vector3(d["x"], d["y"], d["z"])
 		var out: Dictionary = {}
 		for k: Variant in d:

@@ -20,7 +20,12 @@ if (issues.length > 0) {
 const env = (k: string, d = ""): string => process.env[k] ?? d;
 const port = Number(env("PORT", "7350"));
 const apiPort = Number(env("API_PORT", "7351"));
-const map = env("MAP", "solstice");
+// MAP: comma-separated rotation; the first map hosts anonymous quick-join matches.
+const maps = env("MAP", "solstice,neon")
+  .split(",")
+  .map((m) => m.trim())
+  .filter(Boolean);
+const map = maps[0] ?? "solstice";
 const fillBots = env("FILL_BOTS", "1") !== "0";
 const phaseScale = env("PHASE_SCALE") ? Number(env("PHASE_SCALE")) : undefined;
 const secret = env("JWT_SECRET", "dev-only-secret-change-me");
@@ -64,7 +69,7 @@ if (env("DATABASE_URL") && env("REDIS_URL")) {
   social = new SocialService(redis, {
     ticketSecret,
     agents,
-    maps: [map],
+    maps,
     fillAfterSec: Number(env("MM_FILL_AFTER", "15")),
     minCompetitive: Number(env("MM_MIN_COMPETITIVE", "10")),
     agentSelectSec: Number(env("AGENT_SELECT_SEC", "80")),
@@ -89,7 +94,7 @@ gateway = new Gateway({
   },
 });
 await gateway.start();
-log({ msg: "gateway listening", port: gateway.port, map, fillBots });
+log({ msg: "gateway listening", port: gateway.port, maps, fillBots });
 
 const shutdown = async (): Promise<void> => {
   social?.stop();

@@ -10,3 +10,4 @@ client/*.translation
 # local build outputs
 build/
 qa/screens/**/*.tmp
+dump.rdb

@@ -1,3 +1,4 @@
 # One res:// scene per line; baked by tools/bake-lightmaps.sh
 res://scenes/dev/lightmap_test.tscn
 res://scenes/maps/solstice.tscn
+res://scenes/maps/neon.tscn

@@ -20,7 +20,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+import os
+
 ROOT = Path(__file__).resolve().parents[2]
+# Optional staging root (generate outside the Godot project while an editor bake is running).
+OUT_ROOT = Path(os.environ["TEXGEN_OUT"]) if os.environ.get("TEXGEN_OUT") else ROOT
 SIZE = 1024
 RNG_SEED = 1337
 
@@ -137,7 +141,7 @@ def save(name: str, out_dir: Path, albedo: np.ndarray, normal: np.ndarray, ao: n
     Image.fromarray((np.clip(normal, 0, 1) * 255 + 0.5).astype(np.uint8), "RGB").save(out_dir / f"T_{name}_N.png", optimize=True)
     orm = np.stack([ao, rough, metal], axis=-1)
     Image.fromarray((np.clip(orm, 0, 1) * 255 + 0.5).astype(np.uint8), "RGB").save(out_dir / f"T_{name}_ORM.png", optimize=True)
-    print(f"  T_{name}_[A|N|ORM] -> {out_dir.relative_to(ROOT)}")
+    print(f"  T_{name}_[A|N|ORM] -> {out_dir}")
 
 
 # ---------------------------------------------------------------- materials
@@ -157,7 +161,7 @@ def mat_plaster(rng, base="#E9DCC0", name="Plaster_Cream", out="maps/solstice"):
     cur = curvature(height, 4)
     albedo *= (1 + np.clip(cur, -0.05, 0.05)[..., None] * 2.0)
     rough = np.clip(0.88 - mid * 0.08 + chips * 0.05, 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 3.0), ao_from_height(height, 10, 2.5), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 3.0), ao_from_height(height, 10, 2.5), rough, np.zeros_like(rough))
 
 
 def mat_flagstone(rng, name="Flagstone", out="maps/solstice"):
@@ -178,7 +182,7 @@ def mat_flagstone(rng, name="Flagstone", out="maps/solstice"):
     edge_hi = np.clip(curvature(height, 3) * 6, 0, 0.12)
     albedo += edge_hi[..., None]
     rough = np.clip(0.78 - dome * 0.12 + joint * 0.15 + (cell_val - 0.5) * 0.1, 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 5.0), ao_from_height(height, 8, 3.0), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 5.0), ao_from_height(height, 8, 3.0), rough, np.zeros_like(rough))
 
 
 def mat_cobble(rng, name="Cobble", out="maps/solstice"):
@@ -194,7 +198,7 @@ def mat_cobble(rng, name="Cobble", out="maps/solstice"):
     albedo = albedo * (1 - moss[..., None]) + tint("#66763F", detail, 0.3) * moss[..., None]
     albedo += np.clip(curvature(height, 3) * 6, 0, 0.1)[..., None]
     rough = np.clip(0.7 - dome * 0.15 + joint * 0.2, 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 5.0), ao_from_height(height, 6, 3.0), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 5.0), ao_from_height(height, 6, 3.0), rough, np.zeros_like(rough))
 
 
 def mat_brick(rng, name="Brick_Warm", out="maps/solstice"):
@@ -223,7 +227,7 @@ def mat_brick(rng, name="Brick_Warm", out="maps/solstice"):
     albedo = albedo * (1 - wash[..., None] * 0.8) + tint("#E6D7BA", detail, 0.1) * wash[..., None] * 0.8
     albedo += np.clip(curvature(height, 3) * 5, 0, 0.1)[..., None]
     rough = np.clip(0.85 - bevel * 0.05 + mortar * 0.08, 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 4.0), ao_from_height(height, 6, 3.0), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 4.0), ao_from_height(height, 6, 3.0), rough, np.zeros_like(rough))
 
 
 def mat_roof(rng, name="RoofTile", out="maps/solstice"):
@@ -245,7 +249,7 @@ def mat_roof(rng, name="RoofTile", out="maps/solstice"):
     lichen = np.clip((fbm(s, 8, 4, rng) > 0.66) * 1.0, 0, 1) * 0.6
     albedo = albedo * (1 - lichen[..., None]) + tint("#C9BC8C", detail, 0.2) * lichen[..., None]
     rough = np.clip(0.8 - barrel * 0.08, 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 4.0), ao_from_height(height, 8, 3.0), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 4.0), ao_from_height(height, 8, 3.0), rough, np.zeros_like(rough))
 
 
 def mat_wood(rng, base="#8A5A3A", name="WoodPlank", out="maps/solstice", planks=6, painted: str | None = None):
@@ -270,7 +274,7 @@ def mat_wood(rng, base="#8A5A3A", name="WoodPlank", out="maps/solstice", planks=
         albedo = paint * (1 - wear[..., None]) + albedo * wear[..., None]
         height = height + (1 - wear) * 0.05
         rough = np.clip(rough * wear + 0.6 * (1 - wear), 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 3.5), ao_from_height(height, 6, 2.0), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 3.5), ao_from_height(height, 6, 2.0), rough, np.zeros_like(rough))
 
 
 def mat_metal_painted(rng, base="#2BA6A4", name="MetalPainted_Teal", out="maps/solstice"):
@@ -287,7 +291,7 @@ def mat_metal_painted(rng, base="#2BA6A4", name="MetalPainted_Teal", out="maps/s
     albedo = albedo * (1 - bare[..., None]) + tint("#8C9196", big, 0.1) * bare[..., None]
     rough = np.clip(0.45 + big * 0.1 + bare * 0.15, 0, 1)
     metal = np.clip(bare, 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 4.0), ao_from_height(height, 4, 2.0), rough, metal)
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 4.0), ao_from_height(height, 4, 2.0), rough, metal)
 
 
 def mat_concrete(rng, base="#B5AFA4", name="Concrete", out="shared"):
@@ -297,7 +301,7 @@ def mat_concrete(rng, base="#B5AFA4", name="Concrete", out="shared"):
     height = big * 0.2 - blur(pores, 1) * 0.3
     albedo = tint(base, big, 0.14)
     rough = np.clip(0.82 + (big - 0.5) * 0.15, 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 2.5), ao_from_height(height, 6, 2.0), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 2.5), ao_from_height(height, 6, 2.0), rough, np.zeros_like(rough))
 
 
 def mat_sand(rng, name="Sand", out="maps/solstice"):
@@ -308,7 +312,7 @@ def mat_sand(rng, name="Sand", out="maps/solstice"):
     height = ripples * 0.15 + detail * 0.1
     albedo = tint("#D9C49A", fbm(s, 3, 3, rng) * 0.7 + detail * 0.3, 0.12)
     rough = np.full((s, s), 0.92)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 2.0), ao_from_height(height, 6, 1.5), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 2.0), ao_from_height(height, 6, 1.5), rough, np.zeros_like(rough))
 
 
 def mat_facility_panel(rng, name="FacilityPanel", out="shared", base="#C9CDD1"):
@@ -326,10 +330,70 @@ def mat_facility_panel(rng, name="FacilityPanel", out="shared", base="#C9CDD1"):
     albedo *= (1 - seam * 0.35)[..., None]
     albedo += np.clip(curvature(height, 3) * 4, 0, 0.08)[..., None]
     rough = np.clip(0.5 + big * 0.1 + seam * 0.2, 0, 1)
-    save(name, ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 3.0), ao_from_height(height, 6, 2.5), rough, np.zeros_like(rough))
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 3.0), ao_from_height(height, 6, 2.5), rough, np.zeros_like(rough))
+
+
+def mat_asphalt_wet(rng, name="Asphalt_Wet", out="maps/neon"):
+    """Night-city asphalt after rain: dark aggregate, painted-over patches, puddles (low roughness,
+    slightly darker albedo) so reflections read on desktop and roughness tricks work on web."""
+    s = SIZE
+    big = fbm(s, 3, 4, rng)
+    agg = (value_noise(s, 220, rng) > 0.8).astype(float) * 0.5
+    puddle = np.clip((fbm(s, 4, 4, rng) - 0.55) * 8, 0, 1)
+    puddle = blur(puddle, 3)
+    patches = blur((fbm(s, 6, 3, rng) > 0.68).astype(float), 2)
+    height = big * 0.15 + agg * 0.08 - puddle * 0.1
+    albedo = tint("#3A3F48", big * 0.6 + agg * 0.4, 0.25)
+    albedo = albedo * (1 - patches[..., None] * 0.25) + tint("#2E333B", big, 0.1) * patches[..., None] * 0.25
+    albedo *= (1 - puddle[..., None] * 0.25)
+    rough = np.clip(0.82 - puddle * 0.75 - big * 0.05, 0.04, 1)
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height * (1 - puddle), 3.0), ao_from_height(height, 6, 2.0), rough, np.zeros_like(rough))
+
+
+def mat_tile(rng, name="MetroTile", out="maps/neon", base="#D9DEE2", tiles=8, gloss=0.18):
+    """Glossy square ceramic tiles with dark grout (metro concourse walls and pillars)."""
+    s = SIZE
+    ys, xs = np.mgrid[0:s, 0:s] / s
+    fx = (xs * tiles) % 1.0
+    fy = (ys * tiles) % 1.0
+    e = np.minimum(np.minimum(fx, 1 - fx), np.minimum(fy, 1 - fy)) * (s / tiles)
+    grout = np.clip(1 - e / 3.0, 0, 1)
+    bevel = np.clip(e / 8.0, 0, 1) ** 0.5
+    tid = np.floor(xs * tiles).astype(int) * 31 + np.floor(ys * tiles).astype(int)
+    tv = rng.random(tid.max() + 1)[tid]
+    dirt = fbm(s, 4, 3, rng)
+    height = bevel * 0.3 - grout * 0.4
+    albedo = tint(base, tv * 0.5 + dirt * 0.5, 0.08)
+    albedo = albedo * (1 - grout[..., None]) + hex_rgb("#4A4E55") * grout[..., None]
+    albedo *= (1 - np.clip(dirt - 0.6, 0, 1) * 0.6)[..., None]
+    rough = np.clip(gloss + grout * 0.6 + dirt * 0.1, 0, 1)
+    save(name, OUT_ROOT / "client/assets" / out / "textures", albedo, normal_from_height(height, 3.0), ao_from_height(height, 5, 2.0), rough, np.zeros_like(rough))
+
+
+def hazard_stripes(rng):
+    s = 256
+    ys, xs = np.mgrid[0:s, 0:s] / s
+    stripe = ((xs + ys) * 6) % 1.0 < 0.5
+    img = np.where(stripe[..., None], hex_rgb("#E7B91E"), hex_rgb("#1C1C1E"))
+    wear = (fbm(s, 8, 3, rng) > 0.7)[..., None]
+    img = np.where(wear, img * 0.8 + 0.1, img)
+    d = OUT_ROOT / "client/assets/vfx"
+    d.mkdir(parents=True, exist_ok=True)
+    Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8), "RGB").save(d / "T_HazardStripes.png")
+    print("  T_HazardStripes")
 
 
 MATERIALS = {
+    "asphalt_wet": mat_asphalt_wet,
+    "metro_tile": mat_tile,
+    "metro_tile_teal": lambda r: mat_tile(r, name="MetroTile_Teal", base="#3E8E91", tiles=12, gloss=0.22),
+    "neon_concrete": lambda r: mat_concrete(r, base="#4A4E5C", name="Concrete_Dark", out="maps/neon"),
+    "neon_metal": lambda r: mat_metal_painted(r, base="#5A3E8C", name="MetalPainted_Indigo", out="maps/neon"),
+    "neon_rust": lambda r: mat_metal_painted(r, base="#8C5A2E", name="MetalPainted_Amber", out="maps/neon"),
+    "neon_brick": lambda r: mat_brick(r, name="Brick_Dark", out="maps/neon"),
+    "neon_plaster": lambda r: mat_plaster(r, base="#6A6E7E", name="Plaster_Slate", out="maps/neon"),
+    "neon_sidewalk": lambda r: mat_facility_panel(r, name="Sidewalk", out="maps/neon", base="#7C8090"),
+    "hazard_stripes": hazard_stripes,
     "plaster_cream": lambda r: mat_plaster(r),
     "plaster_terracotta": lambda r: mat_plaster(r, base="#C8693F", name="Plaster_Terracotta"),
     "plaster_shade": lambda r: mat_plaster(r, base="#D8C7A6", name="Plaster_Sand"),

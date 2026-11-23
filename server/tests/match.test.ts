@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { Match, Phase } from "../src/match/match.ts";
 
-describe("authoritative match with 10 bots on SOLSTICE", () => {
+describe.each(["solstice", "neon"])("authoritative match with 10 bots on %s", (map) => {
   it("plays rounds to completion within the tick budget", () => {
     const m = new Match({
       matchId: "t",
-      map: "solstice",
+      map,
       seed: 42,
       fillBots: true,
       roundsToWin: 3,
@@ -35,7 +35,7 @@ describe("authoritative match with 10 bots on SOLSTICE", () => {
     const avg = times.reduce((a, b) => a + b, 0) / times.length;
     const p99 = times[Math.floor(times.length * 0.99)]!;
     console.log(
-      `ticks=${ticks} rounds=${m.round} score=${m.score.join(":")} kills=${kills.length} ends=${ends.join(",")} avg=${avg.toFixed(3)}ms p99=${p99.toFixed(3)}ms`,
+      `${map} ticks=${ticks} rounds=${m.round} score=${m.score.join(":")} kills=${kills.length} ends=${ends.join(",")} avg=${avg.toFixed(3)}ms p99=${p99.toFixed(3)}ms`,
     );
     expect(m.phase).toBe(Phase.MATCH_OVER);
     expect(kills.length).toBeGreaterThan(3);

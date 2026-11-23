@@ -5,7 +5,10 @@ extends Node3D
 
 @export var map_id: String = ""
 
+const SPIN_RATE := 0.08
+
 var meta: Dictionary = {}
+var _spinners: Array[Node3D] = []
 
 
 func _ready() -> void:
@@ -17,6 +20,16 @@ func _ready() -> void:
 	if sun != null:
 		QualityManager.apply_sun(sun)
 	QualityManager.convert_particles(self)
+	for c: Node in get_children():
+		if c.name.begins_with("Spin_") and c is Node3D:
+			_spinners.append(c)
+	set_process(not _spinners.is_empty())
+
+
+## Slow ambient rotation for set-dressing nodes named "Spin_*" (e.g. the NEON monolith).
+func _process(delta: float) -> void:
+	for n: Node3D in _spinners:
+		n.rotate_y(delta * SPIN_RATE)
 
 
 static func load_meta(id: String) -> Dictionary:

@@ -161,9 +161,7 @@ export class SocialService {
       .exec();
   }
 
-  async party(
-    id: string,
-  ): Promise<{
+  async party(id: string): Promise<{
     id: string;
     leader: string;
     members: { accountId: string; name: string; ready: boolean }[];

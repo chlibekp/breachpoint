@@ -1,6 +1,7 @@
 ## Look-dev scene (milestone 2): SOLSTICE B site + KESTREL with the Saber in several poses + the
 ## first-person viewmodel. Camera from map bookmarks; used by the QA capture
-## (`-- --capture=res://scenes/dev/lookdev.tscn --bookmark=N [--fp]`).
+## (`-- --capture=res://scenes/dev/lookdev.tscn --bookmark=N [--fp] [--map=<id>]`). Agents are only
+## placed on SOLSTICE.
 extends Node3D
 
 const MAP := "res://scenes/maps/solstice.tscn"
@@ -12,10 +13,13 @@ var agents: Array[AgentRig] = []
 
 
 func _ready() -> void:
-	map = (load(MAP) as PackedScene).instantiate() as MapRuntime
-	add_child(map)
 	var args := Game.parse_user_args(OS.get_cmdline_user_args())
+	var map_path := MAP if not args.has("map") else "res://scenes/maps/%s.tscn" % str(args["map"])
+	map = (load(map_path) as PackedScene).instantiate() as MapRuntime
+	add_child(map)
 	var b := Vector3(10, 0, -32)
+	if map_path != MAP:
+		b = Vector3(0, -1000, 0)  # keep the SOLSTICE poses out of view on other maps
 	# Three KESTRELs: idle facing the plaza, walking/aiming, crouched behind cover.
 	_spawn_agent(b + Vector3(22.5, 0, 26.5), 200.0, {"pitch": 0.0})
 	_spawn_agent(b + Vector3(16.5, 0, 13.5), 135.0, {"walk": Vector3(0, 0, -3.0), "pitch": -0.05})

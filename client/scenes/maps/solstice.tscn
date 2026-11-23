@@ -1,11 +1,10 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://31778c17kmc6"]
 
-[ext_resource type="Script" path="res://scripts/maps/map_runtime.gd" id="bp_root_script"]
-
-[ext_resource type="FontFile" path="res://assets/fonts/ChakraPetch-Bold.ttf" id="1_3t8uh"]
-[ext_resource type="CompressedTexture3D" path="res://assets/maps/solstice/lut/LUT_Solstice.png" id="2_e3we6"]
-[ext_resource type="Shader" path="res://shaders/sky/S_Stylized.gdshader" id="3_m4dhk"]
+[ext_resource type="FontFile" uid="uid://b7gjbl51pboup" path="res://assets/fonts/ChakraPetch-Bold.ttf" id="1_3t8uh"]
+[ext_resource type="CompressedTexture3D" uid="uid://crh25ohf2a87k" path="res://assets/maps/solstice/lut/LUT_Solstice.png" id="2_e3we6"]
+[ext_resource type="Shader" uid="uid://cp43yxm0s3g1k" path="res://shaders/sky/S_Stylized.gdshader" id="3_m4dhk"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/solstice/meshes/SM_solstice_floor.res" id="4_0m50s"]
+[ext_resource type="LightmapGIData" uid="uid://bimsm7sdfqhcd" path="res://scenes/maps/solstice.lmbake" id="5_m4dhk"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/solstice/meshes/SM_solstice_plaster_sand.res" id="5_sjmcx"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/solstice/meshes/SM_solstice_trim.res" id="6_opdoj"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/solstice/meshes/SM_solstice_roof.res" id="7_0pxo4"]
@@ -31,18 +30,19 @@
 [ext_resource type="ArrayMesh" path="res://assets/maps/solstice/meshes/SM_solstice_vista_plaster_terra.res" id="27_b6ufl"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/solstice/meshes/SM_solstice_vista_plaster.res" id="28_8slm1"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/solstice/meshes/SM_solstice_vista_rift.res" id="29_8xx61"]
+[ext_resource type="Script" uid="uid://bjjpek3imclqb" path="res://scripts/maps/map_runtime.gd" id="bp_root_script"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_qik0r"]
 shader = ExtResource("3_m4dhk")
-shader_parameter/zenith_color = null
-shader_parameter/horizon_color = null
-shader_parameter/ground_color = null
-shader_parameter/sun_color = null
-shader_parameter/cloud_light = null
-shader_parameter/cloud_shadow = null
-shader_parameter/cloud_cover = null
-shader_parameter/cloud_speed = null
-shader_parameter/energy = null
+shader_parameter/zenith_color = Color(0.33, 0.52, 0.8, 1)
+shader_parameter/horizon_color = Color(0.8, 0.86, 0.9, 1)
+shader_parameter/ground_color = Color(0.55, 0.6, 0.62, 1)
+shader_parameter/sun_color = Color(1, 0.92, 0.78, 1)
+shader_parameter/cloud_light = Color(1, 0.97, 0.92, 1)
+shader_parameter/cloud_shadow = Color(0.66, 0.7, 0.82, 1)
+shader_parameter/cloud_cover = 0.42
+shader_parameter/cloud_speed = 0.004
+shader_parameter/energy = 1.0
 
 [sub_resource type="Sky" id="Sky_g36gy"]
 sky_material = SubResource("ShaderMaterial_qik0r")
@@ -1228,6 +1228,7 @@ directional_shadow_max_distance = 90.0
 [node name="LightmapGI" type="LightmapGI" parent="." unique_id=449072853]
 quality = 0
 max_texture_size = 4096
+light_data = ExtResource("5_m4dhk")
 
 [node name="ReflectionProbe_BSite" type="ReflectionProbe" parent="." unique_id=2096477640]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 4, -12)
