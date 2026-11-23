@@ -16,6 +16,7 @@ export const CONFIG_NAMES = [
   "hitboxes",
   "materials",
   "skins",
+  "voicelines",
 ] as const;
 export type ConfigName = (typeof CONFIG_NAMES)[number];
 

@@ -1,0 +1,141 @@
+{
+  "$schema": "../schemas/voicelines.schema.json",
+  "version": 1,
+  "comment": "Announcer, ping and agent callout lines (spec 16). Placeholder delivery is the platform's text-to-speech (Web Speech API in browsers) plus subtitles until real voice acting exists. One line is picked at random per event. 'abilities' is keyed by ability id (agents.json) and spoken when a teammate casts it.",
+  "announcer": {
+    "round_start": [
+      "Round start. Make it count.",
+      "Barriers down. Go."
+    ],
+    "buy_phase": [
+      "Buy phase."
+    ],
+    "last_alive": [
+      "You are the last one standing.",
+      "It's all on you."
+    ],
+    "charge_planted": [
+      "Breach Charge planted."
+    ],
+    "charge_defused": [
+      "Charge defused."
+    ],
+    "round_won": [
+      "Round won."
+    ],
+    "round_lost": [
+      "Round lost."
+    ],
+    "match_won": [
+      "Victory."
+    ],
+    "match_lost": [
+      "Defeat."
+    ],
+    "halftime": [
+      "Halftime. Switching sides."
+    ]
+  },
+  "pings": [
+    {
+      "id": "enemy",
+      "label": "Enemy here",
+      "color": "#FF4655",
+      "lines": [
+        "Enemy here!",
+        "Contact here!"
+      ]
+    },
+    {
+      "id": "help",
+      "label": "Need help",
+      "color": "#F2C94C",
+      "lines": [
+        "I need help!",
+        "Need backup here!"
+      ]
+    },
+    {
+      "id": "planting",
+      "label": "Planting",
+      "color": "#3FE0D0",
+      "lines": [
+        "Planting the charge.",
+        "Cover me, planting."
+      ]
+    },
+    {
+      "id": "rotate",
+      "label": "Rotate",
+      "color": "#9B8CFF",
+      "lines": [
+        "Rotate!",
+        "Rotating, go go."
+      ]
+    },
+    {
+      "id": "generic",
+      "label": "Look here",
+      "color": "#ECEFF4",
+      "lines": [
+        "Look here."
+      ]
+    }
+  ],
+  "abilities": {
+    "eclipse_veil": [
+      "Smoke going out.",
+      "Veil down."
+    ],
+    "geyser_smoke": [
+      "Smoke going out.",
+      "Smoking it off."
+    ],
+    "flare_round": [
+      "Flashing!",
+      "Flare out."
+    ],
+    "dust_burst": [
+      "Flash out, look away."
+    ],
+    "basalt_pillar": [
+      "Wall going up."
+    ],
+    "barricade": [
+      "Barricade up."
+    ],
+    "mend": [
+      "Healing."
+    ],
+    "hawk": [
+      "Sending the hawk."
+    ],
+    "ping": [
+      "Scanning."
+    ],
+    "talon_barrage": [
+      "Talon barrage incoming!"
+    ],
+    "gravity_well": [
+      "Gravity well!"
+    ],
+    "eruption": [
+      "Eruption!"
+    ],
+    "apex_hunt": [
+      "Apex hunt. Nowhere to hide."
+    ],
+    "blackout": [
+      "Blackout!"
+    ],
+    "second_wind": [
+      "Second wind, get up!"
+    ],
+    "lockdown": [
+      "Lockdown!"
+    ],
+    "redline": [
+      "Redline!"
+    ]
+  }
+}

@@ -36,6 +36,7 @@ export const MsgId = {
   ShotEvent: 28,
   VoiceSignal: 29,
   VoiceData: 30,
+  MapPing: 31,
 } as const;
 
 export const MsgChannel: Record<number, "reliable" | "unreliable"> = {
@@ -69,6 +70,7 @@ export const MsgChannel: Record<number, "reliable" | "unreliable"> = {
   28: "unreliable",
   29: "reliable",
   30: "unreliable",
+  31: "reliable",
 };
 
 export interface InputCmd {
@@ -396,6 +398,12 @@ export interface VoiceDataMsg {
   seq: number;
   data: Uint8Array;
 }
+export interface MapPingMsg {
+  type: "MapPing";
+  playerId: number;
+  kind: number;
+  pos: Vec3;
+}
 
 export type Message =
   | HelloMsg
@@ -427,7 +435,8 @@ export type Message =
   | ScoreboardMsg
   | ShotEventMsg
   | VoiceSignalMsg
-  | VoiceDataMsg;
+  | VoiceDataMsg
+  | MapPingMsg;
 
 export function encode(msg: Message, w: Writer = new Writer()): Uint8Array {
   switch (msg.type) {
@@ -664,6 +673,13 @@ export function encode(msg: Message, w: Writer = new Writer()): Uint8Array {
       w.u8(msg.playerId);
       w.u16(msg.seq);
       w.bytes(msg.data);
+      break;
+    }
+    case "MapPing": {
+      w.u8(31);
+      w.u8(msg.playerId);
+      w.u8(msg.kind);
+      w.pos(msg.pos);
       break;
     }
   }
@@ -938,6 +954,14 @@ export function decode(bytes: Uint8Array): Message {
         playerId: r.u8(),
         seq: r.u16(),
         data: r.bytes(),
+      };
+      break;
+    case 31:
+      msg = {
+        type: "MapPing",
+        playerId: r.u8(),
+        kind: r.u8(),
+        pos: r.pos(),
       };
       break;
     default:

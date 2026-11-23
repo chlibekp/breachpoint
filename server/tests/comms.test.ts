@@ -6,7 +6,12 @@ function setup(): { m: Match; got: Map<number, Message[]> } {
   const m = new Match({ matchId: "c", map: "solstice", seed: 1 });
   const got = new Map<number, Message[]>();
   m.setTransport((id, msg) => {
-    if (msg.type === "Chat" || msg.type === "VoiceSignal" || msg.type === "VoiceData")
+    if (
+      msg.type === "Chat" ||
+      msg.type === "VoiceSignal" ||
+      msg.type === "VoiceData" ||
+      msg.type === "MapPing"
+    )
       (got.get(id) ?? got.set(id, []).get(id)!).push(msg);
   });
   m.addPlayer(1, "a1", "kestrel", false, 0);
@@ -41,6 +46,13 @@ describe("text chat and voice relay (spec 15.4)", () => {
     expect(toMate.map((x) => x.type)).toEqual(["VoiceSignal", "VoiceData"]);
     expect(toMate[0]!.type === "VoiceSignal" && toMate[0]!.fromId).toBe(1);
     expect(toMate[1]!.type === "VoiceData" && toMate[1]!.playerId).toBe(1);
+    expect(got.get(3)).toBeUndefined();
+  });
+
+  it("map pings go to the sender's team only and are rate-limited", () => {
+    const { m, got } = setup();
+    for (let i = 0; i < 5; i++) m.mapPing(1, 0, { x: 1, y: 0, z: 2 });
+    expect(got.get(2)?.filter((x) => x.type === "MapPing").length).toBe(3);
     expect(got.get(3)).toBeUndefined();
   });
 });

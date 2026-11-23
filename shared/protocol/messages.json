@@ -858,6 +858,27 @@
           "type": "bytes"
         }
       ]
+    },
+    {
+      "id": 31,
+      "name": "MapPing",
+      "dir": "both",
+      "channel": "reliable",
+      "$comment": "Ping wheel marker (spec 15.4). kind: 0 enemy here, 1 need help, 2 planting, 3 rotate, 4 generic. Server stamps playerId and relays to the sender's team (max 3 per 2 s).",
+      "fields": [
+        {
+          "name": "playerId",
+          "type": "u8"
+        },
+        {
+          "name": "kind",
+          "type": "u8"
+        },
+        {
+          "name": "pos",
+          "type": "pos"
+        }
+      ]
     }
   ]
 }

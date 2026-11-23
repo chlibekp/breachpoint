@@ -490,6 +490,20 @@ export class Match {
     this.replay?.record(this.tick, msg);
   }
 
+  private readonly pingTimes = new Map<number, number[]>();
+
+  /** Ping wheel marker: relayed to the sender's team, max 3 per 2 s, kind 0–4. */
+  mapPing(id: number, kind: number, pos: { x: number; y: number; z: number }): void {
+    const p = this.players.get(id);
+    if (!p || p.bot || kind > 4 || ![pos.x, pos.y, pos.z].every(Number.isFinite)) return;
+    const times = (this.pingTimes.get(id) ?? []).filter((t) => this.tick - t < 2 * TICK_RATE);
+    if (times.length >= 3) return;
+    times.push(this.tick);
+    this.pingTimes.set(id, times);
+    const msg: Message = { type: "MapPing", playerId: id, kind, pos };
+    for (const q of this.players.values()) if (!q.bot && q.team === p.team) this.send(q.id, msg);
+  }
+
   /** WebRTC signalling relay between two human teammates. */
   voiceSignal(id: number, toId: number, kind: number, sdp: string): void {
     const p = this.players.get(id);

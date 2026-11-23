@@ -19,6 +19,9 @@ var buy_menu: BuyMenu
 var scoreboard: Scoreboard
 var voice: VoiceChat
 var chat: ChatBox
+var announcer: Announcer
+var ping_wheel: PingWheel
+var _last_alive_round := -1
 var remotes: Dictionary = {}  ## id -> RemotePlayer
 var roster: Dictionary = {}  ## id -> {name, team, agent}
 var my_id := -1
@@ -58,6 +61,12 @@ func _ready() -> void:
 	voice = VoiceChat.new()
 	voice.send_message = Net.send
 	add_child(voice)
+	announcer = Announcer.new()
+	add_child(announcer)
+	ping_wheel = PingWheel.new()
+	hud.add_child(ping_wheel)
+	ping_wheel.pinged.connect(func(kind: int, pos: Vector3) -> void:
+		Net.send({"type": "MapPing", "playerId": 0, "kind": kind, "pos": pos}))
 	chat = ChatBox.new()
 	hud.add_child(chat)
 	chat.submitted.connect(func(text: String, team_only: bool) -> void:
@@ -100,6 +109,7 @@ func _load_map(id: String) -> void:
 	player.setup(self, world, Vector3(0, 0, 0), 0.0)
 	player.shot_fired.connect(_on_local_shot)
 	hud.player = player
+	ping_wheel.camera = player.camera
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
@@ -136,19 +146,23 @@ func _on_message(msg: Dictionary) -> void:
 			scores = [int(msg["scoreAttack"]), int(msg["scoreDefense"])]
 			if phase == 0:
 				hud.message("ROUND %d  ·  BUY PHASE" % round_num, 2.5)
+				announcer.say("announcer", "buy_phase")
 				Sfx.play_2d("music", "buy_sting", -8.0, "Music")
 				if charge_node != null:
 					charge_node.queue_free()
 					charge_node = null
 			elif phase == 1:
 				buy_menu.close()
+				announcer.say("announcer", "round_start")
 		"RoundEnd":
 			var won := int(msg["winnerTeam"]) == my_team
 			if msg["reason"] == "match":
 				hud.message("VICTORY" if won else "DEFEAT", 8.0)
+				announcer.say("announcer", "match_won" if won else "match_lost")
 				Sfx.play_2d("music", "win" if won else "loss", -4.0, "Music")
 			else:
 				hud.message("ROUND WON" if won else "ROUND LOST", 4.0)
+				announcer.say("announcer", "round_won" if won else "round_lost")
 		"HitConfirm":
 			hud.hit("head" if int(msg["hitZone"]) == 0 else "body")
 		"Damage":
@@ -171,6 +185,15 @@ func _on_message(msg: Dictionary) -> void:
 			_on_remote_shot(msg)
 		"AbilityEvent":
 			ability_fx.handle(msg)
+			# Teammate ability callouts ("Smoke going out").
+			var caster := int(msg["casterId"])
+			if int(msg["event"]) == AbilityFx.EVENT_SPAWN and caster != my_id and _team(caster) == my_team:
+				announcer.say("abilities", str(msg["ability"]), _name(caster))
+		"MapPing":
+			var who := int(msg["playerId"])
+			PingWheel.spawn_marker(self, int(msg["kind"]), msg["pos"], _name(who), ping_wheel.pings)
+			announcer.ping_line(int(msg["kind"]), _name(who))
+			Sfx.play_2d("ui", "lockin", -8.0)
 		"SoundEvent":
 			if int(msg["kind"]) == 1:
 				Sfx.play_3d("footsteps", str(msg["param"]), msg["pos"], -6.0, "Footsteps", 40.0)
@@ -274,6 +297,7 @@ func _on_charge(msg: Dictionary) -> void:
 			add_child(charge_node)
 			hud.message("BREACH CHARGE DROPPED", 1.5)
 		3:
+			announcer.say("announcer", "charge_planted")
 			charge_node = ChargeModel.build(true)
 			charge_node.position = msg["pos"]
 			add_child(charge_node)
@@ -282,6 +306,7 @@ func _on_charge(msg: Dictionary) -> void:
 			Sfx.play_2d("charge", "beep", 0.0)
 		4:
 			hud.message("CHARGE DEFUSED", 2.5)
+			announcer.say("announcer", "charge_defused")
 		5:
 			Sfx.play_3d("charge", "detonate", msg["pos"], 6.0, "SFX", 300.0)
 			effects.impact(msg["pos"], Vector3.UP, "concrete")
@@ -354,6 +379,7 @@ func _process(delta: float) -> void:
 	for id: int in voice.speaking():
 		talking.append(str(roster.get(id, {}).get("name", id)))
 	hud.set_voice(talking)
+	_check_last_alive()
 	var rt := server_tick_now() - INTERP_TICKS - clampf(_jitter, 0.0, 4.0)
 	for id: int in remotes:
 		var r: RemotePlayer = remotes[id]
@@ -410,6 +436,22 @@ func _team(id: int) -> int:
 	return int(roster.get(id, {}).get("team", -1))
 
 
+## "Last one standing" once per round, when every teammate is down and the local player lives.
+func _check_last_alive() -> void:
+	if player == null or not player.alive or phase != 1 or _last_alive_round == round_num:
+		return
+	var mates := 0
+	for id: int in remotes:
+		var r: RemotePlayer = remotes[id]
+		if r.ally:
+			mates += 1
+			if r.alive:
+				return
+	if mates > 0:
+		_last_alive_round = round_num
+		announcer.say("announcer", "last_alive")
+
+
 ## Human teammates for voice (bots never transmit); names key mute/volume settings.
 func _update_comms() -> void:
 	var mates: Array[int] = []
@@ -428,6 +470,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		voice.set_transmitting(true)
 	elif event.is_action_released("voice_ptt"):
 		voice.set_transmitting(false)
+	elif event.is_action_pressed("ping_wheel"):
+		ping_wheel.open()
+	elif event.is_action_released("ping_wheel"):
+		ping_wheel.close_and_ping()
 	elif event.is_action_pressed("chat_team") or event.is_action_pressed("chat_all"):
 		chat.open(event.is_action_pressed("chat_team"))
 		get_viewport().set_input_as_handled()

@@ -165,6 +165,7 @@ const samples: Message[] = [
     kind: 2,
     sdp: "0\n0\ncandidate:1 1 udp 2122 192.0.2.1 5000 typ host",
   },
+  { type: "MapPing", playerId: 4, kind: 3, pos: { x: -12.5, y: 0.25, z: 40 } },
   {
     type: "VoiceData",
     playerId: 3,

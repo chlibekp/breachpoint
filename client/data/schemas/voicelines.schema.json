@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "voicelines.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "announcer", "pings", "abilities"],
+  "$defs": {
+    "lines": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1, "maxLength": 120 } },
+    "lineMap": { "type": "object", "additionalProperties": { "$ref": "#/$defs/lines" } }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "comment": { "type": "string" },
+    "version": { "type": "integer", "minimum": 1 },
+    "announcer": { "$ref": "#/$defs/lineMap" },
+    "abilities": { "$ref": "#/$defs/lineMap" },
+    "pings": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "label", "color", "lines"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+          "lines": { "$ref": "#/$defs/lines" }
+        }
+      }
+    }
+  }
+}

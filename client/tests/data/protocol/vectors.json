@@ -402,6 +402,19 @@
     },
     {
       "message": {
+        "type": "MapPing",
+        "playerId": 4,
+        "kind": 3,
+        "pos": {
+          "x": -12.5,
+          "y": 0.25,
+          "z": 40
+        }
+      },
+      "hex": "1f04032ccffffffa000000409c0000"
+    },
+    {
+      "message": {
         "type": "VoiceData",
         "playerId": 3,
         "seq": 65535,

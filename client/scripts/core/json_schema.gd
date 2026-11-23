@@ -107,5 +107,9 @@ static func _validate(value: Variant, raw_schema: Dictionary, root: Dictionary, 
 		for key: Variant in obj.keys():
 			if props.has(key):
 				_validate(obj[key], props[key], root, "%s/%s" % [path, str(key)], errors)
-			elif schema.get("additionalProperties", true) == false:
-				errors.append("%s has unexpected property '%s'" % [at, str(key)])
+			else:
+				var extra: Variant = schema.get("additionalProperties", true)
+				if extra is bool and extra == false:
+					errors.append("%s has unexpected property '%s'" % [at, str(key)])
+				elif extra is Dictionary:
+					_validate(obj[key], extra, root, "%s/%s" % [path, str(key)], errors)

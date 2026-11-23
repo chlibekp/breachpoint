@@ -92,3 +92,4 @@ team_enemy_color={
 [audio]
 
 driver/enable_input=true
+general/text_to_speech=true

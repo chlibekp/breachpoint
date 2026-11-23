@@ -72,6 +72,7 @@ port.on("message", (m: ToWorker) => {
       else if (msg.type === "Chat") match.chat(m.playerId, msg.teamOnly, msg.text);
       else if (msg.type === "VoiceSignal")
         match.voiceSignal(m.playerId, msg.toId, msg.kind, msg.sdp);
+      else if (msg.type === "MapPing") match.mapPing(m.playerId, msg.kind, msg.pos);
       else if (msg.type === "VoiceData") match.voiceData(m.playerId, msg.seq, msg.data);
       break;
     }
