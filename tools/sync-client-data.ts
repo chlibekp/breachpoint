@@ -9,6 +9,9 @@ const jobs: { from: string; to: string }[] = [
   { from: join(SHARED_DIR, "config"), to: join(CLIENT, "data", "config") },
   { from: join(SHARED_DIR, "schemas"), to: join(CLIENT, "data", "schemas") },
   { from: join(SHARED_DIR, "tests", "protocol"), to: join(CLIENT, "tests", "data", "protocol") },
+  { from: join(SHARED_DIR, "tests", "movement"), to: join(CLIENT, "tests", "data", "movement") },
+  { from: join(SHARED_DIR, "tests", "weapons"), to: join(CLIENT, "tests", "data", "weapons") },
+  { from: join(SHARED_DIR, "maps"), to: join(CLIENT, "data", "maps") },
 ];
 
 let count = 0;
@@ -16,7 +19,7 @@ for (const { from, to } of jobs) {
   rmSync(to, { recursive: true, force: true });
   mkdirSync(to, { recursive: true });
   for (const name of readdirSync(from)) {
-    if (!name.endsWith(".json")) continue;
+    if (!name.endsWith(".json") && !name.endsWith(".bin")) continue;
     copyFileSync(join(from, name), join(to, name));
     count++;
   }

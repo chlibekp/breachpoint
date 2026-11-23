@@ -7,6 +7,7 @@ const SUITES: PackedStringArray = [
 	"res://tests/test_shared_config.gd",
 	"res://tests/test_quality_manager.gd",
 	"res://tests/test_json_schema.gd",
+	"res://tests/test_sim_parity.gd",
 ]
 
 

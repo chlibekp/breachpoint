@@ -19,6 +19,7 @@
     "validate:config": "tsx shared/scripts/validate-config.ts",
     "protocol:gen": "tsx shared/protocol/generate.ts",
     "protocol:vectors": "tsx shared/scripts/make-protocol-vectors.ts",
+    "sim:vectors": "tsx server/scripts/make-sim-vectors.ts",
     "sync:client": "tsx tools/sync-client-data.ts",
     "check:generated": "npm run protocol:gen && npm run sync:client && test -z \"$(git status --porcelain -- shared/protocol/generated client/scripts/net/generated client/data client/tests/data)\"",
     "server:dev": "tsx server/src/main.ts",

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "materials.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "tags"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "comment": { "type": "string" },
+    "version": { "type": "integer", "minimum": 1 },
+    "tags": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "impact", "maxThickness", "damageLossPerCm"],
+        "properties": {
+          "id": { "type": "string" },
+          "impact": { "enum": ["concrete", "wood", "metal", "glass", "sand", "water", "flesh", "none"] },
+          "maxThickness": { "$ref": "#/$defs/tiers" },
+          "damageLossPerCm": { "$ref": "#/$defs/tiers" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "tiers": {
+      "type": "object", "additionalProperties": false, "required": ["low", "medium", "high"],
+      "properties": { "low": { "type": "number", "minimum": 0 }, "medium": { "type": "number", "minimum": 0 }, "high": { "type": "number", "minimum": 0 } }
+    }
+  }
+}

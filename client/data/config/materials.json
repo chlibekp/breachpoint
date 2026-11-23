@@ -1,0 +1,14 @@
+{
+  "$schema": "../schemas/materials.schema.json",
+  "version": 1,
+  "comment": "Penetration tags for map collision (spec 8.1, 10.2). damageLossPerCm by weapon penetration tier; maxThickness in metres beyond which nothing passes. Tag order matches MapBuilder.TAGS and the collision.bin tag index.",
+  "tags": [
+    { "id": "stone", "impact": "concrete", "maxThickness": { "low": 0.0, "medium": 0.0, "high": 0.25 }, "damageLossPerCm": { "low": 1.0, "medium": 1.0, "high": 0.025 } },
+    { "id": "wood", "impact": "wood", "maxThickness": { "low": 0.2, "medium": 0.6, "high": 1.6 }, "damageLossPerCm": { "low": 0.012, "medium": 0.006, "high": 0.003 } },
+    { "id": "metal_thin", "impact": "metal", "maxThickness": { "low": 0.1, "medium": 0.3, "high": 0.6 }, "damageLossPerCm": { "low": 0.02, "medium": 0.01, "high": 0.005 } },
+    { "id": "metal_heavy", "impact": "metal", "maxThickness": { "low": 0.0, "medium": 0.0, "high": 0.2 }, "damageLossPerCm": { "low": 1.0, "medium": 1.0, "high": 0.03 } },
+    { "id": "glass", "impact": "glass", "maxThickness": { "low": 0.1, "medium": 0.1, "high": 0.1 }, "damageLossPerCm": { "low": 0.005, "medium": 0.005, "high": 0.005 } },
+    { "id": "fabric", "impact": "wood", "maxThickness": { "low": 1.0, "medium": 1.0, "high": 1.0 }, "damageLossPerCm": { "low": 0.0, "medium": 0.0, "high": 0.0 } },
+    { "id": "invisible", "impact": "none", "maxThickness": { "low": 9.0, "medium": 9.0, "high": 9.0 }, "damageLossPerCm": { "low": 0.0, "medium": 0.0, "high": 0.0 } }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "../schemas/hitboxes.schema.json",
+  "version": 1,
+  "comment": "Identical for every agent (spec 6.2). Player-local metres: origin at the feet, facing -Z, standing pose. Crouched pose scales Y by crouchScale. Capsules are segment a-b with radius r.",
+  "crouchScale": 0.667,
+  "zones": {
+    "head": { "multiplier": "head" },
+    "upper_torso": { "multiplier": "body" },
+    "lower_torso": { "multiplier": "body" },
+    "arm": { "multiplier": "body" },
+    "leg": { "multiplier": "leg" }
+  },
+  "capsules": [
+    { "name": "head", "zone": "head", "a": [0, 1.6, -0.02], "b": [0, 1.68, -0.02], "r": 0.125 },
+    { "name": "chest", "zone": "upper_torso", "a": [0, 1.2, 0], "b": [0, 1.38, 0], "r": 0.2 },
+    { "name": "abdomen", "zone": "lower_torso", "a": [0, 0.92, 0], "b": [0, 1.06, 0], "r": 0.17 },
+    { "name": "arm_l", "zone": "arm", "a": [-0.24, 1.38, -0.05], "b": [-0.18, 1.12, -0.32], "r": 0.065 },
+    { "name": "arm_r", "zone": "arm", "a": [0.24, 1.38, 0.0], "b": [0.12, 1.15, -0.25], "r": 0.065 },
+    { "name": "leg_l", "zone": "leg", "a": [-0.1, 0.82, 0], "b": [-0.11, 0.1, 0.02], "r": 0.095 },
+    { "name": "leg_r", "zone": "leg", "a": [0.1, 0.82, 0], "b": [0.11, 0.1, 0.02], "r": 0.095 }
+  ]
+}
