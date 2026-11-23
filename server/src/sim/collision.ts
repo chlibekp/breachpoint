@@ -229,7 +229,12 @@ export function raycastAll(
   maxT: number,
 ): RayHit[] {
   const hits: RayHit[] = [];
-  for (let i = 0; i < w.boxes.length; i++) {
+  // Broad phase: boxes inside the segment's XZ bounding rectangle (hits are sorted afterwards, so
+  // the candidate order does not matter here).
+  const ex = ox + dx * Math.min(maxT, 1e4);
+  const ez = oz + dz * Math.min(maxT, 1e4);
+  const list = candidates(w, Math.min(ox, ex), Math.min(oz, ez), Math.max(ox, ex), Math.max(oz, ez), _rayScratch);
+  for (const i of list) {
     const b = w.boxes[i]!;
     const r = rayBox(b, ox, oy, oz, dx, dy, dz);
     if (r === null) continue;
