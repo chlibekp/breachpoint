@@ -33,6 +33,8 @@ const MSG_SPAWN: int = 25
 const MSG_SOUND_EVENT: int = 26
 const MSG_SCOREBOARD: int = 27
 const MSG_SHOT_EVENT: int = 28
+const MSG_VOICE_SIGNAL: int = 29
+const MSG_VOICE_DATA: int = 30
 
 const MSG_NAMES: Dictionary = {
 	1: "Hello",
@@ -63,6 +65,8 @@ const MSG_NAMES: Dictionary = {
 	26: "SoundEvent",
 	27: "Scoreboard",
 	28: "ShotEvent",
+	29: "VoiceSignal",
+	30: "VoiceData",
 }
 
 const UNRELIABLE: Dictionary = {
@@ -70,6 +74,7 @@ const UNRELIABLE: Dictionary = {
 	6: true,
 	26: true,
 	28: true,
+	30: true,
 }
 
 static func _write_input_cmd(w: ProtocolCodec.Writer, v: Dictionary) -> void:
@@ -346,6 +351,17 @@ static func encode(msg: Dictionary) -> PackedByteArray:
 			w.put_pos(msg["origin"])
 			w.put_pos(msg["hit"])
 			w.put_u8(msg["impact"])
+		"VoiceSignal":
+			w.put_u8(29)
+			w.put_u8(msg["fromId"])
+			w.put_u8(msg["toId"])
+			w.put_u8(msg["kind"])
+			w.put_string(msg["sdp"])
+		"VoiceData":
+			w.put_u8(30)
+			w.put_u8(msg["playerId"])
+			w.put_u16(msg["seq"])
+			w.put_bytes(msg["data"])
 		_:
 			push_error("Protocol.encode: unknown message type %s" % type_name)
 			return PackedByteArray()
@@ -546,6 +562,17 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 			msg["origin"] = r.get_pos()
 			msg["hit"] = r.get_pos()
 			msg["impact"] = r.get_u8()
+		29:
+			msg["type"] = "VoiceSignal"
+			msg["fromId"] = r.get_u8()
+			msg["toId"] = r.get_u8()
+			msg["kind"] = r.get_u8()
+			msg["sdp"] = r.get_string()
+		30:
+			msg["type"] = "VoiceData"
+			msg["playerId"] = r.get_u8()
+			msg["seq"] = r.get_u16()
+			msg["data"] = r.get_bytes()
 		_:
 			return {}
 	if not r.ok_and_finished():

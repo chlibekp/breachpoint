@@ -12,8 +12,8 @@
     "bool": "u8 0/1",
     "string": "u16 byte length + UTF-8",
     "pos": "Vec3 metres, each axis i32 millimetres",
-    "vel": "Vec3 m/s, each axis i16 at 1/1000 m/s (clamped to \u00b132.767)",
-    "angle": "radians, u16 turn fraction (65536 = 2\u03c0), decoded to (-\u03c0, \u03c0]",
+    "vel": "Vec3 m/s, each axis i16 at 1/1000 m/s (clamped to ±32.767)",
+    "angle": "radians, u16 turn fraction (65536 = 2π), decoded to (-π, π]",
     "bytes": "u16 length + raw bytes"
   },
   "structs": {
@@ -810,6 +810,52 @@
         {
           "name": "impact",
           "type": "u8"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "name": "VoiceSignal",
+      "dir": "both",
+      "channel": "reliable",
+      "$comment": "WebRTC signalling for team voice (spec 15.4). Client sets toId; the server stamps fromId and relays to that teammate only. kind: 0 offer, 1 answer, 2 ice candidate ('mid\\nindex\\ncandidate').",
+      "fields": [
+        {
+          "name": "fromId",
+          "type": "u8"
+        },
+        {
+          "name": "toId",
+          "type": "u8"
+        },
+        {
+          "name": "kind",
+          "type": "u8"
+        },
+        {
+          "name": "sdp",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "name": "VoiceData",
+      "dir": "both",
+      "channel": "unreliable",
+      "$comment": "20 ms of 16 kHz mu-law voice. Server relay fallback when no WebRTC data channel to a teammate is open; server stamps playerId and forwards to living-or-dead teammates only.",
+      "fields": [
+        {
+          "name": "playerId",
+          "type": "u8"
+        },
+        {
+          "name": "seq",
+          "type": "u16"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
         }
       ]
     }

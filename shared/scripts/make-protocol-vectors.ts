@@ -158,6 +158,19 @@ const samples: Message[] = [
     hit: { x: 10, y: 1.2, z: -30 },
     impact: 1,
   },
+  {
+    type: "VoiceSignal",
+    fromId: 3,
+    toId: 5,
+    kind: 2,
+    sdp: "0\n0\ncandidate:1 1 udp 2122 192.0.2.1 5000 typ host",
+  },
+  {
+    type: "VoiceData",
+    playerId: 3,
+    seq: 65535,
+    data: new Uint8Array([0xff, 0x7f, 0x00, 0x80, 0x55]),
+  },
 ];
 
 const vectors: ProtocolVector[] = samples.map((m) => ({

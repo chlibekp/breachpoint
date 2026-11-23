@@ -88,3 +88,7 @@ team_enemy_color={
 "type": "color",
 "value": Color(1, 0.27451, 0.333333, 1)
 }
+
+[audio]
+
+driver/enable_input=true

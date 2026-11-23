@@ -457,6 +457,59 @@ export class Match {
     if (p.inputs.length > 8) p.inputs.splice(0, p.inputs.length - 8);
   }
 
+  // ------------------------------------------------------------------ communication (spec §15.4)
+
+  private readonly chatTimes = new Map<number, number[]>();
+  private readonly voiceBudget = new Map<number, { tokens: number; tick: number }>();
+
+  /** Text chat: all or team. Max 5 messages per 5 s, 120 chars, control characters stripped. */
+  chat(id: number, teamOnly: boolean, text: string): void {
+    const p = this.players.get(id);
+    if (!p || p.bot) return;
+    const clean = [...text]
+      .filter((ch) => {
+        const c = ch.codePointAt(0)!;
+        return c >= 0x20 && c !== 0x7f;
+      })
+      .join("")
+      .trim()
+      .slice(0, 120);
+    if (!clean) return;
+    const now = this.tick;
+    const times = (this.chatTimes.get(id) ?? []).filter((t) => now - t < 5 * TICK_RATE);
+    if (times.length >= 5) return;
+    times.push(now);
+    this.chatTimes.set(id, times);
+    const msg: Message = { type: "Chat", playerId: id, teamOnly, text: clean };
+    for (const q of this.players.values())
+      if (!q.bot && (!teamOnly || q.team === p.team)) this.send(q.id, msg);
+    this.replay?.record(this.tick, msg);
+  }
+
+  /** WebRTC signalling relay between two human teammates. */
+  voiceSignal(id: number, toId: number, kind: number, sdp: string): void {
+    const p = this.players.get(id);
+    const q = this.players.get(toId);
+    if (!p || !q || p.bot || q.bot || q.team !== p.team || id === toId) return;
+    if (kind > 2 || sdp.length > 8000) return;
+    this.send(toId, { type: "VoiceSignal", fromId: id, toId, kind, sdp });
+  }
+
+  /** Server-relayed voice frame (fallback when no data channel): teammates only, ~60 frames/s. */
+  voiceData(id: number, seq: number, data: Uint8Array): void {
+    const p = this.players.get(id);
+    if (!p || p.bot || data.length === 0 || data.length > 400) return;
+    const b = this.voiceBudget.get(id) ?? { tokens: 60, tick: this.tick };
+    b.tokens = Math.min(60, b.tokens + ((this.tick - b.tick) * 60) / TICK_RATE);
+    b.tick = this.tick;
+    this.voiceBudget.set(id, b);
+    if (b.tokens < 1) return;
+    b.tokens -= 1;
+    const msg: Message = { type: "VoiceData", playerId: id, seq, data };
+    for (const q of this.players.values())
+      if (!q.bot && q.id !== id && q.team === p.team) this.send(q.id, msg);
+  }
+
   buy(id: number, item: string): void {
     const p = this.players.get(id);
     if (!p) return;

@@ -17,6 +17,8 @@ var player: LocalPlayer
 var hud: Hud
 var buy_menu: BuyMenu
 var scoreboard: Scoreboard
+var voice: VoiceChat
+var chat: ChatBox
 var remotes: Dictionary = {}  ## id -> RemotePlayer
 var roster: Dictionary = {}  ## id -> {name, team, agent}
 var my_id := -1
@@ -53,6 +55,17 @@ func _ready() -> void:
 	add_child(buy_menu)
 	scoreboard = Scoreboard.new()
 	add_child(scoreboard)
+	voice = VoiceChat.new()
+	voice.send_message = Net.send
+	add_child(voice)
+	chat = ChatBox.new()
+	hud.add_child(chat)
+	chat.submitted.connect(func(text: String, team_only: bool) -> void:
+		Net.send({"type": "Chat", "playerId": 0, "teamOnly": team_only, "text": text}))
+	chat.typing_changed.connect(func(on: bool) -> void:
+		if player != null:
+			player.input_enabled = not on
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if on else Input.MOUSE_MODE_CAPTURED)
 	Net.message_received.connect(_on_message)
 	hud.message("CONNECTING…", 5.0)
 	if Net.state != Net.State.ONLINE:
@@ -106,6 +119,7 @@ func _on_message(msg: Dictionary) -> void:
 				my_team = int(roster[my_id]["team"])
 			_load_map(msg["map"])
 			scoreboard.roster = roster
+			_update_comms()
 			scoreboard.match_id = str(msg["matchId"])
 			scoreboard.my_id = my_id
 		"Snapshot":
@@ -171,6 +185,15 @@ func _on_message(msg: Dictionary) -> void:
 				Sfx.play_2d("charge", "defuse_half", -4.0)
 		"Scoreboard":
 			scoreboard.entries = msg["entries"]
+		"Chat":
+			var from := int(msg["playerId"])
+			var info: Dictionary = roster.get(from, {"name": "?", "team": -1})
+			if not (Settings.get_value("comms", "chat_muted") as Array).has(str(info["name"])):
+				chat.add_line(str(info["name"]), str(msg["text"]), bool(msg["teamOnly"]), int(info["team"]) == my_team)
+		"VoiceSignal":
+			voice.on_signal(msg)
+		"VoiceData":
+			voice.on_voice_data(msg)
 		"BuyResult":
 			if not bool(msg["ok"]):
 				hud.message(str(msg["reason"]).replace("_", " "), 1.2)
@@ -325,6 +348,12 @@ func _physics_process(_delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	var talking: PackedStringArray = []
+	if voice.transmitting:
+		talking.append("You")
+	for id: int in voice.speaking():
+		talking.append(str(roster.get(id, {}).get("name", id)))
+	hud.set_voice(talking)
 	var rt := server_tick_now() - INTERP_TICKS - clampf(_jitter, 0.0, 4.0)
 	for id: int in remotes:
 		var r: RemotePlayer = remotes[id]
@@ -381,7 +410,28 @@ func _team(id: int) -> int:
 	return int(roster.get(id, {}).get("team", -1))
 
 
+## Human teammates for voice (bots never transmit); names key mute/volume settings.
+func _update_comms() -> void:
+	var mates: Array[int] = []
+	var names: Dictionary = {}
+	for id: int in roster:
+		names[id] = str(roster[id]["name"])
+		if id != my_id and int(roster[id]["team"]) == my_team and not str(roster[id]["name"]).ends_with("[BOT]"):
+			mates.append(id)
+	voice.set_team(my_id, mates, names)
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	if chat.typing:
+		return
+	if event.is_action_pressed("voice_ptt"):
+		voice.set_transmitting(true)
+	elif event.is_action_released("voice_ptt"):
+		voice.set_transmitting(false)
+	elif event.is_action_pressed("chat_team") or event.is_action_pressed("chat_all"):
+		chat.open(event.is_action_pressed("chat_team"))
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("buy_menu") and phase == 0:
 		buy_menu.toggle()
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if buy_menu.visible else Input.MOUSE_MODE_CAPTURED

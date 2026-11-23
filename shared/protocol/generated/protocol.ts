@@ -34,6 +34,8 @@ export const MsgId = {
   SoundEvent: 26,
   Scoreboard: 27,
   ShotEvent: 28,
+  VoiceSignal: 29,
+  VoiceData: 30,
 } as const;
 
 export const MsgChannel: Record<number, "reliable" | "unreliable"> = {
@@ -65,6 +67,8 @@ export const MsgChannel: Record<number, "reliable" | "unreliable"> = {
   26: "unreliable",
   27: "reliable",
   28: "unreliable",
+  29: "reliable",
+  30: "unreliable",
 };
 
 export interface InputCmd {
@@ -379,6 +383,19 @@ export interface ShotEventMsg {
   hit: Vec3;
   impact: number;
 }
+export interface VoiceSignalMsg {
+  type: "VoiceSignal";
+  fromId: number;
+  toId: number;
+  kind: number;
+  sdp: string;
+}
+export interface VoiceDataMsg {
+  type: "VoiceData";
+  playerId: number;
+  seq: number;
+  data: Uint8Array;
+}
 
 export type Message =
   | HelloMsg
@@ -408,7 +425,9 @@ export type Message =
   | SpawnMsg
   | SoundEventMsg
   | ScoreboardMsg
-  | ShotEventMsg;
+  | ShotEventMsg
+  | VoiceSignalMsg
+  | VoiceDataMsg;
 
 export function encode(msg: Message, w: Writer = new Writer()): Uint8Array {
   switch (msg.type) {
@@ -630,6 +649,21 @@ export function encode(msg: Message, w: Writer = new Writer()): Uint8Array {
       w.pos(msg.origin);
       w.pos(msg.hit);
       w.u8(msg.impact);
+      break;
+    }
+    case "VoiceSignal": {
+      w.u8(29);
+      w.u8(msg.fromId);
+      w.u8(msg.toId);
+      w.u8(msg.kind);
+      w.string(msg.sdp);
+      break;
+    }
+    case "VoiceData": {
+      w.u8(30);
+      w.u8(msg.playerId);
+      w.u16(msg.seq);
+      w.bytes(msg.data);
       break;
     }
   }
@@ -887,6 +921,23 @@ export function decode(bytes: Uint8Array): Message {
         origin: r.pos(),
         hit: r.pos(),
         impact: r.u8(),
+      };
+      break;
+    case 29:
+      msg = {
+        type: "VoiceSignal",
+        fromId: r.u8(),
+        toId: r.u8(),
+        kind: r.u8(),
+        sdp: r.string(),
+      };
+      break;
+    case 30:
+      msg = {
+        type: "VoiceData",
+        playerId: r.u8(),
+        seq: r.u16(),
+        data: r.bytes(),
       };
       break;
     default:

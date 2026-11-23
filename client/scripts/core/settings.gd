@@ -26,6 +26,8 @@ const DEFAULTS: Dictionary = {
 	"accessibility": {"colorblind": "off", "reduced_shake": false, "subtitle_scale": 1.0},
 	"gameplay": {"viewmodel_sway": true, "strafe_tilt": true, "agent": "kestrel"},
 	"net": {"server_url": "ws://127.0.0.1:7350", "show_net_graph": false},
+	# Team voice / text chat (spec 15.4). stun_server empty = host candidates only (relay fallback).
+	"comms": {"voice_enabled": true, "stun_server": "", "muted": [], "volumes": {}, "chat_muted": []},
 }
 
 ## action -> default keycodes / mouse buttons. Rebinding writes overrides into section "bindings".
@@ -53,6 +55,9 @@ const DEFAULT_BINDINGS: Dictionary = {
 	"buy_menu": [KEY_B],
 	"scoreboard": [KEY_TAB],
 	"ping_wheel": [KEY_Z],
+	"voice_ptt": [KEY_V],
+	"chat_team": [KEY_ENTER],
+	"chat_all": [KEY_T],
 	"debug_greyscale": [KEY_F6],
 	"debug_silhouette": [KEY_F7],
 	"debug_overlay": [KEY_F3],

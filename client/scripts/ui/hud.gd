@@ -14,6 +14,7 @@ var _ammo: Label
 var _reserve: Label
 var _weapon_name: Label
 var _killfeed: VBoxContainer
+var _voice: Label
 var _hitmarker: Control
 var _hit_t := 0.0
 var _hit_kind := "body"
@@ -188,6 +189,17 @@ func set_abilities(agent_id: String, charges: Array, ult_points: int) -> void:
 func set_round_info(timer_text: String, score_text: String) -> void:
 	_timer.text = timer_text
 	_score.text = score_text
+
+
+## Voice activity: names currently talking (left edge, above the chat).
+func set_voice(talking: PackedStringArray) -> void:
+	if _voice == null:
+		_voice = _label("", &"ValueLabel")
+		_voice.set_anchors_preset(Control.PRESET_CENTER_LEFT)
+		_voice.position = Vector2(24, -40)
+		_voice.add_theme_color_override("font_color", Color("#3FE0D0"))
+		_root.add_child(_voice)
+	_voice.text = "\n".join(Array(talking).map(func(n: String) -> String: return "» " + n))
 
 
 func message(text: String, seconds: float = 2.0) -> void:

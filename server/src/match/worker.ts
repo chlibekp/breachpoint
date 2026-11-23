@@ -69,6 +69,10 @@ port.on("message", (m: ToWorker) => {
       }
       if (msg.type === "Input") match.receiveInput(m.playerId, msg.cmds);
       else if (msg.type === "BuyRequest") match.buy(m.playerId, msg.item);
+      else if (msg.type === "Chat") match.chat(m.playerId, msg.teamOnly, msg.text);
+      else if (msg.type === "VoiceSignal")
+        match.voiceSignal(m.playerId, msg.toId, msg.kind, msg.sdp);
+      else if (msg.type === "VoiceData") match.voiceData(m.playerId, msg.seq, msg.data);
       break;
     }
     case "stats":
