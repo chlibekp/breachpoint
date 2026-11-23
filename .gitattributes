@@ -1,0 +1,11 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ttf binary
+*.otf binary
+*.wav binary
+*.ogg binary
+*.glb binary
+*.bin binary
+*.exr binary
+*.lmbake binary

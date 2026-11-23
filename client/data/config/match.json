@@ -1,0 +1,11 @@
+{
+  "$schema": "../schemas/match.schema.json",
+  "version": 1,
+  "teamSize": 5,
+  "roundsToWin": 13,
+  "halftimeAfterRound": 12,
+  "overtime": { "winBy": 2, "swapEachRound": true, "drawVoteAfterPairs": 2 },
+  "phases": { "buy": 30, "combat": 100, "postPlant": 45, "roundEnd": 7 },
+  "breachCharge": { "plantTime": 4, "defuseTime": 7, "defuseCheckpoint": 3.5 },
+  "agentSelectTime": 80
+}

@@ -1,0 +1,10 @@
+client/
+qa/
+docs/
+node_modules/
+package-lock.json
+shared/tests/protocol/vectors.json
+shared/protocol/generated/
+# Hand-formatted data files (validated by JSON Schema instead)
+shared/**/*.json
+.github/

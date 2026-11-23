@@ -1,0 +1,42 @@
+{
+  "$schema": "../schemas/quality.schema.json",
+  "version": 1,
+  "defaultDesktopTier": "medium",
+  "tiers": [
+    {
+      "id": "web", "index": 0, "renderer": "gl_compatibility", "textureScale": 0.5,
+      "shadowCascades": 1, "shadowSize": 2048, "softShadows": false,
+      "ssao": false, "ssil": false, "ssr": false, "volumetricFog": false,
+      "msaa": 2, "fxaa": true, "taa": false, "fsr2": false, "sharpen": 0.0,
+      "particleScale": 0.5, "extraDebris": false, "gpuParticles": false, "ragdoll": false, "targetFps": 60
+    },
+    {
+      "id": "low", "index": 1, "renderer": "forward_plus", "textureScale": 0.5,
+      "shadowCascades": 2, "shadowSize": 2048, "softShadows": false,
+      "ssao": false, "ssil": false, "ssr": false, "volumetricFog": false,
+      "msaa": 0, "fxaa": true, "taa": false, "fsr2": false, "sharpen": 0.0,
+      "particleScale": 0.5, "extraDebris": false, "gpuParticles": true, "ragdoll": true, "targetFps": 144
+    },
+    {
+      "id": "medium", "index": 2, "renderer": "forward_plus", "textureScale": 1.0,
+      "shadowCascades": 3, "shadowSize": 4096, "softShadows": false,
+      "ssao": true, "ssil": false, "ssr": false, "volumetricFog": false,
+      "msaa": 0, "fxaa": false, "taa": true, "fsr2": false, "sharpen": 0.3,
+      "particleScale": 1.0, "extraDebris": false, "gpuParticles": true, "ragdoll": true, "targetFps": 144
+    },
+    {
+      "id": "high", "index": 3, "renderer": "forward_plus", "textureScale": 1.0,
+      "shadowCascades": 4, "shadowSize": 4096, "softShadows": true,
+      "ssao": true, "ssil": true, "ssr": true, "volumetricFog": true,
+      "msaa": 0, "fxaa": false, "taa": true, "fsr2": false, "sharpen": 0.3,
+      "particleScale": 1.0, "extraDebris": true, "gpuParticles": true, "ragdoll": true, "targetFps": 144
+    },
+    {
+      "id": "ultra", "index": 4, "renderer": "forward_plus", "textureScale": 1.0,
+      "shadowCascades": 4, "shadowSize": 4096, "softShadows": true,
+      "ssao": true, "ssil": true, "ssr": true, "volumetricFog": true,
+      "msaa": 0, "fxaa": false, "taa": false, "fsr2": true, "sharpen": 0.35,
+      "particleScale": 1.0, "extraDebris": true, "gpuParticles": true, "ragdoll": true, "targetFps": 165
+    }
+  ]
+}

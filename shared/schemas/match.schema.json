@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "match.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "teamSize", "roundsToWin", "halftimeAfterRound", "overtime", "phases", "breachCharge", "agentSelectTime"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "integer", "minimum": 1 },
+    "teamSize": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "roundsToWin": { "type": "integer", "minimum": 1 },
+    "halftimeAfterRound": { "type": "integer", "minimum": 1 },
+    "overtime": {
+      "type": "object", "additionalProperties": false, "required": ["winBy", "swapEachRound", "drawVoteAfterPairs"],
+      "properties": { "winBy": { "type": "integer", "minimum": 1 }, "swapEachRound": { "type": "boolean" }, "drawVoteAfterPairs": { "type": "integer", "minimum": 1 } }
+    },
+    "phases": {
+      "type": "object", "additionalProperties": false, "required": ["buy", "combat", "postPlant", "roundEnd"],
+      "properties": {
+        "buy": { "type": "number", "minimum": 0 }, "combat": { "type": "number", "minimum": 0 },
+        "postPlant": { "type": "number", "minimum": 0 }, "roundEnd": { "type": "number", "minimum": 0 }
+      }
+    },
+    "breachCharge": {
+      "type": "object", "additionalProperties": false, "required": ["plantTime", "defuseTime", "defuseCheckpoint"],
+      "properties": {
+        "plantTime": { "type": "number", "exclusiveMinimum": 0 }, "defuseTime": { "type": "number", "exclusiveMinimum": 0 },
+        "defuseCheckpoint": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "agentSelectTime": { "type": "number", "minimum": 0 }
+  }
+}

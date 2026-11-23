@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "movement.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "tickRate", "runSpeed", "walkSpeed", "crouchSpeed", "crouchTransitionTime", "accelerationTime", "decelerationTime", "airAcceleration", "jumpHeight", "gravity", "landingSlow", "stepHeight", "maxSlopeDegrees", "standingAccuracyThreshold", "capsule", "footstepHearingRange"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "integer", "minimum": 1 },
+    "tickRate": { "const": 64 },
+    "runSpeed": { "type": "number", "exclusiveMinimum": 0 },
+    "walkSpeed": { "type": "number", "exclusiveMinimum": 0 },
+    "crouchSpeed": { "type": "number", "exclusiveMinimum": 0 },
+    "crouchTransitionTime": { "type": "number", "minimum": 0 },
+    "accelerationTime": { "type": "number", "exclusiveMinimum": 0 },
+    "decelerationTime": { "type": "number", "exclusiveMinimum": 0 },
+    "airAcceleration": { "type": "number", "minimum": 0 },
+    "jumpHeight": { "type": "number", "exclusiveMinimum": 0 },
+    "gravity": { "type": "number", "exclusiveMinimum": 0 },
+    "landingSlow": {
+      "type": "object", "additionalProperties": false, "required": ["multiplier", "duration"],
+      "properties": { "multiplier": { "type": "number", "minimum": 0, "maximum": 1 }, "duration": { "type": "number", "minimum": 0 } }
+    },
+    "stepHeight": { "type": "number", "minimum": 0 },
+    "maxSlopeDegrees": { "type": "number", "minimum": 0, "maximum": 89 },
+    "standingAccuracyThreshold": { "type": "number", "minimum": 0, "maximum": 1 },
+    "capsule": {
+      "type": "object", "additionalProperties": false, "required": ["radius", "height", "crouchHeight", "eyeHeight", "crouchEyeHeight"],
+      "properties": {
+        "radius": { "type": "number", "exclusiveMinimum": 0 }, "height": { "type": "number", "exclusiveMinimum": 0 },
+        "crouchHeight": { "type": "number", "exclusiveMinimum": 0 }, "eyeHeight": { "type": "number", "exclusiveMinimum": 0 },
+        "crouchEyeHeight": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "footstepHearingRange": { "type": "number", "minimum": 0 }
+  }
+}

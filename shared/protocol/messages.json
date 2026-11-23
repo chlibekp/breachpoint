@@ -1,0 +1,92 @@
+{
+  "$comment": "BREACHPOINT wire protocol. Edit this file, then run `npm run protocol:gen` to regenerate the TypeScript and GDScript codecs. Never edit generated files by hand.",
+  "version": 1,
+  "primitives": {
+    "u8": "unsigned 8-bit", "u16": "unsigned 16-bit LE", "u32": "unsigned 32-bit LE",
+    "i8": "signed 8-bit", "i16": "signed 16-bit LE", "i32": "signed 32-bit LE",
+    "f32": "IEEE754 float LE", "bool": "u8 0/1", "string": "u16 byte length + UTF-8",
+    "pos": "Vec3 metres, each axis i32 millimetres",
+    "vel": "Vec3 m/s, each axis i16 at 1/1000 m/s (clamped to ±32.767)",
+    "angle": "radians, u16 turn fraction (65536 = 2π), decoded to (-π, π]",
+    "bytes": "u16 length + raw bytes"
+  },
+  "structs": {
+    "InputCmd": [
+      { "name": "seq", "type": "u32" },
+      { "name": "tick", "type": "u32" },
+      { "name": "buttons", "type": "u32" },
+      { "name": "yaw", "type": "angle" },
+      { "name": "pitch", "type": "angle" },
+      { "name": "weaponSlot", "type": "u8" }
+    ],
+    "PlayerState": [
+      { "name": "playerId", "type": "u8" },
+      { "name": "pos", "type": "pos" },
+      { "name": "vel", "type": "vel" },
+      { "name": "yaw", "type": "angle" },
+      { "name": "pitch", "type": "angle" },
+      { "name": "flags", "type": "u16" },
+      { "name": "health", "type": "u8" },
+      { "name": "shield", "type": "u8" },
+      { "name": "weapon", "type": "u8" }
+    ],
+    "RosterEntry": [
+      { "name": "playerId", "type": "u8" },
+      { "name": "name", "type": "string" },
+      { "name": "team", "type": "u8" },
+      { "name": "agent", "type": "string" }
+    ]
+  },
+  "messages": [
+    { "id": 1, "name": "Hello", "dir": "c2s", "channel": "reliable", "fields": [
+      { "name": "protocolVersion", "type": "u16" }, { "name": "token", "type": "string" }, { "name": "platform", "type": "string" } ] },
+    { "id": 2, "name": "AuthOk", "dir": "s2c", "channel": "reliable", "fields": [
+      { "name": "playerId", "type": "u8" }, { "name": "displayName", "type": "string" }, { "name": "serverTick", "type": "u32" } ] },
+    { "id": 3, "name": "JoinMatch", "dir": "c2s", "channel": "reliable", "fields": [
+      { "name": "ticket", "type": "string" } ] },
+    { "id": 4, "name": "MatchState", "dir": "s2c", "channel": "reliable", "fields": [
+      { "name": "matchId", "type": "string" }, { "name": "map", "type": "string" }, { "name": "seed", "type": "u32" },
+      { "name": "roster", "type": { "array": "RosterEntry", "max": 10 } } ] },
+    { "id": 5, "name": "Input", "dir": "c2s", "channel": "unreliable", "fields": [
+      { "name": "ackSnapshot", "type": "u32" }, { "name": "cmds", "type": { "array": "InputCmd", "max": 3 } } ] },
+    { "id": 6, "name": "Snapshot", "dir": "s2c", "channel": "unreliable", "fields": [
+      { "name": "tick", "type": "u32" }, { "name": "baseTick", "type": "u32" }, { "name": "lastProcessedSeq", "type": "u32" },
+      { "name": "players", "type": { "array": "PlayerState", "max": 10 } } ] },
+    { "id": 7, "name": "Fire", "dir": "c2s", "channel": "reliable", "fields": [
+      { "name": "seq", "type": "u32" }, { "name": "tick", "type": "u32" }, { "name": "interpTimeMs", "type": "u16" },
+      { "name": "origin", "type": "pos" }, { "name": "yaw", "type": "angle" }, { "name": "pitch", "type": "angle" }, { "name": "weapon", "type": "u8" } ] },
+    { "id": 8, "name": "HitConfirm", "dir": "s2c", "channel": "reliable", "fields": [
+      { "name": "shotSeq", "type": "u32" }, { "name": "victimId", "type": "u8" }, { "name": "hitZone", "type": "u8" }, { "name": "damage", "type": "u8" } ] },
+    { "id": 9, "name": "Damage", "dir": "s2c", "channel": "reliable", "fields": [
+      { "name": "attackerId", "type": "u8" }, { "name": "victimId", "type": "u8" }, { "name": "amount", "type": "u8" },
+      { "name": "hitZone", "type": "u8" }, { "name": "fromPos", "type": "pos" } ] },
+    { "id": 10, "name": "Kill", "dir": "s2c", "channel": "reliable", "fields": [
+      { "name": "killerId", "type": "u8" }, { "name": "victimId", "type": "u8" }, { "name": "assisterIds", "type": { "array": "u8", "max": 4 } },
+      { "name": "weapon", "type": "string" }, { "name": "headshot", "type": "bool" }, { "name": "wallbang", "type": "bool" } ] },
+    { "id": 11, "name": "AbilityCast", "dir": "c2s", "channel": "reliable", "fields": [
+      { "name": "seq", "type": "u32" }, { "name": "tick", "type": "u32" }, { "name": "slot", "type": "u8" },
+      { "name": "target", "type": "pos" }, { "name": "yaw", "type": "angle" }, { "name": "pitch", "type": "angle" } ] },
+    { "id": 12, "name": "AbilityEvent", "dir": "s2c", "channel": "reliable", "fields": [
+      { "name": "casterId", "type": "u8" }, { "name": "ability", "type": "string" }, { "name": "event", "type": "u8" },
+      { "name": "pos", "type": "pos" }, { "name": "data", "type": "bytes" } ] },
+    { "id": 13, "name": "BuyRequest", "dir": "c2s", "channel": "reliable", "fields": [
+      { "name": "item", "type": "string" } ] },
+    { "id": 14, "name": "BuyResult", "dir": "s2c", "channel": "reliable", "fields": [
+      { "name": "item", "type": "string" }, { "name": "ok", "type": "bool" }, { "name": "credits", "type": "u16" }, { "name": "reason", "type": "string" } ] },
+    { "id": 15, "name": "PlantStart", "dir": "both", "channel": "reliable", "fields": [
+      { "name": "playerId", "type": "u8" }, { "name": "site", "type": "u8" }, { "name": "pos", "type": "pos" } ] },
+    { "id": 16, "name": "DefuseStart", "dir": "both", "channel": "reliable", "fields": [
+      { "name": "playerId", "type": "u8" }, { "name": "resumeFromCheckpoint", "type": "bool" } ] },
+    { "id": 17, "name": "RoundPhase", "dir": "s2c", "channel": "reliable", "fields": [
+      { "name": "round", "type": "u8" }, { "name": "phase", "type": "u8" }, { "name": "endsAtTick", "type": "u32" },
+      { "name": "scoreAttack", "type": "u8" }, { "name": "scoreDefense", "type": "u8" } ] },
+    { "id": 18, "name": "Chat", "dir": "both", "channel": "reliable", "fields": [
+      { "name": "playerId", "type": "u8" }, { "name": "teamOnly", "type": "bool" }, { "name": "text", "type": "string" } ] },
+    { "id": 19, "name": "Ping", "dir": "both", "channel": "reliable", "fields": [
+      { "name": "nonce", "type": "u32" }, { "name": "clientTimeMs", "type": "f32" } ] },
+    { "id": 20, "name": "Pong", "dir": "both", "channel": "reliable", "fields": [
+      { "name": "nonce", "type": "u32" }, { "name": "clientTimeMs", "type": "f32" }, { "name": "serverTick", "type": "u32" } ] },
+    { "id": 21, "name": "Disconnect", "dir": "both", "channel": "reliable", "fields": [
+      { "name": "reason", "type": "string" } ] }
+  ]
+}

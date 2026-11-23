@@ -1,0 +1,10 @@
+{
+  "name": "@breachpoint/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@breachpoint/shared": "0.1.0",
+    "ws": "^8.18.3"
+  }
+}

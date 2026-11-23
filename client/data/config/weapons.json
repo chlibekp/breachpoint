@@ -1,0 +1,2165 @@
+{
+  "$schema": "../schemas/weapons.schema.json",
+  "version": 1,
+  "weapons": [
+    {
+      "id": "wasp",
+      "name": "Wasp",
+      "class": "sidearm",
+      "cost": 0,
+      "fireRate": 6.75,
+      "fireMode": "semi",
+      "magazine": 12,
+      "reserveAmmo": 36,
+      "damage": {
+        "body": 26,
+        "headMult": 4,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 30,
+            "multiplier": 0.85
+          }
+        ]
+      },
+      "runSpeed": 6.75,
+      "penetration": "low",
+      "reloadTime": 1.5,
+      "equipTime": 0.75,
+      "movementSpreadMult": 5,
+      "spread": {
+        "base": 0,
+        "perShot": 0.4,
+        "max": 3,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0.8
+          ],
+          [
+            0,
+            1.6
+          ],
+          [
+            0,
+            2.4
+          ],
+          [
+            0,
+            3.2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0.252,
+            4
+          ],
+          [
+            0.552,
+            4
+          ],
+          [
+            0.811,
+            4
+          ],
+          [
+            0.953,
+            4
+          ]
+        ],
+        "cameraPunch": 0.4,
+        "shake": 0.2
+      },
+      "ads": null,
+      "burst": null,
+      "altFire": {
+        "type": "burst",
+        "count": 3,
+        "interval": 0.06,
+        "spreadMult": 2.2
+      },
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#C9A227"
+    },
+    {
+      "id": "pike",
+      "name": "Pike",
+      "class": "sidearm",
+      "cost": 300,
+      "fireRate": 4,
+      "fireMode": "semi",
+      "magazine": 6,
+      "reserveAmmo": 24,
+      "damage": {
+        "body": 50,
+        "headMult": 4,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 30,
+            "multiplier": 0.9
+          }
+        ]
+      },
+      "runSpeed": 6.75,
+      "penetration": "high",
+      "reloadTime": 2.25,
+      "equipTime": 0.75,
+      "movementSpreadMult": 5,
+      "spread": {
+        "base": 0,
+        "perShot": 1,
+        "max": 3.5,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            2.2
+          ],
+          [
+            0,
+            4.4
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            0,
+            6
+          ]
+        ],
+        "cameraPunch": 1,
+        "shake": 0.6
+      },
+      "ads": null,
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#B5482F"
+    },
+    {
+      "id": "hornet",
+      "name": "Hornet",
+      "class": "sidearm",
+      "cost": 200,
+      "fireRate": 10,
+      "fireMode": "auto",
+      "magazine": 13,
+      "reserveAmmo": 39,
+      "damage": {
+        "body": 24,
+        "headMult": 4,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 20,
+            "multiplier": 0.8
+          }
+        ]
+      },
+      "runSpeed": 6.75,
+      "penetration": "low",
+      "reloadTime": 1.75,
+      "equipTime": 0.75,
+      "movementSpreadMult": 2.5,
+      "spread": {
+        "base": 0,
+        "perShot": 0.3,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0.5
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            1.5
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2.5
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            3.5
+          ],
+          [
+            0.085,
+            3.625
+          ],
+          [
+            -0.154,
+            3.75
+          ],
+          [
+            -0.645,
+            3.875
+          ],
+          [
+            -1.243,
+            4
+          ],
+          [
+            -1.773,
+            4
+          ]
+        ],
+        "cameraPunch": 0.4,
+        "shake": 0.2
+      },
+      "ads": null,
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": true,
+      "accentColor": "#5F7F6A"
+    },
+    {
+      "id": "grifter",
+      "name": "Grifter",
+      "class": "sidearm",
+      "cost": 200,
+      "fireRate": 2.2,
+      "fireMode": "semi",
+      "magazine": 4,
+      "reserveAmmo": 8,
+      "damage": {
+        "body": 20,
+        "headMult": 4,
+        "legMult": 0.85,
+        "pellets": 4,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 8,
+            "multiplier": 0.5
+          },
+          {
+            "range": 15,
+            "multiplier": 0.25
+          }
+        ]
+      },
+      "runSpeed": 6.75,
+      "penetration": "low",
+      "reloadTime": 1.75,
+      "equipTime": 0.75,
+      "movementSpreadMult": 1,
+      "spread": {
+        "base": 3.2,
+        "perShot": 0,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1.5
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "cameraPunch": 0.4,
+        "shake": 0.2
+      },
+      "ads": null,
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#7A6A9E"
+    },
+    {
+      "id": "jolt",
+      "name": "Jolt",
+      "class": "smg",
+      "cost": 900,
+      "fireRate": 16,
+      "fireMode": "auto",
+      "magazine": 25,
+      "reserveAmmo": 75,
+      "damage": {
+        "body": 27,
+        "headMult": 3,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 20,
+            "multiplier": 0.8
+          }
+        ]
+      },
+      "runSpeed": 6.75,
+      "penetration": "low",
+      "reloadTime": 2.25,
+      "equipTime": 0.75,
+      "movementSpreadMult": 1.5,
+      "spread": {
+        "base": 0.4,
+        "perShot": 0.15,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0.45
+          ],
+          [
+            0,
+            0.9
+          ],
+          [
+            0,
+            1.35
+          ],
+          [
+            0,
+            1.8
+          ],
+          [
+            0,
+            2.25
+          ],
+          [
+            0,
+            2.7
+          ],
+          [
+            0,
+            3.15
+          ],
+          [
+            -0.53,
+            3.263
+          ],
+          [
+            -1.221,
+            3.375
+          ],
+          [
+            -1.869,
+            3.488
+          ],
+          [
+            -2.283,
+            3.6
+          ],
+          [
+            -2.341,
+            3.712
+          ],
+          [
+            -2.026,
+            3.825
+          ],
+          [
+            -1.431,
+            3.937
+          ],
+          [
+            -0.731,
+            4
+          ],
+          [
+            -0.132,
+            4
+          ],
+          [
+            0.188,
+            4
+          ],
+          [
+            0.135,
+            4
+          ],
+          [
+            -0.275,
+            4
+          ],
+          [
+            -0.921,
+            4
+          ],
+          [
+            -1.612,
+            4
+          ],
+          [
+            -2.146,
+            4
+          ],
+          [
+            -2.364,
+            4
+          ],
+          [
+            -2.201,
+            4
+          ]
+        ],
+        "cameraPunch": 0.4,
+        "shake": 0.2
+      },
+      "ads": null,
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#3E8FB0"
+    },
+    {
+      "id": "halcyon",
+      "name": "Halcyon",
+      "class": "smg",
+      "cost": 1600,
+      "fireRate": 13.3,
+      "fireMode": "auto",
+      "magazine": 30,
+      "reserveAmmo": 90,
+      "damage": {
+        "body": 26,
+        "headMult": 3,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 20,
+            "multiplier": 0.85
+          }
+        ]
+      },
+      "runSpeed": 6.5,
+      "penetration": "medium",
+      "reloadTime": 2.25,
+      "equipTime": 0.75,
+      "movementSpreadMult": 1.8,
+      "spread": {
+        "base": 0.3,
+        "perShot": 0.12,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0.5
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            1.5
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2.5
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            3.5
+          ],
+          [
+            -0.575,
+            3.625
+          ],
+          [
+            -0.977,
+            3.75
+          ],
+          [
+            -1.086,
+            3.875
+          ],
+          [
+            -0.871,
+            4
+          ],
+          [
+            -0.395,
+            4.125
+          ],
+          [
+            0.202,
+            4.25
+          ],
+          [
+            0.743,
+            4.375
+          ],
+          [
+            1.069,
+            4.5
+          ],
+          [
+            1.084,
+            4.625
+          ],
+          [
+            0.783,
+            4.75
+          ],
+          [
+            0.256,
+            4.875
+          ],
+          [
+            -0.343,
+            5
+          ],
+          [
+            -0.837,
+            5
+          ],
+          [
+            -1.08,
+            5
+          ],
+          [
+            -1,
+            5
+          ],
+          [
+            -0.621,
+            5
+          ],
+          [
+            -0.055,
+            5
+          ],
+          [
+            0.532,
+            5
+          ],
+          [
+            0.965,
+            5
+          ],
+          [
+            1.119,
+            5
+          ],
+          [
+            0.946,
+            5
+          ],
+          [
+            0.498,
+            5
+          ]
+        ],
+        "cameraPunch": 0.4,
+        "shake": 0.2
+      },
+      "ads": {
+        "zoom": 1.25,
+        "accuracyBonus": 0.25,
+        "fireRateMult": 0.9,
+        "moveSpeedMult": 0.76
+      },
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#3E8FB0"
+    },
+    {
+      "id": "breaker",
+      "name": "Breaker",
+      "class": "shotgun",
+      "cost": 1850,
+      "fireRate": 3.3,
+      "fireMode": "auto",
+      "magazine": 7,
+      "reserveAmmo": 14,
+      "damage": {
+        "body": 11,
+        "headMult": 3,
+        "legMult": 0.85,
+        "pellets": 8,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 10,
+            "multiplier": 0.5
+          },
+          {
+            "range": 15,
+            "multiplier": 0.2
+          }
+        ]
+      },
+      "runSpeed": 6.5,
+      "penetration": "low",
+      "reloadTime": 3.25,
+      "equipTime": 1,
+      "movementSpreadMult": 1,
+      "spread": {
+        "base": 2.6,
+        "perShot": 0,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1.6
+          ],
+          [
+            0,
+            3.2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        "cameraPunch": 1.2,
+        "shake": 0.8
+      },
+      "ads": null,
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#B07A3E"
+    },
+    {
+      "id": "mauler",
+      "name": "Mauler",
+      "class": "shotgun",
+      "cost": 2100,
+      "fireRate": 4,
+      "fireMode": "auto",
+      "magazine": 8,
+      "reserveAmmo": 16,
+      "damage": {
+        "body": 10,
+        "headMult": 3,
+        "legMult": 0.85,
+        "pellets": 9,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 9,
+            "multiplier": 0.55
+          },
+          {
+            "range": 15,
+            "multiplier": 0.2
+          }
+        ]
+      },
+      "runSpeed": 6.5,
+      "penetration": "low",
+      "reloadTime": 2.5,
+      "equipTime": 1,
+      "movementSpreadMult": 1,
+      "spread": {
+        "base": 2.9,
+        "perShot": 0,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1.1
+          ],
+          [
+            0,
+            2.2
+          ],
+          [
+            0,
+            3.3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            4
+          ]
+        ],
+        "cameraPunch": 0.9,
+        "shake": 0.7
+      },
+      "ads": null,
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#B07A3E"
+    },
+    {
+      "id": "lancer",
+      "name": "Lancer",
+      "class": "rifle",
+      "cost": 950,
+      "fireRate": 4,
+      "fireMode": "burst",
+      "magazine": 24,
+      "reserveAmmo": 72,
+      "damage": {
+        "body": 30,
+        "headMult": 4,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 30,
+            "multiplier": 0.85
+          }
+        ]
+      },
+      "runSpeed": 6.5,
+      "penetration": "medium",
+      "reloadTime": 2.5,
+      "equipTime": 1,
+      "movementSpreadMult": 5,
+      "spread": {
+        "base": 0,
+        "perShot": 0.12,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0.7
+          ],
+          [
+            0,
+            1.4
+          ],
+          [
+            0,
+            2.1
+          ],
+          [
+            0,
+            2.8
+          ],
+          [
+            0,
+            3.5
+          ],
+          [
+            0,
+            4.2
+          ],
+          [
+            0,
+            4.9
+          ],
+          [
+            0.396,
+            5
+          ],
+          [
+            0.703,
+            5
+          ],
+          [
+            0.83,
+            5
+          ],
+          [
+            0.741,
+            5
+          ],
+          [
+            0.461,
+            5
+          ],
+          [
+            0.073,
+            5
+          ],
+          [
+            -0.309,
+            5
+          ],
+          [
+            -0.571,
+            5
+          ],
+          [
+            -0.637,
+            5
+          ],
+          [
+            -0.488,
+            5
+          ],
+          [
+            -0.166,
+            5
+          ],
+          [
+            0.232,
+            5
+          ],
+          [
+            0.59,
+            5
+          ],
+          [
+            0.802,
+            5
+          ],
+          [
+            0.805,
+            5
+          ],
+          [
+            0.599,
+            5
+          ]
+        ],
+        "cameraPunch": 0.4,
+        "shake": 0.2
+      },
+      "ads": {
+        "zoom": 1.15,
+        "accuracyBonus": 0.3,
+        "fireRateMult": 1,
+        "moveSpeedMult": 0.76,
+        "adsBurstOverride": "semi"
+      },
+      "burst": {
+        "count": 3,
+        "interval": 0.0625
+      },
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#6E8B4A"
+    },
+    {
+      "id": "kite",
+      "name": "Kite",
+      "class": "rifle",
+      "cost": 2050,
+      "fireRate": 6,
+      "fireMode": "semi",
+      "magazine": 12,
+      "reserveAmmo": 36,
+      "damage": {
+        "body": 75,
+        "headMult": 4,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 30,
+            "multiplier": 0.95
+          }
+        ]
+      },
+      "runSpeed": 6.5,
+      "penetration": "medium",
+      "reloadTime": 2.5,
+      "equipTime": 1,
+      "movementSpreadMult": 6,
+      "spread": {
+        "base": 0,
+        "perShot": 0.6,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1.4
+          ],
+          [
+            0,
+            2.8
+          ],
+          [
+            0,
+            4.2
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0.082,
+            5
+          ],
+          [
+            0.057,
+            5
+          ],
+          [
+            -0.068,
+            5
+          ],
+          [
+            -0.256,
+            5
+          ]
+        ],
+        "cameraPunch": 0.8,
+        "shake": 0.2
+      },
+      "ads": {
+        "zoom": 2,
+        "accuracyBonus": 0.6,
+        "fireRateMult": 0.75,
+        "moveSpeedMult": 0.6
+      },
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#4A6E8B"
+    },
+    {
+      "id": "saber",
+      "name": "Saber",
+      "class": "rifle",
+      "cost": 2900,
+      "fireRate": 9.75,
+      "fireMode": "auto",
+      "magazine": 25,
+      "reserveAmmo": 75,
+      "damage": {
+        "body": 40,
+        "headMult": 4,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          }
+        ]
+      },
+      "runSpeed": 6,
+      "penetration": "medium",
+      "reloadTime": 2.5,
+      "equipTime": 1,
+      "movementSpreadMult": 6,
+      "spread": {
+        "base": 0,
+        "perShot": 0.14,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0.75
+          ],
+          [
+            0,
+            1.5
+          ],
+          [
+            0,
+            2.25
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            3.75
+          ],
+          [
+            0,
+            4.5
+          ],
+          [
+            0,
+            5.25
+          ],
+          [
+            -0.354,
+            5.438
+          ],
+          [
+            -0.94,
+            5.625
+          ],
+          [
+            -1.587,
+            5.813
+          ],
+          [
+            -2.102,
+            6
+          ],
+          [
+            -2.335,
+            6.188
+          ],
+          [
+            -2.216,
+            6.375
+          ],
+          [
+            -1.781,
+            6.5
+          ],
+          [
+            -1.158,
+            6.5
+          ],
+          [
+            -0.53,
+            6.5
+          ],
+          [
+            -0.083,
+            6.5
+          ],
+          [
+            0.051,
+            6.5
+          ],
+          [
+            -0.167,
+            6.5
+          ],
+          [
+            -0.673,
+            6.5
+          ],
+          [
+            -1.318,
+            6.5
+          ],
+          [
+            -1.911,
+            6.5
+          ],
+          [
+            -2.278,
+            6.5
+          ],
+          [
+            -2.31,
+            6.5
+          ]
+        ],
+        "cameraPunch": 0.55,
+        "shake": 0.3
+      },
+      "ads": {
+        "zoom": 1.25,
+        "accuracyBonus": 0.25,
+        "fireRateMult": 0.9,
+        "moveSpeedMult": 0.76
+      },
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#D4643A"
+    },
+    {
+      "id": "specter",
+      "name": "Specter",
+      "class": "rifle",
+      "cost": 2900,
+      "fireRate": 11,
+      "fireMode": "auto",
+      "magazine": 30,
+      "reserveAmmo": 90,
+      "damage": {
+        "body": 39,
+        "headMult": 4,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 15,
+            "multiplier": 0.88
+          },
+          {
+            "range": 30,
+            "multiplier": 0.8
+          }
+        ]
+      },
+      "runSpeed": 6,
+      "penetration": "medium",
+      "reloadTime": 2.5,
+      "equipTime": 1,
+      "movementSpreadMult": 6,
+      "spread": {
+        "base": 0,
+        "perShot": 0.12,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0.62
+          ],
+          [
+            0,
+            1.24
+          ],
+          [
+            0,
+            1.86
+          ],
+          [
+            0,
+            2.48
+          ],
+          [
+            0,
+            3.1
+          ],
+          [
+            0,
+            3.72
+          ],
+          [
+            0,
+            4.34
+          ],
+          [
+            -0.55,
+            4.495
+          ],
+          [
+            -1.018,
+            4.65
+          ],
+          [
+            -1.265,
+            4.805
+          ],
+          [
+            -1.219,
+            4.96
+          ],
+          [
+            -0.893,
+            5.115
+          ],
+          [
+            -0.384,
+            5.27
+          ],
+          [
+            0.159,
+            5.425
+          ],
+          [
+            0.575,
+            5.5
+          ],
+          [
+            0.741,
+            5.5
+          ],
+          [
+            0.61,
+            5.5
+          ],
+          [
+            0.218,
+            5.5
+          ],
+          [
+            -0.317,
+            5.5
+          ],
+          [
+            -0.839,
+            5.5
+          ],
+          [
+            -1.193,
+            5.5
+          ],
+          [
+            -1.275,
+            5.5
+          ],
+          [
+            -1.061,
+            5.5
+          ],
+          [
+            -0.614,
+            5.5
+          ],
+          [
+            -0.065,
+            5.5
+          ],
+          [
+            0.423,
+            5.5
+          ],
+          [
+            0.706,
+            5.5
+          ],
+          [
+            0.702,
+            5.5
+          ],
+          [
+            0.41,
+            5.5
+          ]
+        ],
+        "cameraPunch": 0.45,
+        "shake": 0.25
+      },
+      "ads": {
+        "zoom": 1.25,
+        "accuracyBonus": 0.25,
+        "fireRateMult": 0.9,
+        "moveSpeedMult": 0.76
+      },
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": true,
+      "accentColor": "#2E9C93"
+    },
+    {
+      "id": "shrike",
+      "name": "Shrike",
+      "class": "sniper",
+      "cost": 1100,
+      "fireRate": 1.35,
+      "fireMode": "semi",
+      "magazine": 5,
+      "reserveAmmo": 15,
+      "damage": {
+        "body": 75,
+        "headMult": 2,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          }
+        ]
+      },
+      "runSpeed": 6.5,
+      "penetration": "medium",
+      "reloadTime": 3,
+      "equipTime": 1,
+      "movementSpreadMult": 8,
+      "spread": {
+        "base": 1,
+        "perShot": 0,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "cameraPunch": 1.2,
+        "shake": 0.6
+      },
+      "ads": {
+        "zoom": 3.5,
+        "accuracyBonus": 1,
+        "fireRateMult": 1,
+        "moveSpeedMult": 0.5,
+        "scoped": true,
+        "unscopedSpread": 1
+      },
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#8B4A6E"
+    },
+    {
+      "id": "longbow",
+      "name": "Longbow",
+      "class": "sniper",
+      "cost": 4700,
+      "fireRate": 0.75,
+      "fireMode": "semi",
+      "magazine": 5,
+      "reserveAmmo": 10,
+      "damage": {
+        "body": 150,
+        "headMult": 1.7,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          }
+        ]
+      },
+      "runSpeed": 5.4,
+      "penetration": "high",
+      "reloadTime": 3.7,
+      "equipTime": 1.5,
+      "movementSpreadMult": 10,
+      "spread": {
+        "base": 5,
+        "perShot": 0,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            5
+          ]
+        ],
+        "cameraPunch": 2,
+        "shake": 1.2
+      },
+      "ads": {
+        "zoom": 2.5,
+        "zoomLevels": [
+          2.5,
+          5
+        ],
+        "accuracyBonus": 1,
+        "fireRateMult": 1,
+        "moveSpeedMult": 0.5,
+        "scoped": true,
+        "unscopedSpread": 5
+      },
+      "burst": null,
+      "altFire": null,
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#8B4A6E"
+    },
+    {
+      "id": "bulwark",
+      "name": "Bulwark",
+      "class": "heavy",
+      "cost": 3200,
+      "fireRate": 10,
+      "fireMode": "auto",
+      "magazine": 100,
+      "reserveAmmo": 200,
+      "damage": {
+        "body": 34,
+        "headMult": 3,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          },
+          {
+            "range": 30,
+            "multiplier": 0.88
+          }
+        ]
+      },
+      "runSpeed": 5.4,
+      "penetration": "high",
+      "reloadTime": 5,
+      "equipTime": 1.25,
+      "movementSpreadMult": 7,
+      "spread": {
+        "base": 0,
+        "perShot": 0.1,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0.5
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            1.5
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            2.5
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            3.5
+          ],
+          [
+            -0.376,
+            3.625
+          ],
+          [
+            -0.387,
+            3.75
+          ],
+          [
+            -0.031,
+            3.875
+          ],
+          [
+            0.588,
+            4
+          ],
+          [
+            1.286,
+            4.125
+          ],
+          [
+            1.859,
+            4.25
+          ],
+          [
+            2.137,
+            4.375
+          ],
+          [
+            2.037,
+            4.5
+          ],
+          [
+            1.591,
+            4.625
+          ],
+          [
+            0.928,
+            4.75
+          ],
+          [
+            0.245,
+            4.875
+          ],
+          [
+            -0.257,
+            5
+          ],
+          [
+            -0.43,
+            5.125
+          ],
+          [
+            -0.222,
+            5.25
+          ],
+          [
+            0.304,
+            5.375
+          ],
+          [
+            0.994,
+            5.5
+          ],
+          [
+            1.644,
+            5.625
+          ],
+          [
+            2.062,
+            5.75
+          ],
+          [
+            2.126,
+            5.875
+          ],
+          [
+            1.816,
+            6
+          ],
+          [
+            1.224,
+            6.125
+          ],
+          [
+            0.524,
+            6.25
+          ],
+          [
+            -0.077,
+            6.375
+          ],
+          [
+            -0.402,
+            6.5
+          ],
+          [
+            -0.355,
+            6.625
+          ],
+          [
+            0.05,
+            6.75
+          ],
+          [
+            0.694,
+            6.875
+          ],
+          [
+            1.386,
+            7
+          ],
+          [
+            1.923,
+            7
+          ],
+          [
+            2.146,
+            7
+          ],
+          [
+            1.99,
+            7
+          ],
+          [
+            1.5,
+            7
+          ],
+          [
+            0.82,
+            7
+          ],
+          [
+            0.153,
+            7
+          ],
+          [
+            -0.307,
+            7
+          ],
+          [
+            -0.422,
+            7
+          ],
+          [
+            -0.16,
+            7
+          ],
+          [
+            0.403,
+            7
+          ],
+          [
+            1.1,
+            7
+          ],
+          [
+            1.726,
+            7
+          ],
+          [
+            2.097,
+            7
+          ],
+          [
+            2.102,
+            7
+          ],
+          [
+            1.741,
+            7
+          ],
+          [
+            1.119,
+            7
+          ],
+          [
+            0.421,
+            7
+          ],
+          [
+            -0.148,
+            7
+          ],
+          [
+            -0.42,
+            7
+          ],
+          [
+            -0.315,
+            7
+          ],
+          [
+            0.137,
+            7
+          ],
+          [
+            0.801,
+            7
+          ],
+          [
+            1.483,
+            7
+          ],
+          [
+            1.98,
+            7
+          ],
+          [
+            2.147,
+            7
+          ],
+          [
+            1.934,
+            7
+          ],
+          [
+            1.404,
+            7
+          ],
+          [
+            0.713,
+            7
+          ],
+          [
+            0.065,
+            7
+          ],
+          [
+            -0.349,
+            7
+          ],
+          [
+            -0.406,
+            7
+          ],
+          [
+            -0.09,
+            7
+          ],
+          [
+            0.505,
+            7
+          ],
+          [
+            1.205,
+            7
+          ],
+          [
+            1.803,
+            7
+          ],
+          [
+            2.122,
+            7
+          ],
+          [
+            2.069,
+            7
+          ],
+          [
+            1.659,
+            7
+          ],
+          [
+            1.013,
+            7
+          ],
+          [
+            0.321,
+            7
+          ],
+          [
+            -0.212,
+            7
+          ],
+          [
+            -0.429,
+            7
+          ],
+          [
+            -0.266,
+            7
+          ],
+          [
+            0.228,
+            7
+          ],
+          [
+            0.909,
+            7
+          ],
+          [
+            1.575,
+            7
+          ],
+          [
+            2.029,
+            7
+          ],
+          [
+            2.139,
+            7
+          ],
+          [
+            1.871,
+            7
+          ],
+          [
+            1.304,
+            7
+          ],
+          [
+            0.607,
+            7
+          ],
+          [
+            -0.017,
+            7
+          ],
+          [
+            -0.382,
+            7
+          ],
+          [
+            -0.381,
+            7
+          ],
+          [
+            -0.014,
+            7
+          ],
+          [
+            0.61,
+            7
+          ],
+          [
+            1.308,
+            7
+          ],
+          [
+            1.873,
+            7
+          ],
+          [
+            2.139,
+            7
+          ],
+          [
+            2.028,
+            7
+          ],
+          [
+            1.572,
+            7
+          ],
+          [
+            0.905,
+            7
+          ],
+          [
+            0.225,
+            7
+          ],
+          [
+            -0.268,
+            7
+          ]
+        ],
+        "cameraPunch": 0.6,
+        "shake": 0.5
+      },
+      "ads": {
+        "zoom": 1.25,
+        "accuracyBonus": 0.3,
+        "fireRateMult": 1,
+        "moveSpeedMult": 0.6
+      },
+      "burst": null,
+      "altFire": null,
+      "spinUp": {
+        "startRate": 10,
+        "endRate": 13,
+        "time": 1
+      },
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#6B6F75"
+    },
+    {
+      "id": "knife",
+      "name": "Tactical knife",
+      "class": "melee",
+      "cost": 0,
+      "fireRate": 1.33,
+      "fireMode": "semi",
+      "magazine": 0,
+      "reserveAmmo": 0,
+      "damage": {
+        "body": 50,
+        "headMult": 1,
+        "legMult": 0.85,
+        "pellets": 1,
+        "falloff": [
+          {
+            "range": 0,
+            "multiplier": 1
+          }
+        ]
+      },
+      "runSpeed": 6.75,
+      "penetration": "low",
+      "reloadTime": 0,
+      "equipTime": 0.5,
+      "movementSpreadMult": 1,
+      "spread": {
+        "base": 0,
+        "perShot": 0,
+        "max": 4,
+        "recoveryDelay": 0.35,
+        "recoveryRate": 8
+      },
+      "recoil": {
+        "pattern": [
+          [
+            0,
+            0
+          ]
+        ],
+        "cameraPunch": 0.3,
+        "shake": 0.1
+      },
+      "ads": null,
+      "burst": null,
+      "altFire": {
+        "type": "heavy",
+        "damage": 75,
+        "interval": 1,
+        "range": 1.8
+      },
+      "spinUp": null,
+      "tagSlow": {
+        "amount": 0.7,
+        "duration": 0.2
+      },
+      "silenced": false,
+      "accentColor": "#9AA3AA",
+      "meleeRange": 2
+    }
+  ]
+}

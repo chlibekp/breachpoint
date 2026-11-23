@@ -1,0 +1,22 @@
+{
+  "$schema": "../schemas/economy.schema.json",
+  "version": 1,
+  "startCredits": 800,
+  "maxCredits": 9000,
+  "killReward": 200,
+  "roundWin": 3000,
+  "roundLossStreak": [1900, 2400, 2900],
+  "plantTeamReward": 300,
+  "shields": [
+    { "id": "light_shield", "name": "Light Shield", "cost": 400, "amount": 25, "absorb": 0.66 },
+    { "id": "heavy_shield", "name": "Heavy Shield", "cost": 1000, "amount": 50, "absorb": 0.66 }
+  ],
+  "ultimatePoints": {
+    "kill": 1,
+    "death": 1,
+    "plant": 1,
+    "defuse": 1,
+    "riftOrb": 1,
+    "riftOrbsPerMap": 2
+  }
+}

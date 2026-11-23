@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.log
+.env
+# Godot
+client/.godot/
+client/build/
+client/*.translation
+*.tmp
+# local build outputs
+build/
+qa/screens/**/*.tmp

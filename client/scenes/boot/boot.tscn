@@ -1,0 +1,134 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/boot/boot.gd" id="1_boot"]
+[ext_resource type="Shader" path="res://shaders/ui/menu_backdrop.gdshader" id="2_bg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
+shader = ExtResource("2_bg")
+
+[node name="Boot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_boot")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_bg")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 112
+theme_override_constants/margin_top = 88
+theme_override_constants/margin_right = 112
+theme_override_constants/margin_bottom = 72
+
+[node name="Columns" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 72
+
+[node name="Left" type="VBoxContainer" parent="Margin/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="Kicker" type="Label" parent="Margin/Columns/Left"]
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+text = "PRISM TASK FORCE  //  FIELD BUILD"
+
+[node name="Title" type="Label" parent="Margin/Columns/Left"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "BREACHPOINT"
+
+[node name="AccentBar" type="Panel" parent="Margin/Columns/Left"]
+custom_minimum_size = Vector2(140, 6)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"AccentBar"
+
+[node name="Tagline" type="Label" parent="Margin/Columns/Left"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+text = "5V5 TACTICAL  ·  MILESTONE 1 — FOUNDATIONS"
+
+[node name="Blurb" type="Label" parent="Margin/Columns/Left"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"MutedLabel"
+text = "One project, two renderers: Forward+ on desktop, WebGL2 Compatibility in the browser. Shared, schema-validated data and a generated binary protocol keep the client and the authoritative 64 Hz server in lockstep."
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="Margin/Columns/Left"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Margin/Columns/Left"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ConnectButton" type="Button" parent="Margin/Columns/Left/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "CONNECT"
+
+[node name="LightmapButton" type="Button" parent="Margin/Columns/Left/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "LIGHTMAP TEST"
+
+[node name="QuitButton" type="Button" parent="Margin/Columns/Left/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "QUIT"
+
+[node name="Version" type="Label" parent="Margin/Columns/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "version"
+
+[node name="Panel" type="PanelContainer" parent="Margin/Columns"]
+custom_minimum_size = Vector2(700, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="VBox" type="VBoxContainer" parent="Margin/Columns/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="Label" parent="Margin/Columns/Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLarge"
+text = "SYSTEMS CHECK"
+
+[node name="Sub" type="Label" parent="Margin/Columns/Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Live diagnostics for the foundations milestone."
+
+[node name="Gap" type="Control" parent="Margin/Columns/Panel/VBox"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="Rows" type="VBoxContainer" parent="Margin/Columns/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6

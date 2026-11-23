@@ -1,0 +1,20 @@
+{
+  "$schema": "../schemas/movement.schema.json",
+  "version": 1,
+  "tickRate": 64,
+  "runSpeed": 6.75,
+  "walkSpeed": 3.0,
+  "crouchSpeed": 2.4,
+  "crouchTransitionTime": 0.12,
+  "accelerationTime": 0.15,
+  "decelerationTime": 0.1,
+  "airAcceleration": 2.0,
+  "jumpHeight": 1.0,
+  "gravity": 20.0,
+  "landingSlow": { "multiplier": 0.5, "duration": 0.25 },
+  "stepHeight": 0.4,
+  "maxSlopeDegrees": 45,
+  "standingAccuracyThreshold": 0.2,
+  "capsule": { "radius": 0.3, "height": 1.8, "crouchHeight": 1.2, "eyeHeight": 1.62, "crouchEyeHeight": 1.05 },
+  "footstepHearingRange": 40
+}

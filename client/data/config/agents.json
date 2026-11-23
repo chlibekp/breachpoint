@@ -1,0 +1,100 @@
+{
+  "$schema": "../schemas/agents.schema.json",
+  "version": 1,
+  "roles": [
+    { "id": "vanguard", "name": "Vanguard", "description": "Entry fraggers who create space." },
+    { "id": "shroud", "name": "Shroud", "description": "Vision control: smokes and walls." },
+    { "id": "seeker", "name": "Seeker", "description": "Information: scans, flashes and reveals." },
+    { "id": "warden", "name": "Warden", "description": "Site anchors: traps, slows and healing." }
+  ],
+  "agents": [
+    {
+      "id": "kestrel", "name": "KESTREL", "role": "vanguard", "origin": "Norway",
+      "bio": "Ex-rescue pilot.", "signatureColor": "#FF7A1A",
+      "silhouette": "Cropped flight jacket, tall collar, shoulder-mounted thruster pack.",
+      "abilities": [
+        { "slot": "C", "id": "updraft", "name": "Updraft", "castType": "instant", "cost": 150, "charges": 2, "castTime": 0.15, "params": { "height": 3.0 } },
+        { "slot": "Q", "id": "flare_round", "name": "Flare Round", "castType": "throwable", "cost": 250, "charges": 2, "castTime": 0.2, "params": { "popDelay": 0.6, "blindDuration": 1.5, "bounces": 1 } },
+        { "slot": "E", "id": "slipstream", "name": "Slipstream", "castType": "instant", "cost": 0, "charges": 1, "castTime": 0.05, "recharge": { "type": "kills", "amount": 2 }, "params": { "distance": 5.0 } },
+        { "slot": "X", "id": "talon_barrage", "name": "Talon Barrage", "castType": "aimed", "cost": 0, "ultPoints": 7, "charges": 1, "castTime": 0.4, "params": { "blades": 5, "oneShotBodyRange": 15, "damage": 150, "refundOnKill": true } }
+      ]
+    },
+    {
+      "id": "mamba", "name": "MAMBA", "role": "vanguard", "origin": "Kenya",
+      "bio": "Street racer turned Rift runner.", "signatureColor": "#9BE22B",
+      "silhouette": "Hooded racing suit, glowing visor, sleek knee guards.",
+      "abilities": [
+        { "slot": "C", "id": "burnout", "name": "Burnout", "castType": "aimed", "cost": 200, "charges": 1, "castTime": 0.3, "params": { "duration": 4, "dps": 30, "length": 8 } },
+        { "slot": "Q", "id": "afterimage", "name": "Afterimage", "castType": "aimed", "cost": 250, "charges": 1, "castTime": 0.3, "params": { "speed": 6.75, "lifetime": 3, "blindDuration": 1.25 } },
+        { "slot": "E", "id": "gearshift", "name": "Gearshift", "castType": "instant", "cost": 0, "charges": 1, "castTime": 0.05, "recharge": { "type": "timer", "amount": 30 }, "params": { "duration": 2, "speedMult": 1.3, "silent": true } },
+        { "slot": "X", "id": "redline", "name": "Redline", "castType": "instant", "cost": 0, "ultPoints": 7, "charges": 1, "castTime": 0.5, "params": { "duration": 10, "reloadMult": 0.6, "equipMult": 0.6, "healOnKill": 50 } }
+      ]
+    },
+    {
+      "id": "vesper", "name": "VESPER", "role": "shroud", "origin": "France",
+      "bio": "Astronomer.", "signatureColor": "#6B3FD6",
+      "silhouette": "Long tailored coat, star-chart cape, floating orrery.",
+      "abilities": [
+        { "slot": "C", "id": "eclipse_veil", "name": "Eclipse Veil", "castType": "placeable", "cost": 300, "charges": 1, "castTime": 0.5, "params": { "maxLength": 18, "duration": 12, "placement": "map" } },
+        { "slot": "Q", "id": "nebula_mine", "name": "Nebula Mine", "castType": "throwable", "cost": 150, "charges": 2, "castTime": 0.25, "params": { "slowMult": 0.5, "slowDuration": 2, "radius": 3 } },
+        { "slot": "E", "id": "starfall", "name": "Starfall", "castType": "placeable", "cost": 0, "charges": 3, "castTime": 0.6, "recharge": { "type": "timer", "amount": 40 }, "params": { "duration": 15, "radius": 4.1, "placement": "map" } },
+        { "slot": "X", "id": "gravity_well", "name": "Gravity Well", "castType": "placeable", "cost": 0, "ultPoints": 7, "charges": 1, "castTime": 1.0, "params": { "radius": 12, "duration": 4, "pullStrength": 4, "slowMult": 0.5 } }
+      ]
+    },
+    {
+      "id": "haldor", "name": "HALDOR", "role": "shroud", "origin": "Iceland",
+      "bio": "Geothermal engineer.", "signatureColor": "#E8E4DC",
+      "silhouette": "Bulky heat-suit, exhaust stacks on the back, gauntlet nozzle.",
+      "abilities": [
+        { "slot": "C", "id": "vent", "name": "Vent", "castType": "throwable", "cost": 200, "charges": 1, "castTime": 0.3, "params": { "duration": 8, "radius": 3, "muffle": 0.6 } },
+        { "slot": "Q", "id": "basalt_pillar", "name": "Basalt Pillar", "castType": "placeable", "cost": 300, "charges": 1, "castTime": 0.8, "params": { "height": 2, "health": 800 } },
+        { "slot": "E", "id": "geyser_smoke", "name": "Geyser Smoke", "castType": "throwable", "cost": 0, "charges": 2, "castTime": 0.4, "recharge": { "type": "timer", "amount": 35 }, "params": { "duration": 14, "radius": 4.1 } },
+        { "slot": "X", "id": "eruption", "name": "Eruption", "castType": "aimed", "cost": 0, "ultPoints": 8, "charges": 1, "castTime": 1.0, "params": { "blasts": 3, "delay": 0.8, "damage": 120, "radius": 4, "smokeDuration": 6 } }
+      ]
+    },
+    {
+      "id": "orin", "name": "ORIN", "role": "seeker", "origin": "Australia",
+      "bio": "Outback tracker.", "signatureColor": "#C8913A",
+      "silhouette": "Wide-brim hat, poncho, mechanical hawk drone.",
+      "abilities": [
+        { "slot": "C", "id": "hawk", "name": "Hawk", "castType": "instant", "cost": 300, "charges": 1, "castTime": 0.5, "params": { "duration": 7, "speed": 7, "dartRevealDuration": 3 } },
+        { "slot": "Q", "id": "dust_burst", "name": "Dust Burst", "castType": "throwable", "cost": 250, "charges": 2, "castTime": 0.3, "params": { "coneDegrees": 70, "range": 15, "blindDuration": 1.75 } },
+        { "slot": "E", "id": "echo_arrow", "name": "Echo Arrow", "castType": "aimed", "cost": 0, "charges": 1, "castTime": 0.6, "recharge": { "type": "timer", "amount": 40 }, "params": { "bounces": 2, "pulses": 2, "radius": 30 } },
+        { "slot": "X", "id": "apex_hunt", "name": "Apex Hunt", "castType": "instant", "cost": 0, "ultPoints": 8, "charges": 1, "castTime": 1.0, "params": { "pulses": 3, "duration": 6 } }
+      ]
+    },
+    {
+      "id": "sable", "name": "SABLE", "role": "seeker", "origin": "South Korea",
+      "bio": "Signal hacker.", "signatureColor": "#2F8CFF",
+      "silhouette": "Oversized jacket, cables, holographic tablet; white trim separates her from ally cyan.",
+      "abilities": [
+        { "slot": "C", "id": "tripwire_trace", "name": "Tripwire Trace", "castType": "placeable", "cost": 200, "charges": 2, "castTime": 0.5, "params": { "maxLength": 8, "slowMult": 0.5, "revealDuration": 3 } },
+        { "slot": "Q", "id": "static", "name": "Static", "castType": "aimed", "cost": 250, "charges": 2, "castTime": 0.4, "params": { "nearsightDuration": 2.5, "radius": 6 } },
+        { "slot": "E", "id": "ping", "name": "Ping", "castType": "placeable", "cost": 0, "charges": 1, "castTime": 0.5, "recharge": { "type": "timer", "amount": 45 }, "params": { "radius": 10, "interval": 3 } },
+        { "slot": "X", "id": "blackout", "name": "Blackout", "castType": "instant", "cost": 0, "ultPoints": 7, "charges": 1, "castTime": 0.8, "params": { "duration": 8 } }
+      ]
+    },
+    {
+      "id": "imani", "name": "IMANI", "role": "warden", "origin": "Nigeria",
+      "bio": "Combat medic.", "signatureColor": "#F2B632",
+      "silhouette": "Field medic armour, glowing medkit backpack, braided hair with beads.",
+      "abilities": [
+        { "slot": "C", "id": "barricade", "name": "Barricade", "castType": "placeable", "cost": 400, "charges": 1, "castTime": 0.6, "params": { "health": 1000, "deployTime": 3.6, "width": 8 } },
+        { "slot": "Q", "id": "mend", "name": "Mend", "castType": "aimed", "cost": 0, "charges": 1, "castTime": 0.2, "recharge": { "type": "timer", "amount": 35 }, "params": { "heal": 60, "duration": 3, "selfRateMult": 0.5 } },
+        { "slot": "E", "id": "lattice", "name": "Lattice", "castType": "throwable", "cost": 200, "charges": 2, "castTime": 0.3, "params": { "slowMult": 0.5, "radius": 6, "duration": 4 } },
+        { "slot": "X", "id": "second_wind", "name": "Second Wind", "castType": "aimed", "cost": 0, "ultPoints": 8, "charges": 1, "castTime": 1.4, "params": { "reviveHealth": 100 } }
+      ]
+    },
+    {
+      "id": "tomas", "name": "TOMAS", "role": "warden", "origin": "Chile",
+      "bio": "Mining engineer.", "signatureColor": "#C8743A",
+      "silhouette": "Hard hat with goggles, tool belt, mechanical arm.",
+      "abilities": [
+        { "slot": "C", "id": "proximity_charge", "name": "Proximity Charge", "castType": "placeable", "cost": 200, "charges": 1, "castTime": 0.5, "params": { "tetherDuration": 1.5, "damage": 40, "slowMult": 0.6 } },
+        { "slot": "Q", "id": "sentry_drill", "name": "Sentry Drill", "castType": "placeable", "cost": 300, "charges": 1, "castTime": 0.6, "params": { "dps": 15, "slowMult": 0.8, "health": 125, "range": 20 } },
+        { "slot": "E", "id": "alarm_spike", "name": "Alarm Spike", "castType": "placeable", "cost": 0, "charges": 1, "castTime": 0.5, "recharge": { "type": "timer", "amount": 0 }, "params": { "revealDuration": 4, "vulnerableMult": 2, "triggerRadius": 5 } },
+        { "slot": "X", "id": "lockdown", "name": "Lockdown", "castType": "placeable", "cost": 0, "ultPoints": 8, "charges": 1, "castTime": 1.0, "params": { "radius": 32, "warmup": 13, "detainDuration": 8 } }
+      ]
+    }
+  ]
+}

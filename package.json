@@ -1,0 +1,39 @@
+{
+  "name": "breachpoint",
+  "private": true,
+  "version": "0.1.0",
+  "description": "BREACHPOINT — 5v5 tactical hero shooter monorepo (Godot client, Node.js authoritative server, shared data).",
+  "type": "module",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "workspaces": [
+    "shared",
+    "server"
+  ],
+  "scripts": {
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc -p shared && tsc -p server",
+    "test": "vitest run",
+    "validate:config": "tsx shared/scripts/validate-config.ts",
+    "protocol:gen": "tsx shared/protocol/generate.ts",
+    "protocol:vectors": "tsx shared/scripts/make-protocol-vectors.ts",
+    "sync:client": "tsx tools/sync-client-data.ts",
+    "check:generated": "npm run protocol:gen && npm run sync:client && test -z \"$(git status --porcelain -- shared/protocol/generated client/scripts/net/generated client/data client/tests/data)\"",
+    "server:dev": "tsx server/src/main.ts",
+    "godot:test": "bash tools/godot.sh --headless --path client -s res://tests/run_tests.gd",
+    "ci": "npm run lint && npm run typecheck && npm run validate:config && npm test && npm run check:generated"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.19.1",
+    "@types/ws": "^8.18.1",
+    "eslint": "^9.39.1",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.47.0",
+    "vitest": "^3.2.4"
+  }
+}

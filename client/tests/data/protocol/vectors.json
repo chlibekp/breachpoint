@@ -1,0 +1,280 @@
+{
+  "comment": "Golden protocol vectors. Regenerate with npm run protocol:vectors.",
+  "vectors": [
+    {
+      "message": {
+        "type": "Hello",
+        "protocolVersion": 1,
+        "token": "guest:κestrel-01",
+        "platform": "web"
+      },
+      "hex": "010100110067756573743aceba65737472656c2d30310300776562"
+    },
+    {
+      "message": {
+        "type": "AuthOk",
+        "playerId": 3,
+        "displayName": "Petr#1234",
+        "serverTick": 123456
+      },
+      "hex": "0203090050657472233132333440e20100"
+    },
+    {
+      "message": {
+        "type": "JoinMatch",
+        "ticket": "tkt_abc"
+      },
+      "hex": "030700746b745f616263"
+    },
+    {
+      "message": {
+        "type": "MatchState",
+        "matchId": "m-0001",
+        "map": "solstice",
+        "seed": 3735928559,
+        "roster": [
+          {
+            "playerId": 0,
+            "name": "Alpha",
+            "team": 0,
+            "agent": "kestrel"
+          },
+          {
+            "playerId": 5,
+            "name": "Bravo",
+            "team": 1,
+            "agent": "vesper"
+          }
+        ]
+      },
+      "hex": "0406006d2d303030310800736f6c7374696365efbeadde0200000500416c7068610007006b65737472656c050500427261766f010600766573706572"
+    },
+    {
+      "message": {
+        "type": "Input",
+        "ackSnapshot": 9001,
+        "cmds": [
+          {
+            "seq": 41,
+            "tick": 1000,
+            "buttons": 11,
+            "yaw": 1.25,
+            "pitch": -0.3,
+            "weaponSlot": 1
+          },
+          {
+            "seq": 42,
+            "tick": 1001,
+            "buttons": 9,
+            "yaw": -2.75,
+            "pitch": 0.125,
+            "weaponSlot": 1
+          }
+        ]
+      },
+      "hex": "0529230000020029000000e80300000b000000ee32c7f3012a000000e903000009000000f48f180501"
+    },
+    {
+      "message": {
+        "type": "Snapshot",
+        "tick": 1002,
+        "baseTick": 998,
+        "lastProcessedSeq": 42,
+        "players": [
+          {
+            "playerId": 1,
+            "pos": {
+              "x": 12.345,
+              "y": 0.25,
+              "z": -48.75
+            },
+            "vel": {
+              "x": 6.75,
+              "y": -3.125,
+              "z": 0
+            },
+            "yaw": 3,
+            "pitch": -1.2,
+            "flags": 261,
+            "health": 100,
+            "shield": 50,
+            "weapon": 11
+          }
+        ]
+      },
+      "hex": "06ea030000e60300002a00000001000139300000fa0000009241ffff5e1acbf300003b7a1ccf050164320b"
+    },
+    {
+      "message": {
+        "type": "Fire",
+        "seq": 7,
+        "tick": 1003,
+        "interpTimeMs": 47,
+        "origin": {
+          "x": 1.125,
+          "y": 1.62,
+          "z": -3.5
+        },
+        "yaw": 0.5,
+        "pitch": 0.05,
+        "weapon": 11
+      },
+      "hex": "0707000000eb0300002f00650400005406000054f2ffff5f140a020b"
+    },
+    {
+      "message": {
+        "type": "HitConfirm",
+        "shotSeq": 7,
+        "victimId": 6,
+        "hitZone": 0,
+        "damage": 160
+      },
+      "hex": "08070000000600a0"
+    },
+    {
+      "message": {
+        "type": "Damage",
+        "attackerId": 1,
+        "victimId": 6,
+        "amount": 40,
+        "hitZone": 1,
+        "fromPos": {
+          "x": -7.25,
+          "y": 1.5,
+          "z": 22
+        }
+      },
+      "hex": "0901062801aee3ffffdc050000f0550000"
+    },
+    {
+      "message": {
+        "type": "Kill",
+        "killerId": 1,
+        "victimId": 6,
+        "assisterIds": [
+          2,
+          4
+        ],
+        "weapon": "saber",
+        "headshot": true,
+        "wallbang": false
+      },
+      "hex": "0a010602000204050073616265720100"
+    },
+    {
+      "message": {
+        "type": "AbilityCast",
+        "seq": 3,
+        "tick": 1100,
+        "slot": 2,
+        "target": {
+          "x": 4,
+          "y": 0,
+          "z": 8.5
+        },
+        "yaw": -0.75,
+        "pitch": 0.2
+      },
+      "hex": "0b030000004c04000002a00f0000000000003421000071e12608"
+    },
+    {
+      "message": {
+        "type": "AbilityEvent",
+        "casterId": 2,
+        "ability": "starfall",
+        "event": 1,
+        "pos": {
+          "x": 4,
+          "y": 0,
+          "z": 8.5
+        },
+        "data": {
+          "$bytes": "010203fa"
+        }
+      },
+      "hex": "0c0208007374617266616c6c01a00f000000000000342100000400010203fa"
+    },
+    {
+      "message": {
+        "type": "BuyRequest",
+        "item": "saber"
+      },
+      "hex": "0d05007361626572"
+    },
+    {
+      "message": {
+        "type": "BuyResult",
+        "item": "saber",
+        "ok": false,
+        "credits": 2100,
+        "reason": "insufficient_credits"
+      },
+      "hex": "0e050073616265720034081400696e73756666696369656e745f63726564697473"
+    },
+    {
+      "message": {
+        "type": "PlantStart",
+        "playerId": 3,
+        "site": 1,
+        "pos": {
+          "x": 30.5,
+          "y": 0.1,
+          "z": -12.25
+        }
+      },
+      "hex": "0f0301247700006400000026d0ffff"
+    },
+    {
+      "message": {
+        "type": "DefuseStart",
+        "playerId": 7,
+        "resumeFromCheckpoint": true
+      },
+      "hex": "100701"
+    },
+    {
+      "message": {
+        "type": "RoundPhase",
+        "round": 13,
+        "phase": 2,
+        "endsAtTick": 64000,
+        "scoreAttack": 6,
+        "scoreDefense": 6
+      },
+      "hex": "110d0200fa00000606"
+    },
+    {
+      "message": {
+        "type": "Chat",
+        "playerId": 2,
+        "teamOnly": true,
+        "text": "Rotate B — smoke going out"
+      },
+      "hex": "1202011c00526f74617465204220e2809420736d6f6b6520676f696e67206f7574"
+    },
+    {
+      "message": {
+        "type": "Ping",
+        "nonce": 77,
+        "clientTimeMs": 1234.5
+      },
+      "hex": "134d00000000509a44"
+    },
+    {
+      "message": {
+        "type": "Pong",
+        "nonce": 77,
+        "clientTimeMs": 1234.5,
+        "serverTick": 4242
+      },
+      "hex": "144d00000000509a4492100000"
+    },
+    {
+      "message": {
+        "type": "Disconnect",
+        "reason": "server_shutdown"
+      },
+      "hex": "150f007365727665725f73687574646f776e"
+    }
+  ]
+}

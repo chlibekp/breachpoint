@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weapons.schema.json",
+  "type": "object",
+  "required": ["version", "weapons"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "integer", "minimum": 1 },
+    "weapons": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/weapon" } }
+  },
+  "$defs": {
+    "vec2": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+    "falloffStep": {
+      "type": "object", "additionalProperties": false, "required": ["range", "multiplier"],
+      "properties": { "range": { "type": "number", "minimum": 0 }, "multiplier": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 } }
+    },
+    "weapon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "class", "cost", "fireRate", "fireMode", "magazine", "reserveAmmo", "damage", "runSpeed", "penetration", "reloadTime", "equipTime", "movementSpreadMult", "spread", "recoil", "ads", "burst", "altFire", "spinUp", "tagSlow", "silenced", "accentColor"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "class": { "enum": ["sidearm", "smg", "shotgun", "rifle", "sniper", "heavy", "melee"] },
+        "cost": { "type": "integer", "minimum": 0, "maximum": 9000 },
+        "fireRate": { "type": "number", "exclusiveMinimum": 0 },
+        "fireMode": { "enum": ["semi", "auto", "burst"] },
+        "magazine": { "type": "integer", "minimum": 0 },
+        "reserveAmmo": { "type": "integer", "minimum": 0 },
+        "meleeRange": { "type": "number", "exclusiveMinimum": 0 },
+        "damage": {
+          "type": "object", "additionalProperties": false, "required": ["body", "headMult", "legMult", "pellets", "falloff"],
+          "properties": {
+            "body": { "type": "number", "exclusiveMinimum": 0 },
+            "headMult": { "type": "number", "minimum": 1 },
+            "legMult": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            "pellets": { "type": "integer", "minimum": 1 },
+            "falloff": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/falloffStep" } }
+          }
+        },
+        "runSpeed": { "type": "number", "minimum": 1, "maximum": 10 },
+        "penetration": { "enum": ["low", "medium", "high"] },
+        "reloadTime": { "type": "number", "minimum": 0 },
+        "equipTime": { "type": "number", "minimum": 0 },
+        "movementSpreadMult": { "type": "number", "minimum": 0 },
+        "spread": {
+          "type": "object", "additionalProperties": false, "required": ["base", "perShot", "max", "recoveryDelay", "recoveryRate"],
+          "properties": {
+            "base": { "type": "number", "minimum": 0 }, "perShot": { "type": "number", "minimum": 0 }, "max": { "type": "number", "minimum": 0 },
+            "recoveryDelay": { "type": "number", "minimum": 0 }, "recoveryRate": { "type": "number", "minimum": 0 }
+          }
+        },
+        "recoil": {
+          "type": "object", "additionalProperties": false, "required": ["pattern", "cameraPunch", "shake"],
+          "properties": {
+            "pattern": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/vec2" } },
+            "cameraPunch": { "type": "number", "minimum": 0 }, "shake": { "type": "number", "minimum": 0 }
+          }
+        },
+        "ads": {
+          "type": ["object", "null"], "additionalProperties": false, "required": ["zoom", "accuracyBonus", "fireRateMult", "moveSpeedMult"],
+          "properties": {
+            "zoom": { "type": "number", "minimum": 1 }, "zoomLevels": { "type": "array", "items": { "type": "number", "minimum": 1 } },
+            "accuracyBonus": { "type": "number", "minimum": 0, "maximum": 1 }, "fireRateMult": { "type": "number", "exclusiveMinimum": 0 },
+            "moveSpeedMult": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }, "scoped": { "type": "boolean" },
+            "unscopedSpread": { "type": "number", "minimum": 0 }, "adsBurstOverride": { "enum": ["semi", "auto", "burst"] }
+          }
+        },
+        "burst": {
+          "type": ["object", "null"], "additionalProperties": false, "required": ["count", "interval"],
+          "properties": { "count": { "type": "integer", "minimum": 2 }, "interval": { "type": "number", "exclusiveMinimum": 0 } }
+        },
+        "altFire": {
+          "type": ["object", "null"], "additionalProperties": false, "required": ["type"],
+          "properties": {
+            "type": { "enum": ["burst", "heavy"] }, "count": { "type": "integer", "minimum": 2 }, "interval": { "type": "number", "exclusiveMinimum": 0 },
+            "spreadMult": { "type": "number", "minimum": 0 }, "damage": { "type": "number", "exclusiveMinimum": 0 }, "range": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "spinUp": {
+          "type": ["object", "null"], "additionalProperties": false, "required": ["startRate", "endRate", "time"],
+          "properties": { "startRate": { "type": "number", "exclusiveMinimum": 0 }, "endRate": { "type": "number", "exclusiveMinimum": 0 }, "time": { "type": "number", "exclusiveMinimum": 0 } }
+        },
+        "tagSlow": {
+          "type": "object", "additionalProperties": false, "required": ["amount", "duration"],
+          "properties": { "amount": { "type": "number", "minimum": 0, "maximum": 1 }, "duration": { "type": "number", "minimum": 0 } }
+        },
+        "silenced": { "type": "boolean" },
+        "accentColor": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+      }
+    }
+  }
+}
