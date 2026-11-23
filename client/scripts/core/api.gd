@@ -71,6 +71,28 @@ func display_name() -> String:
 	return "%s#%s" % [profile.get("name", "Player"), profile.get("tag", "0000")] if not profile.is_empty() else "Offline"
 
 
+## Binary GET (replays). Returns the raw bytes, empty on failure (see last_error).
+func download(path: String) -> PackedByteArray:
+	var http := HTTPRequest.new()
+	http.timeout = 30.0
+	http.body_size_limit = 64 * 1024 * 1024
+	add_child(http)
+	var headers := PackedStringArray()
+	if access_token != "":
+		headers.append("authorization: Bearer %s" % access_token)
+	var err := http.request(base_url + path, headers, HTTPClient.METHOD_GET)
+	if err != OK:
+		http.queue_free()
+		last_error = error_string(err)
+		return PackedByteArray()
+	var res: Array = await http.request_completed
+	http.queue_free()
+	if int(res[1]) != 200:
+		last_error = "replay unavailable (%d)" % int(res[1])
+		return PackedByteArray()
+	return res[3]
+
+
 ## JSON request. Returns {ok, status, body}. Retries once after refreshing an expired access token.
 func request(method: String, path: String, body: Variant = null, auth: bool = true) -> Dictionary:
 	var http := HTTPRequest.new()

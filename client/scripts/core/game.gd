@@ -12,9 +12,12 @@ const SCENES: Dictionary = {
 	"menu": "res://scenes/menu/main_menu.tscn",
 	"online": "res://scenes/game/online.tscn",
 	"lookdev": "res://scenes/dev/lookdev.tscn",
+	"replay": "res://scenes/replay/replay_viewer.tscn",
 }
 
 var view_mode: ViewMode = ViewMode.LIT
+## Gzipped .bpr bytes handed from the Career tab to the replay viewer.
+var pending_replay := PackedByteArray()
 var _view_layer: CanvasLayer = null
 var _view_rect: ColorRect = null
 

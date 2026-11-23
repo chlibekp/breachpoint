@@ -1,12 +1,11 @@
-[gd_scene format=4]
+[gd_scene format=4 uid="uid://bxkbgtnh768b4"]
 
-[ext_resource type="Script" path="res://scripts/maps/map_runtime.gd" id="bp_root_script"]
-
-[ext_resource type="FontFile" path="res://assets/fonts/ChakraPetch-Bold.ttf" id="1_7pajv"]
-[ext_resource type="Shader" path="res://shaders/master/M_RiftEnergy.gdshader" id="2_xgv2o"]
-[ext_resource type="Shader" path="res://shaders/master/M_Hologram.gdshader" id="3_mhrdr"]
-[ext_resource type="Shader" path="res://shaders/sky/S_Stylized.gdshader" id="4_p4426"]
+[ext_resource type="FontFile" uid="uid://b7gjbl51pboup" path="res://assets/fonts/ChakraPetch-Bold.ttf" id="1_7pajv"]
+[ext_resource type="Shader" uid="uid://dt8vh03ihpcc1" path="res://shaders/master/M_RiftEnergy.gdshader" id="2_xgv2o"]
+[ext_resource type="Shader" uid="uid://ddhnjxl1cu7l2" path="res://shaders/master/M_Hologram.gdshader" id="3_mhrdr"]
+[ext_resource type="Shader" uid="uid://cp43yxm0s3g1k" path="res://shaders/sky/S_Stylized.gdshader" id="4_p4426"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/neon/meshes/SM_neon_asphalt.res" id="5_wjp3c"]
+[ext_resource type="LightmapGIData" uid="uid://dqw6kvbi0nlxk" path="res://scenes/maps/neon.lmbake" id="6_mhrdr"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/neon/meshes/SM_neon_vista_concrete.res" id="6_nyxmb"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/neon/meshes/SM_neon_plaster.res" id="7_beby7"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/neon/meshes/SM_neon_trim.res" id="8_tgu3h"]
@@ -29,16 +28,17 @@
 [ext_resource type="ArrayMesh" path="res://assets/maps/neon/meshes/SM_neon_wood.res" id="25_m8pr1"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/neon/meshes/SM_neon_iron.res" id="26_2yyk2"]
 [ext_resource type="ArrayMesh" path="res://assets/maps/neon/meshes/SM_neon_vista_window.res" id="27_mvenb"]
+[ext_resource type="Script" uid="uid://bjjpek3imclqb" path="res://scripts/maps/map_runtime.gd" id="bp_root_script"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2rxs1"]
 render_priority = 0
 shader = ExtResource("2_xgv2o")
 shader_parameter/core_color = Color(0.47843137, 0.29803923, 1, 1)
 shader_parameter/edge_color = Color(0.21960784, 0.88235295, 1, 1)
-shader_parameter/energy = null
-shader_parameter/scroll_speed = null
-shader_parameter/noise_scale = null
-shader_parameter/fresnel_power = null
+shader_parameter/energy = 1.6
+shader_parameter/scroll_speed = 0.25
+shader_parameter/noise_scale = 2.0
+shader_parameter/fresnel_power = 2.5
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_a52fs"]
 _surfaces = [{
@@ -56,7 +56,7 @@ _surfaces = [{
 render_priority = 0
 shader = ExtResource("3_mhrdr")
 shader_parameter/color = Color(1, 0.24705882, 0.6431373, 1)
-shader_parameter/energy = null
+shader_parameter/energy = 1.5
 shader_parameter/glitch = 0.35
 
 [sub_resource type="QuadMesh" id="QuadMesh_mdrvn"]
@@ -66,7 +66,7 @@ size = Vector2(14, 8)
 render_priority = 0
 shader = ExtResource("3_mhrdr")
 shader_parameter/color = Color(0.21960784, 0.88235295, 1, 1)
-shader_parameter/energy = null
+shader_parameter/energy = 1.5
 shader_parameter/glitch = 0.35
 
 [sub_resource type="QuadMesh" id="QuadMesh_nrkrb"]
@@ -76,7 +76,7 @@ size = Vector2(14, 8)
 render_priority = 0
 shader = ExtResource("3_mhrdr")
 shader_parameter/color = Color(1, 0.7019608, 0.2784314, 1)
-shader_parameter/energy = null
+shader_parameter/energy = 1.5
 shader_parameter/glitch = 0.35
 
 [sub_resource type="QuadMesh" id="QuadMesh_8rdb7"]
@@ -91,8 +91,8 @@ shader_parameter/sun_color = Color(0.62352943, 0.7058824, 1, 1)
 shader_parameter/cloud_light = Color(0.2901961, 0.25882354, 0.4392157, 1)
 shader_parameter/cloud_shadow = Color(0.101960786, 0.09411765, 0.21176471, 1)
 shader_parameter/cloud_cover = 0.6
-shader_parameter/cloud_speed = null
-shader_parameter/energy = null
+shader_parameter/cloud_speed = 0.004
+shader_parameter/energy = 1.0
 
 [sub_resource type="Sky" id="Sky_piskl"]
 sky_material = SubResource("ShaderMaterial_6amcl")
@@ -1466,6 +1466,7 @@ shadow_enabled = true
 quality = 0
 bounces = 2
 texel_scale = 0.8
+light_data = ExtResource("6_mhrdr")
 
 [node name="Rain" type="GPUParticles3D" parent="." unique_id=1110453874]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 10)

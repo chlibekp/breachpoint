@@ -19,6 +19,8 @@ export interface MatchResult {
     deaths: number;
     assists: number;
     score: number;
+    /** Anti-cheat review flags (server/src/match/anticheat.ts). */
+    flags?: { kind: string; value: number; samples: number }[];
   }[];
 }
 
@@ -51,6 +53,11 @@ export class StatsService {
             p.accountId ? (deltas.get(p.accountId) ?? null) : null,
           ],
         );
+        for (const f of p.accountId ? (p.flags ?? []) : [])
+          await client.query(
+            "INSERT INTO anticheat_flags(account_id, match_id, kind, value, samples) VALUES ($1,$2,$3,$4,$5)",
+            [p.accountId, r.matchId, f.kind, f.value, f.samples],
+          );
         if (p.accountId) {
           const xp = 500 + p.score / 4 + (p.team === r.winner ? 300 : 0);
           await client.query(
@@ -102,6 +109,28 @@ export class StatsService {
       );
     }
     return deltas;
+  }
+
+  /** In-game report (spec §14.3); reviewers pull the match replay by match id. */
+  async report(
+    reporterId: string,
+    target: string,
+    matchId: string | null,
+    reason: string,
+  ): Promise<void> {
+    await this.db.query(
+      "INSERT INTO reports(reporter_id, target_name, match_id, reason) VALUES ($1,$2,$3,$4)",
+      [reporterId, target.slice(0, 64), matchId?.slice(0, 64) ?? null, reason.slice(0, 200)],
+    );
+  }
+
+  /** True when the account played in the match (replay access check). */
+  async playedIn(accountId: string, matchId: string): Promise<boolean> {
+    const { rows } = await this.db.query(
+      "SELECT 1 FROM match_players WHERE account_id = $1 AND match_id = $2 LIMIT 1",
+      [accountId, matchId],
+    );
+    return rows.length > 0;
   }
 
   async history(accountId: string, limit = 20): Promise<unknown[]> {

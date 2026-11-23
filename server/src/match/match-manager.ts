@@ -29,6 +29,8 @@ export interface ManagerOptions {
   maxPlayersPerMatch: number;
   roundsToWin?: number;
   phaseScale?: number;
+  /** Where match workers write .bpr replays; omit to disable recording. */
+  replayDir?: string;
 }
 
 export class MatchManager {
@@ -94,27 +96,40 @@ export class MatchManager {
     if (h) this.post(h, { cmd: "ping", playerId, ms });
   }
 
+  /** Frees a finished match: forget its players and terminate the worker. */
+  private release(h: MatchHandle): void {
+    for (const id of h.players) this.byPlayer.delete(id);
+    h.players.clear();
+    this.matches.delete(h.id);
+    void h.worker.terminate();
+  }
+
   async stopAll(): Promise<void> {
     await Promise.all([...this.matches.values()].map((m) => m.worker.terminate()));
     this.matches.clear();
   }
 
   private create(fixedId?: string, mode = "quick", mapOverride?: string): MatchHandle {
-    const id = fixedId ?? `m-${(this.nextId++).toString().padStart(4, "0")}`;
+    // Unique across restarts: match ids key the matches table and replay files.
+    const id =
+      fixedId ?? `m-${Date.now().toString(36)}-${(this.nextId++).toString().padStart(4, "0")}`;
+    const map = mapOverride ?? this.opts.map;
     const worker = new Worker(new URL("./worker.ts", import.meta.url), {
       workerData: {
         matchId: id,
-        map: this.opts.map,
+        map,
+        mode,
         seed: Math.floor(Math.random() * 2 ** 31),
         fillBots: this.opts.fillBots,
         roundsToWin: this.opts.roundsToWin,
         phaseScale: this.opts.phaseScale,
+        replayDir: this.opts.replayDir,
       },
       execArgv: ["--import", "tsx"],
     });
     const handle: MatchHandle = {
       id,
-      map: mapOverride ?? this.opts.map,
+      map,
       mode,
       worker,
       players: new Set(),
@@ -122,6 +137,7 @@ export class MatchManager {
     worker.on("message", (m: FromWorker) => {
       if (m.type === "frame") this.deliver(m.playerId, new Uint8Array(m.bytes));
       else if (m.type === "result") this.opts.onResult?.(m.result);
+      else if (m.type === "ended") this.release(handle);
     });
     worker.on("error", (e) =>
       console.error(

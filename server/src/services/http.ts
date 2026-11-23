@@ -11,7 +11,10 @@ export interface Req {
   ip: string;
 }
 
-export type Handler = (req: Req) => Promise<{ status?: number; body: unknown }>;
+/** `raw` sends bytes as-is (e.g. replay files) instead of JSON-encoding `body`. */
+export type Handler = (
+  req: Req,
+) => Promise<{ status?: number; body: unknown; raw?: Uint8Array; contentType?: string }>;
 
 export class HttpError extends Error {
   constructor(
@@ -115,7 +118,14 @@ export class Router {
         headers: req.headers,
         ip,
       });
-      send(out.status ?? 200, out.body);
+      if (out.raw)
+        res
+          .writeHead(out.status ?? 200, {
+            "content-type": out.contentType ?? "application/octet-stream",
+            "content-length": out.raw.byteLength,
+          })
+          .end(out.raw);
+      else send(out.status ?? 200, out.body);
     } catch (e) {
       const status = (e as { status?: number }).status ?? 500;
       const code = (e as { code?: string }).code ?? "internal";

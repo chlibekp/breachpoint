@@ -7,5 +7,19 @@
   "overtime": { "winBy": 2, "swapEachRound": true, "drawVoteAfterPairs": 2 },
   "phases": { "buy": 30, "combat": 100, "postPlant": 45, "roundEnd": 7 },
   "breachCharge": { "plantTime": 4, "defuseTime": 7, "defuseCheckpoint": 3.5 },
-  "agentSelectTime": 80
+  "agentSelectTime": 80,
+  "antiCheat": {
+    "reactionMinSamples": 15,
+    "reactionMedianFlagMs": 140,
+    "reacquireGapMs": 600,
+    "snapDegrees": 25,
+    "snapWindowTicks": 3,
+    "snapMinCount": 6,
+    "snapShareOfHeadshots": 0.35,
+    "headshotMinHits": 40,
+    "headshotRatioFlag": 0.65,
+    "accuracyMinShots": 120,
+    "accuracyFlag": 0.8,
+    "maxInterpMs": 200
+  }
 }

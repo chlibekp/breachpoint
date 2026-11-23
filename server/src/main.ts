@@ -5,6 +5,7 @@ import { loadRawConfig, validateConfigs } from "@breachpoint/shared/config";
 import { Redis } from "ioredis";
 import { Gateway } from "./gateway/gateway.ts";
 import { MatchManager } from "./match/match-manager.ts";
+import { pruneReplays } from "./match/replay.ts";
 import { buildApi } from "./services/api.ts";
 import { AuthService } from "./services/auth.ts";
 import { connect, migrate } from "./services/db.ts";
@@ -31,7 +32,15 @@ const phaseScale = env("PHASE_SCALE") ? Number(env("PHASE_SCALE")) : undefined;
 const secret = env("JWT_SECRET", "dev-only-secret-change-me");
 const ticketSecret = env("TICKET_SECRET", `${secret}:tickets`);
 const publicGateway = env("PUBLIC_GATEWAY_URL", `ws://127.0.0.1:${port}`);
+const replayDir = env("REPLAY_DIR", "replays");
 const log = (o: object): void => console.log(JSON.stringify({ level: "info", ...o }));
+// Replays are kept 14 days for report review (spec §14.3).
+const prune = (): void => {
+  const removed = pruneReplays(replayDir);
+  if (removed) log({ msg: "replays pruned", removed });
+};
+prune();
+setInterval(prune, 3_600_000).unref();
 
 let social: SocialService | null = null;
 let stats: StatsService | null = null;
@@ -43,6 +52,7 @@ const manager = new MatchManager(
     map,
     fillBots,
     maxPlayersPerMatch: 10,
+    replayDir,
     ...(phaseScale ? { phaseScale } : {}),
     verifyTicket: (t) => social?.verifyTicket(t) ?? null,
     onResult: (r) => {
@@ -76,7 +86,7 @@ if (env("DATABASE_URL") && env("REDIS_URL")) {
     onReady: (lobby) => manager.createMatch(lobby.id, lobby.mode, lobby.map),
   });
   social.start();
-  await buildApi(auth, social, stats, publicGateway).listen(apiPort);
+  await buildApi(auth, social, stats, publicGateway, replayDir).listen(apiPort);
   log({ msg: "api listening", port: apiPort });
 }
 

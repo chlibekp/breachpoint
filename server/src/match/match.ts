@@ -37,6 +37,8 @@ import { FixedTickLoop } from "./fixed-tick-loop.ts";
 import { BotBrain, NavGraph, type BotGoal } from "./bot-brain.ts";
 import { inBox, loadMeta, loadWorld, type MapMeta, type V3 } from "./world-data.ts";
 import { AbilityEngine, type AbilityPlayer, type AgentDef, type Effect } from "./abilities.ts";
+import { ensureReplayDir, REPLAY_EVERY, ReplayRecorder, replayPath } from "./replay.ts";
+import { AntiCheat, type AntiCheatConfig } from "./anticheat.ts";
 
 export interface MatchOptions {
   mode?: string;
@@ -48,6 +50,8 @@ export interface MatchOptions {
   /** Override round count / phases for tests and quick modes. */
   roundsToWin?: number;
   phaseScale?: number;
+  /** Directory for .bpr replays (spec §14.4); omit to disable recording. */
+  replayDir?: string;
 }
 
 export const Phase = { BUY: 0, COMBAT: 1, POSTPLANT: 2, END: 3, MATCH_OVER: 4 } as const;
@@ -94,6 +98,7 @@ interface MatchConfig {
   overtime: { winBy: number };
   phases: { buy: number; combat: number; postPlant: number; roundEnd: number };
   breachCharge: { plantTime: number; defuseTime: number; defuseCheckpoint: number };
+  antiCheat: AntiCheatConfig;
 }
 
 export interface ServerPlayer extends AbilityPlayer {
@@ -164,6 +169,10 @@ export class Match {
   private readonly nav: NavGraph;
   private readonly rand: () => number;
   private send: (playerId: number, msg: Message) => void = () => undefined;
+  private replay: ReplayRecorder | null = null;
+  /** Statistical aim checks (review flags in the match result). Reset every match cycle. */
+  ac: AntiCheat;
+  private replayClosed: Promise<void> = Promise.resolve();
 
   constructor(readonly options: MatchOptions) {
     this.loop = new FixedTickLoop(TICK_RATE, () => this.step());
@@ -190,6 +199,7 @@ export class Match {
     this.hitboxes = loadRawConfig("hitboxes") as HitboxConfig;
     this.tags = (loadRawConfig("materials") as { tags: MaterialTag[] }).tags;
     this.nav = new NavGraph(this.meta);
+    this.ac = new AntiCheat(this.rules.antiCheat);
     this.rand = mulberry32(options.seed);
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
@@ -257,23 +267,61 @@ export class Match {
 
   start(): void {
     if (this.options.fillBots) this.fillBots();
+    this.openReplay();
     this.startRound();
     this.loop.start();
   }
 
   stop(): void {
     this.loop.stop();
+    void this.closeReplay();
+  }
+
+  /** Flushes and closes the replay file (idempotent); resolves when it is on disk. */
+  closeReplay(): Promise<void> {
+    if (this.replay) {
+      this.replayClosed = this.replay.close();
+      this.replay = null;
+    }
+    return this.replayClosed;
+  }
+
+  private openReplay(): void {
+    const dir = this.options.replayDir;
+    if (!dir || this.replay) return;
+    const path = replayPath(dir, this.currentMatchId);
+    if (!path) return;
+    ensureReplayDir(dir);
+    this.replay = new ReplayRecorder(path, {
+      matchId: this.currentMatchId,
+      map: this.options.map,
+      mode: this.options.mode ?? "quick",
+      tickRate: TICK_RATE,
+      snapshotEvery: REPLAY_EVERY,
+      startedAt: new Date().toISOString(),
+    });
+    this.replay.record(this.tick, this.matchStateMsg());
   }
 
   /** Starts without the real-time loop (tests, replays, load tests): call step() manually. */
   startManual(): void {
     if (this.options.fillBots) this.fillBots();
+    this.openReplay();
     this.startRound();
   }
 
   // ------------------------------------------------------------------ players
 
   onResult: ((result: unknown) => void) | null = null;
+  /** Fired once when a matchmade match is over and the worker can be released. */
+  onFinished: (() => void) | null = null;
+  finished = false;
+  /** Quick servers play consecutive matches; each gets its own id (stats + replay key). */
+  private cycle = 0;
+
+  get currentMatchId(): string {
+    return this.cycle === 0 ? this.options.matchId : `${this.options.matchId}-${this.cycle}`;
+  }
   private roundLog: { round: number; winner: number; reason: string }[] = [];
 
   addPlayer(
@@ -397,8 +445,12 @@ export class Match {
     if (!p || p.bot) return;
     for (const c of cmds) {
       if (c.seq <= p.lastSeq || p.inputs.some((q) => q.seq === c.seq)) continue;
-      // Validation (spec §14.3): clamp pitch, reject absurd turn rates is implicit (angles are absolute).
+      // Validation (spec §14.3). Angles are absolute (no turn-rate exploit), but must be finite;
+      // interp is capped so a client cannot stretch lag compensation.
+      if (!Number.isFinite(c.yaw) || !Number.isFinite(c.pitch) || !Number.isFinite(c.interpMs))
+        continue;
       c.pitch = Math.max(-1.553, Math.min(1.553, c.pitch));
+      c.interpMs = Math.max(0, Math.min(this.rules.antiCheat.maxInterpMs, c.interpMs));
       p.inputs.push(c);
     }
     p.inputs.sort((a, b) => a.seq - b.seq);
@@ -614,7 +666,7 @@ export class Match {
       this.winner = a > b ? 0 : 1;
       this.setPhase(Phase.MATCH_OVER, 10);
       this.onResult?.({
-        matchId: this.options.matchId,
+        matchId: this.currentMatchId,
         mode: this.options.mode ?? "quick",
         map: this.options.map,
         score: [this.score[0], this.score[1]],
@@ -629,6 +681,7 @@ export class Match {
           deaths: p.deaths,
           assists: p.assists,
           score: p.score,
+          flags: p.bot ? [] : this.ac.flags(p.id),
         })),
       });
       this.broadcast({
@@ -641,6 +694,7 @@ export class Match {
       this.setPhase(Phase.END, this.rules.phases.roundEnd);
     }
     this.broadcastScoreboard();
+    if (over) void this.closeReplay();
   }
 
   private checkElimination(): void {
@@ -666,6 +720,7 @@ export class Match {
   // ------------------------------------------------------------------ tick
 
   step(): void {
+    if (this.finished) return;
     this.tick++;
     const dt = 1 / TICK_RATE;
     // Phase timers.
@@ -679,6 +734,15 @@ export class Match {
         this.endRound(attTeam, "detonated");
       } else if (this.phase === Phase.END) this.startRound();
       else if (this.phase === Phase.MATCH_OVER) {
+        // Matchmade games end here; quick drop-in servers roll straight into a new match.
+        if (this.options.mode && this.options.mode !== "quick") {
+          this.finished = true;
+          this.onFinished?.();
+          return;
+        }
+        this.cycle++;
+        this.ac = new AntiCheat(this.rules.antiCheat);
+        this.openReplay();
         this.score = [0, 0];
         this.round = 0;
         this.winner = -1;
@@ -825,6 +889,7 @@ export class Match {
     if (!p.alive) return;
     p.yaw = cmd.yaw;
     p.pitch = cmd.pitch;
+    if (!p.bot) this.ac.view(p.id, p.yaw, p.pitch);
     let buttons = cmd.buttons;
     // Spawn barriers during the buy phase are enforced after movement (enforceBarriers).
     if (this.phase === Phase.MATCH_OVER) buttons = 0;
@@ -1023,6 +1088,14 @@ export class Match {
       for (const q of this.players.values()) {
         if (q.id !== p.id && Math.hypot(q.move.x - ox, q.move.z - oz) < 120) this.send(q.id, ev);
       }
+    }
+    if (!p.bot) {
+      let head = false;
+      for (const [vid, d] of dmgBy) {
+        head ||= d.zone === "head";
+        if (this.players.get(vid)?.alive) this.ac.hit(p.id, vid, d.zone === "head", this.tick);
+      }
+      if (def.class !== "melee") this.ac.shot(p.id, dmgBy.size > 0, head);
     }
     for (const [vid, d] of dmgBy) this.applyDamage(p, vid, d.dmg, d.zone, d.wallbang, def);
   }
@@ -1287,6 +1360,14 @@ export class Match {
         weapon: [...this.weapons.keys()].indexOf(w.id),
       });
     }
+    if (this.replay && this.tick % REPLAY_EVERY === 0)
+      this.replay.record(this.tick, {
+        type: "Snapshot",
+        tick: this.tick,
+        baseTick: 0,
+        lastProcessedSeq: 0,
+        players: [...states.values()],
+      });
     for (const viewer of this.players.values()) {
       if (viewer.bot) continue;
       const players: PlayerState[] = [];
@@ -1294,7 +1375,10 @@ export class Match {
         let send = q.team === viewer.team || !viewer.alive || !q.alive;
         if (!send) {
           const vis = this.canSee(viewer, q);
-          if (vis) viewer.visibleTicks.set(q.id, this.tick);
+          if (vis) {
+            viewer.visibleTicks.set(q.id, this.tick);
+            this.ac.visible(viewer.id, q.id, this.tick);
+          }
           // Short grace window avoids pop-out flicker at corners.
           send =
             vis ||
@@ -1428,12 +1512,17 @@ export class Match {
 
   private broadcast(msg: Message): void {
     for (const p of this.players.values()) if (!p.bot) this.send(p.id, msg);
+    this.replay?.record(this.tick, msg);
   }
 
   broadcastMatchState(): void {
-    this.broadcast({
+    this.broadcast(this.matchStateMsg());
+  }
+
+  private matchStateMsg(): Message {
+    return {
       type: "MatchState",
-      matchId: this.options.matchId,
+      matchId: this.currentMatchId,
       map: this.options.map,
       seed: this.roundSeed,
       roster: [...this.players.values()].map((p) => ({
@@ -1442,7 +1531,7 @@ export class Match {
         team: p.team,
         agent: p.agent,
       })),
-    });
+    };
   }
 
   private broadcastCharge(): void {

@@ -3,31 +3,183 @@
   "$id": "match.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "teamSize", "roundsToWin", "halftimeAfterRound", "overtime", "phases", "breachCharge", "agentSelectTime"],
+  "required": [
+    "version",
+    "teamSize",
+    "roundsToWin",
+    "halftimeAfterRound",
+    "overtime",
+    "phases",
+    "breachCharge",
+    "agentSelectTime",
+    "antiCheat"
+  ],
   "properties": {
-    "$schema": { "type": "string" },
-    "version": { "type": "integer", "minimum": 1 },
-    "teamSize": { "type": "integer", "minimum": 1, "maximum": 5 },
-    "roundsToWin": { "type": "integer", "minimum": 1 },
-    "halftimeAfterRound": { "type": "integer", "minimum": 1 },
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "teamSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "roundsToWin": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "halftimeAfterRound": {
+      "type": "integer",
+      "minimum": 1
+    },
     "overtime": {
-      "type": "object", "additionalProperties": false, "required": ["winBy", "swapEachRound", "drawVoteAfterPairs"],
-      "properties": { "winBy": { "type": "integer", "minimum": 1 }, "swapEachRound": { "type": "boolean" }, "drawVoteAfterPairs": { "type": "integer", "minimum": 1 } }
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "winBy",
+        "swapEachRound",
+        "drawVoteAfterPairs"
+      ],
+      "properties": {
+        "winBy": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "swapEachRound": {
+          "type": "boolean"
+        },
+        "drawVoteAfterPairs": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
     },
     "phases": {
-      "type": "object", "additionalProperties": false, "required": ["buy", "combat", "postPlant", "roundEnd"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "buy",
+        "combat",
+        "postPlant",
+        "roundEnd"
+      ],
       "properties": {
-        "buy": { "type": "number", "minimum": 0 }, "combat": { "type": "number", "minimum": 0 },
-        "postPlant": { "type": "number", "minimum": 0 }, "roundEnd": { "type": "number", "minimum": 0 }
+        "buy": {
+          "type": "number",
+          "minimum": 0
+        },
+        "combat": {
+          "type": "number",
+          "minimum": 0
+        },
+        "postPlant": {
+          "type": "number",
+          "minimum": 0
+        },
+        "roundEnd": {
+          "type": "number",
+          "minimum": 0
+        }
       }
     },
     "breachCharge": {
-      "type": "object", "additionalProperties": false, "required": ["plantTime", "defuseTime", "defuseCheckpoint"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plantTime",
+        "defuseTime",
+        "defuseCheckpoint"
+      ],
       "properties": {
-        "plantTime": { "type": "number", "exclusiveMinimum": 0 }, "defuseTime": { "type": "number", "exclusiveMinimum": 0 },
-        "defuseCheckpoint": { "type": "number", "exclusiveMinimum": 0 }
+        "plantTime": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "defuseTime": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "defuseCheckpoint": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
       }
     },
-    "agentSelectTime": { "type": "number", "minimum": 0 }
+    "agentSelectTime": {
+      "type": "number",
+      "minimum": 0
+    },
+    "antiCheat": {
+      "description": "Server-side statistical detection thresholds (spec \u00a714.3). Flags are for human review, never automatic bans.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reactionMinSamples",
+        "reactionMedianFlagMs",
+        "reacquireGapMs",
+        "snapDegrees",
+        "snapWindowTicks",
+        "snapMinCount",
+        "snapShareOfHeadshots",
+        "headshotMinHits",
+        "headshotRatioFlag",
+        "accuracyMinShots",
+        "accuracyFlag",
+        "maxInterpMs"
+      ],
+      "properties": {
+        "reactionMinSamples": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reactionMedianFlagMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reacquireGapMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "snapDegrees": {
+          "type": "number",
+          "minimum": 0
+        },
+        "snapWindowTicks": {
+          "type": "number",
+          "minimum": 0
+        },
+        "snapMinCount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "snapShareOfHeadshots": {
+          "type": "number",
+          "minimum": 0
+        },
+        "headshotMinHits": {
+          "type": "number",
+          "minimum": 0
+        },
+        "headshotRatioFlag": {
+          "type": "number",
+          "minimum": 0
+        },
+        "accuracyMinShots": {
+          "type": "number",
+          "minimum": 0
+        },
+        "accuracyFlag": {
+          "type": "number",
+          "minimum": 0
+        },
+        "maxInterpMs": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    }
   }
 }

@@ -11,3 +11,4 @@ client/*.translation
 build/
 qa/screens/**/*.tmp
 dump.rdb
+replays/

@@ -106,6 +106,8 @@ func _on_message(msg: Dictionary) -> void:
 				my_team = int(roster[my_id]["team"])
 			_load_map(msg["map"])
 			scoreboard.roster = roster
+			scoreboard.match_id = str(msg["matchId"])
+			scoreboard.my_id = my_id
 		"Snapshot":
 			_on_snapshot(msg)
 		"Spawn":
@@ -387,6 +389,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		scoreboard.visible = true
 	elif event.is_action_released("scoreboard"):
 		scoreboard.visible = false
+		if not buy_menu.visible:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event.is_action_pressed("fire") and player != null and not player.alive:
 		_spectate_idx += 1
 	elif event is InputEventKey and event.is_pressed() and (event as InputEventKey).keycode == KEY_F10:

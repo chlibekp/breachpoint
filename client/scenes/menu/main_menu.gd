@@ -442,7 +442,24 @@ func _tab_career() -> void:
 		return
 	for m: Dictionary in r["body"]:
 		var won: bool = m["winner"] != null and int(m["winner"]) == int(m["team"])
-		list.add_child(_lbl("%s  %s  %s  ·  %d-%d  ·  %s  ·  %d/%d/%d" % ["VICTORY" if won else "DEFEAT", str(m["mode"]).to_upper(), str(m["map"]).to_upper(), int(m["score_a"]), int(m["score_b"]), str(m["agent"]).to_upper(), int(m["kills"]), int(m["deaths"]), int(m["assists"])], &"ValueLabel"))
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 16)
+		row.add_child(_lbl("%s  %s  %s  ·  %d-%d  ·  %s  ·  %d/%d/%d" % ["VICTORY" if won else "DEFEAT", str(m["mode"]).to_upper(), str(m["map"]).to_upper(), int(m["score_a"]), int(m["score_b"]), str(m["agent"]).to_upper(), int(m["kills"]), int(m["deaths"]), int(m["assists"])], &"ValueLabel"))
+		# Replays are kept 14 days on the server (spec §14.3/14.4).
+		var watch := Button.new()
+		watch.text = "REPLAY"
+		var match_id := str(m["id"])
+		watch.pressed.connect(func() -> void:
+			watch.disabled = true
+			watch.text = "LOADING…"
+			var bytes := await Api.download("/replays/%s" % match_id.uri_encode())
+			if bytes.is_empty():
+				watch.text = "UNAVAILABLE"
+				return
+			Game.pending_replay = bytes
+			Game.goto("replay"))
+		row.add_child(watch)
+		list.add_child(row)
 
 
 # ------------------------------------------------------------------ SETTINGS (spec §15.3)

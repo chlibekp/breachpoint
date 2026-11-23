@@ -4,12 +4,15 @@ import { AuthService } from "./auth.ts";
 import { HttpError, Router, type Req } from "./http.ts";
 import { MODES, SocialService, type Mode } from "./social.ts";
 import type { StatsService } from "./stats.ts";
+import { readFile } from "node:fs/promises";
+import { replayPath } from "../match/replay.ts";
 
 export function buildApi(
   auth: AuthService,
   social: SocialService,
   stats: StatsService,
   gatewayUrl: string,
+  replayDir?: string,
 ): Router {
   const r = new Router();
   const user = (req: Req): AccessClaims => {
@@ -117,6 +120,29 @@ export function buildApi(
     );
     if (err) throw new HttpError(409, err);
     return { body: { ok: true } };
+  });
+  r.on("POST", "/reports", async (q) => {
+    const reason = str(q.body["reason"], "reason");
+    const mid = q.body["matchId"];
+    await stats.report(
+      user(q).sub,
+      str(q.body["target"], "target"),
+      typeof mid === "string" ? mid : null,
+      reason,
+    );
+    return { status: 201, body: { ok: true } };
+  });
+  // Replays (spec §14.4): players of the match may download its .bpr for the in-client viewer.
+  r.on("GET", "/replays/:id", async (q) => {
+    const claims = user(q);
+    const path = replayDir ? replayPath(replayDir, q.params["id"] ?? "") : null;
+    if (!path) throw new HttpError(404, "not_found");
+    if (!(await stats.playedIn(claims.sub, q.params["id"]!))) throw new HttpError(403, "forbidden");
+    try {
+      return { body: null, raw: await readFile(path), contentType: "application/x-bp-replay" };
+    } catch {
+      throw new HttpError(404, "not_found");
+    }
   });
   r.on("POST", "/lobby/leave", async (q) => {
     await social.leaveLobby(user(q).sub);

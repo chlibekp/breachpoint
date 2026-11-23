@@ -16,7 +16,8 @@ export type FromWorker =
   | { type: "frame"; playerId: number; bytes: ArrayBuffer }
   | { type: "stats"; tick: number; players: number; maxTickMs: number; lastTickMs: number }
   | { type: "stopped" }
-  | { type: "result"; result: unknown };
+  | { type: "result"; result: unknown }
+  | { type: "ended" };
 
 const match = new Match(workerData as MatchOptions);
 const port = parentPort!;
@@ -37,6 +38,13 @@ match.setTransport((playerId: number, msg: Message) => {
   port.postMessage({ type: "frame", playerId, bytes: ab } satisfies FromWorker, [ab]);
 });
 match.onResult = (result) => port.postMessage({ type: "result", result } satisfies FromWorker);
+match.onFinished = () => {
+  match.stop();
+  void match
+    .closeReplay()
+    .catch(() => undefined)
+    .then(() => port.postMessage({ type: "ended" } satisfies FromWorker));
+};
 match.start();
 
 port.on("message", (m: ToWorker) => {
@@ -74,7 +82,10 @@ port.on("message", (m: ToWorker) => {
       break;
     case "stop":
       match.stop();
-      port.postMessage({ type: "stopped" } satisfies FromWorker);
+      void match
+        .closeReplay()
+        .catch(() => undefined)
+        .then(() => port.postMessage({ type: "stopped" } satisfies FromWorker));
       break;
   }
 });

@@ -49,6 +49,8 @@ run("matchmaking end to end", () => {
         ALLOW_ANON: "0",
       },
       stdio: "pipe",
+      // Own process group: npx → tsx → node; killing only npx would leave the server running.
+      detached: true,
     });
     for (let i = 0; i < 60; i++) {
       try {
@@ -61,7 +63,7 @@ run("matchmaking end to end", () => {
     throw new Error("server did not start");
   }, 30000);
   afterAll(() => {
-    server.kill("SIGTERM");
+    if (server.pid) process.kill(-server.pid, "SIGTERM");
   });
 
   it("register → queue → agent select → ticket → join the match over WebSocket", async () => {
