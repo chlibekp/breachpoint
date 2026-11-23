@@ -23,8 +23,13 @@ static func build(weapon_id: String, skin: Dictionary = {}) -> Node3D:
 	match weapon_id:
 		"saber":
 			_saber(root, mat)
+		"knife":
+			_knife(root, mat)
 		_:
-			_generic(root, mat, weapon_id)
+			if RECIPES.has(weapon_id):
+				_parametric(root, mat, RECIPES[weapon_id])
+			else:
+				_generic(root, mat, weapon_id)
 	return root
 
 
@@ -198,7 +203,231 @@ static func _saber(root: Node3D, mat: ShaderMaterial) -> void:
 	_socket(root, "left_hand_ik", Vector3(-0.01, 0.0, -0.4), Vector3(deg_to_rad(-10), 0, deg_to_rad(-80)))
 
 
-## Placeholder silhouette for weapons not yet built (milestone 9 fills these in).
+## Silhouette recipes (spec §7.1: each weapon recognisable from its first-person silhouette).
+## len = receiver length, h = receiver height, barrel = barrel length past the handguard,
+## stock: none/fixed/skeleton/folding, mag: pistol/straight/curved/drum/cylinder/tube/top/box,
+## sight: iron/holo/scope2/scope_long, extras: suppressor, pump, spin, slide, brake.
+const RECIPES: Dictionary = {
+	"wasp": {"len": 0.19, "h": 0.042, "barrel": 0.0, "stock": "none", "mag": "pistol", "sight": "iron", "extras": ["slide"], "width": 0.032},
+	"pike": {"len": 0.24, "h": 0.05, "barrel": 0.07, "stock": "none", "mag": "cylinder", "sight": "iron", "extras": ["brake"], "width": 0.04},
+	"hornet": {"len": 0.2, "h": 0.045, "barrel": 0.0, "stock": "none", "mag": "pistol_long", "sight": "iron", "extras": ["suppressor", "slide"], "width": 0.034},
+	"grifter": {"len": 0.2, "h": 0.05, "barrel": 0.02, "stock": "none", "mag": "pistol", "sight": "iron", "extras": ["double_barrel"], "width": 0.045},
+	"jolt": {"len": 0.3, "h": 0.07, "barrel": 0.05, "stock": "folding", "mag": "straight", "sight": "iron", "extras": [], "width": 0.042},
+	"halcyon": {"len": 0.36, "h": 0.075, "barrel": 0.08, "stock": "skeleton", "mag": "curved_short", "sight": "holo", "extras": [], "width": 0.046},
+	"breaker": {"len": 0.42, "h": 0.07, "barrel": 0.26, "stock": "fixed", "mag": "tube", "sight": "iron", "extras": ["pump"], "width": 0.05},
+	"mauler": {"len": 0.4, "h": 0.085, "barrel": 0.18, "stock": "fixed", "mag": "drum", "sight": "holo", "extras": ["brake"], "width": 0.056},
+	"lancer": {"len": 0.44, "h": 0.07, "barrel": 0.14, "stock": "fixed", "mag": "straight", "sight": "iron", "extras": ["brake"], "width": 0.046},
+	"kite": {"len": 0.48, "h": 0.075, "barrel": 0.24, "stock": "fixed", "mag": "box", "sight": "scope2", "extras": [], "width": 0.046},
+	"specter": {"len": 0.46, "h": 0.078, "barrel": 0.02, "stock": "skeleton", "mag": "curved", "sight": "holo", "extras": ["suppressor"], "width": 0.05},
+	"shrike": {"len": 0.5, "h": 0.07, "barrel": 0.32, "stock": "skeleton", "mag": "box", "sight": "scope_long", "extras": ["bolt"], "width": 0.044},
+	"longbow": {"len": 0.62, "h": 0.095, "barrel": 0.48, "stock": "fixed", "mag": "box", "sight": "scope_long", "extras": ["brake", "bipod", "bolt"], "width": 0.058},
+	"bulwark": {"len": 0.56, "h": 0.11, "barrel": 0.3, "stock": "fixed", "mag": "drum_side", "sight": "holo", "extras": ["spin", "carry_handle"], "width": 0.07},
+}
+
+
+## Builds any weapon from a recipe. Same part vocabulary and finish rules as the Saber.
+static func _parametric(root: Node3D, mat: ShaderMaterial, r: Dictionary) -> void:
+	var L: float = r["len"]
+	var H: float = r["h"]
+	var W: float = r.get("width", 0.046)
+	var extras: Array = r.get("extras", [])
+	var pistol: bool = r["stock"] == "none"
+	var body := _kit()
+	# Receiver: machined upper over a polymer lower; front edge angled.
+	body.uv2_flag = Vector2(1, 0)
+	var front := L * 0.72
+	var back := -L * 0.28
+	profile(body, [Vector2(back, 0.0), Vector2(front, 0.0), Vector2(front + 0.02, H * 0.45), Vector2(front, H), Vector2(back + 0.03, H), Vector2(back, H * 0.8)], W, Vector3(0, 0.02, 0), 0.004)
+	body.uv2_flag = Vector2.ZERO
+	if not pistol:
+		profile(body, [Vector2(back + 0.04, 0.0), Vector2(front - 0.06, 0.0), Vector2(front - 0.05, 0.028), Vector2(back + 0.04, 0.028)], W * 0.9, Vector3(0, -0.006, 0), 0.004)
+	# Grip.
+	profile(body, [Vector2(-0.025, 0.005), Vector2(0.035, 0.005), Vector2(0.005, -0.12), Vector2(-0.055, -0.125), Vector2(-0.06, -0.11)], W * 0.75, Vector3.ZERO, 0.006)
+	profile(body, [Vector2(0.035, 0.0), Vector2(0.095, 0.0), Vector2(0.095, -0.048), Vector2(0.03, -0.048), Vector2(0.03, -0.04), Vector2(0.087, -0.04), Vector2(0.087, -0.008), Vector2(0.035, -0.008)], 0.01, Vector3.ZERO, 0.002)
+	var bore_y := 0.02 + H * 0.62
+	# Barrel past the receiver.
+	var muzzle_z := -front
+	if float(r["barrel"]) > 0.0:
+		body.uv2_flag = Vector2(1, 0)
+		var rad := 0.011 if not pistol else 0.009
+		if "double_barrel" in extras:
+			tube(body, rad, -front, -front - float(r["barrel"]) - 0.02, bore_y + 0.01, -0.01, 12)
+			tube(body, rad, -front, -front - float(r["barrel"]) - 0.02, bore_y + 0.01, 0.01, 12)
+		elif "spin" in extras:
+			for i: int in 6:
+				var a := TAU * i / 6.0
+				tube(body, 0.011, -front + 0.04, -front - float(r["barrel"]), bore_y + sin(a) * 0.03, cos(a) * 0.03, 10)
+			tube(body, 0.05, -front + 0.02, -front - 0.04, bore_y, 0.0, 16, 0.006)
+			tube(body, 0.05, -front - float(r["barrel"]) + 0.05, -front - float(r["barrel"]) + 0.02, bore_y, 0.0, 16, 0.006)
+		else:
+			tube(body, rad, -front, -front - float(r["barrel"]), bore_y, 0.0, 14)
+		muzzle_z = -front - float(r["barrel"])
+		body.uv2_flag = Vector2.ZERO
+	# Handguard for long guns (with the class-accent panel).
+	if not pistol:
+		var hg := minf(float(r["barrel"]) * 0.7 + 0.12, L * 0.55)
+		profile(body, [Vector2(front - 0.01, 0.0), Vector2(front + hg, 0.004), Vector2(front + hg + 0.01, H * 0.3), Vector2(front + hg, H * 0.95), Vector2(front - 0.01, H * 0.95)], W * 1.08, Vector3(0, 0.02, 0), 0.006)
+	# Muzzle devices.
+	body.uv2_flag = Vector2(1, 0)
+	if "suppressor" in extras:
+		tube(body, 0.022, muzzle_z, muzzle_z - (0.2 if not pistol else 0.12), bore_y, 0.0, 16, 0.004)
+		muzzle_z -= 0.2 if not pistol else 0.12
+	elif "brake" in extras:
+		tube(body, 0.018 if pistol else 0.022, muzzle_z, muzzle_z - 0.07, bore_y, 0.0, 10, 0.004)
+		muzzle_z -= 0.07
+	body.uv2_flag = Vector2.ZERO
+	# Pistol slide.
+	if "slide" in extras:
+		body.uv2_flag = Vector2(1, 0)
+		profile(body, [Vector2(back + 0.005, 0.0), Vector2(front + 0.015, 0.0), Vector2(front + 0.015, 0.03), Vector2(back + 0.02, 0.03)], W * 1.05, Vector3(0, 0.02 + H - 0.005, 0), 0.003)
+		body.uv2_flag = Vector2.ZERO
+	# Stock.
+	match str(r["stock"]):
+		"fixed":
+			profile(body, [Vector2(back - 0.3, -0.07), Vector2(back - 0.25, -0.075), Vector2(back - 0.05, -0.015), Vector2(back, 0.0), Vector2(back, H * 0.9), Vector2(back - 0.18, H), Vector2(back - 0.3, H + 0.01)], W * 0.85, Vector3(0, 0.02, 0), 0.006)
+		"skeleton":
+			profile(body, [Vector2(back - 0.27, -0.06), Vector2(back - 0.24, -0.06), Vector2(back - 0.02, 0.01), Vector2(back, 0.0), Vector2(back, 0.03), Vector2(back - 0.24, 0.0)], W * 0.7, Vector3(0, 0.02, 0), 0.004)
+			profile(body, [Vector2(back - 0.27, H * 0.7), Vector2(back, H * 0.75), Vector2(back, H * 0.95), Vector2(back - 0.27, H * 0.95)], W * 0.7, Vector3(0, 0.02, 0), 0.004)
+			profile(body, [Vector2(back - 0.29, -0.065), Vector2(back - 0.26, -0.065), Vector2(back - 0.26, H + 0.01), Vector2(back - 0.29, H + 0.01)], W * 0.85, Vector3(0, 0.02, 0), 0.004)
+		"folding":
+			body.uv2_flag = Vector2(1, 0)
+			tube(body, 0.006, -back, -back + 0.2, 0.05, -W * 0.4, 8, 0.0)
+			tube(body, 0.006, -back, -back + 0.2, 0.05, W * 0.4, 8, 0.0)
+			body.box(Vector3(W * 0.9, 0.08, 0.02), Vector3(0, 0.03, -back + 0.2), 0.004)
+			body.uv2_flag = Vector2.ZERO
+	# Sight.
+	var top := 0.02 + H
+	match str(r["sight"]):
+		"iron":
+			profile(body, [Vector2(back + 0.03, 0.0), Vector2(back + 0.05, 0.0), Vector2(back + 0.045, 0.02), Vector2(back + 0.035, 0.02)], 0.03, Vector3(0, top, 0), 0.002)
+			profile(body, [Vector2(front - 0.03, 0.0), Vector2(front - 0.01, 0.0), Vector2(front - 0.015, 0.022), Vector2(front - 0.025, 0.022)], 0.01, Vector3(0, top, 0), 0.002)
+		"holo":
+			profile(body, [Vector2(0.0, 0.0), Vector2(0.1, 0.0), Vector2(0.1, 0.012), Vector2(0.0, 0.012)], 0.034, Vector3(0, top, 0), 0.002)
+			profile(body, [Vector2(0.015, 0.0), Vector2(0.045, 0.0), Vector2(0.04, 0.05), Vector2(0.02, 0.05)], 0.046, Vector3(0, top + 0.008, 0), 0.003)
+			profile(body, [Vector2(0.07, 0.0), Vector2(0.1, 0.0), Vector2(0.095, 0.055), Vector2(0.075, 0.055)], 0.046, Vector3(0, top + 0.008, 0), 0.003)
+		"scope2", "scope_long":
+			var slen := 0.22 if r["sight"] == "scope2" else 0.34
+			var srad := 0.022 if r["sight"] == "scope2" else 0.028
+			body.uv2_flag = Vector2(1, 0)
+			tube(body, srad, 0.06, -slen + 0.06, top + 0.045, 0.0, 18, 0.004)
+			tube(body, srad + 0.008, 0.07, 0.03, top + 0.045, 0.0, 18, 0.004)
+			tube(body, srad + 0.01, -slen + 0.09, -slen + 0.04, top + 0.045, 0.0, 18, 0.004)
+			body.box(Vector3(0.02, 0.03, 0.02), Vector3(0, top + 0.015, -0.01), 0.004)
+			body.box(Vector3(0.02, 0.03, 0.02), Vector3(0, top + 0.015, -slen + 0.12), 0.004)
+			body.uv2_flag = Vector2.ZERO
+	# Accent panel + Rift strip (class accent / emissive skin channels).
+	body.with_color(ACCENT)
+	for sx: float in [-1.0, 1.0]:
+		profile(body, [Vector2(back * 0.3, 0.0), Vector2(front * 0.55, 0.0), Vector2(front * 0.6, H * 0.4), Vector2(back * 0.3, H * 0.4)], 0.003, Vector3(sx * (W * 0.5 + 0.001), 0.02 + H * 0.25, 0), 0.0012)
+	body.with_color(EMIT)
+	body.box(Vector3(0.004, 0.006, front * 0.5), Vector3(W * 0.5 + 0.003, 0.02 + H * 0.75, -front * 0.3), 0.001)
+	body.with_color(BASE)
+	# Extras.
+	if "pump" in extras:
+		profile(body, [Vector2(front + 0.04, -0.012), Vector2(front + 0.2, -0.012), Vector2(front + 0.2, 0.03), Vector2(front + 0.04, 0.03)], W * 1.2, Vector3(0, -0.005, 0), 0.008)
+	if "carry_handle" in extras:
+		profile(body, [Vector2(-0.05, 0.0), Vector2(0.18, 0.0), Vector2(0.16, 0.05), Vector2(-0.03, 0.05)], 0.02, Vector3(0, top + 0.03, 0), 0.004)
+	if "bipod" in extras:
+		body.uv2_flag = Vector2(1, 0)
+		for sx: float in [-1.0, 1.0]:
+			body.set_transform(Transform3D(Basis(Vector3.BACK, sx * 0.25), Vector3(sx * 0.03, bore_y - 0.09, muzzle_z + 0.18)))
+			body.cylinder(0.007, 0.16, Vector3.ZERO, 6, 0.002)
+		body.reset_transform()
+		body.uv2_flag = Vector2.ZERO
+	if "bolt" in extras:
+		body.uv2_flag = Vector2(1, 0)
+		body.set_transform(Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(W * 0.5 + 0.03, 0.02 + H * 0.7, 0.04)))
+		body.cylinder(0.006, 0.06, Vector3.ZERO, 8, 0.002)
+		body.reset_transform()
+		body.ellipsoid(Vector3(0.012, 0.012, 0.012), Vector3(W * 0.5 + 0.06, 0.02 + H * 0.7, 0.04), 8, 6)
+		body.uv2_flag = Vector2.ZERO
+	_mesh_node(root, "body", body, mat)
+	# Magazine as its own node (reload choreography moves it).
+	var mag := _kit()
+	var mag_pos := Vector3(0, -0.035, 0)
+	match str(r["mag"]):
+		"pistol":
+			mag_pos = Vector3(0, -0.12, 0.012)
+			profile(mag, [Vector2(-0.045, 0.0), Vector2(0.005, 0.0), Vector2(0.0, 0.02), Vector2(-0.05, 0.02)], W * 0.8, Vector3.ZERO, 0.003)
+		"pistol_long":
+			mag_pos = Vector3(0, -0.12, 0.012)
+			profile(mag, [Vector2(-0.045, 0.0), Vector2(0.005, 0.0), Vector2(0.015, -0.07), Vector2(-0.035, -0.07)], W * 0.8, Vector3.ZERO, 0.003)
+		"cylinder":
+			mag_pos = Vector3(0, 0.02 + H * 0.5, -0.06)
+			mag.uv2_flag = Vector2(1, 0)
+			mag.set_transform(Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3.ZERO))
+			mag.cylinder(0.03, 0.065, Vector3.ZERO, 8, 0.006)
+			mag.reset_transform()
+		"straight":
+			profile(mag, [Vector2(0.025, 0.0), Vector2(0.09, 0.0), Vector2(0.09, -0.17), Vector2(0.025, -0.17)], W * 0.7, Vector3.ZERO, 0.004)
+		"curved", "curved_short":
+			var depth := 0.19 if r["mag"] == "curved" else 0.13
+			profile(mag, [Vector2(0.025, 0.0), Vector2(0.11, 0.0), Vector2(0.13, -depth), Vector2(0.05, -depth - 0.01)], W * 0.72, Vector3.ZERO, 0.004)
+		"box":
+			profile(mag, [Vector2(0.02, 0.0), Vector2(0.1, 0.0), Vector2(0.1, -0.09), Vector2(0.02, -0.09)], W * 0.78, Vector3.ZERO, 0.004)
+		"drum":
+			mag.set_transform(Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(0, -0.07, -0.06)))
+			mag.cylinder(0.075, W * 1.25, Vector3.ZERO, 20, 0.01)
+			mag.reset_transform()
+		"drum_side":
+			mag.set_transform(Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(-W * 0.9, -0.02, -0.05)))
+			mag.cylinder(0.09, 0.07, Vector3.ZERO, 22, 0.01)
+			mag.reset_transform()
+		"tube":
+			mag_pos = Vector3(0, bore_y - 0.035, 0)
+			mag.uv2_flag = Vector2(1, 0)
+			mag.set_transform(Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(0, 0, -front - 0.1)))
+			mag.cylinder(0.013, 0.28, Vector3.ZERO, 10, 0.003)
+			mag.reset_transform()
+	var mag_node := Node3D.new()
+	mag_node.name = "magazine"
+	mag_node.position = mag_pos
+	root.add_child(mag_node)
+	_mesh_node(mag_node, "mesh", mag, mat)
+	var trig := _kit()
+	trig.uv2_flag = Vector2(1, 0)
+	profile(trig, [Vector2(0.0, 0.0), Vector2(0.012, 0.0), Vector2(0.006, -0.03), Vector2(-0.004, -0.028)], 0.006, Vector3.ZERO, 0.001)
+	var trig_node := Node3D.new()
+	trig_node.name = "trigger"
+	trig_node.position = Vector3(0, -0.006, -0.055)
+	root.add_child(trig_node)
+	_mesh_node(trig_node, "mesh", trig, mat)
+	var ch_node := Node3D.new()
+	ch_node.name = "charging_handle"
+	ch_node.position = Vector3(0, 0.02 + H, 0.0)
+	root.add_child(ch_node)
+	var sight_y := top + (0.045 if str(r["sight"]).begins_with("scope") else (0.04 if r["sight"] == "holo" else 0.018))
+	_socket(root, "grip", Vector3(0, -0.055, 0.02), Vector3(deg_to_rad(15), 0, 0))
+	_socket(root, "muzzle", Vector3(0, bore_y, muzzle_z - 0.01))
+	_socket(root, "eject", Vector3(W * 0.5 + 0.005, 0.02 + H * 0.7, -0.03))
+	_socket(root, "mag", mag_pos)
+	_socket(root, "sight_aim", Vector3(0, sight_y, 0.0))
+	if pistol:
+		_socket(root, "left_hand_ik", Vector3(-0.02, -0.06, 0.03), Vector3(deg_to_rad(10), deg_to_rad(20), deg_to_rad(-60)))
+	else:
+		_socket(root, "left_hand_ik", Vector3(-0.01, 0.0, -front - minf(float(r["barrel"]) * 0.35, 0.12)), Vector3(deg_to_rad(-10), 0, deg_to_rad(-80)))
+
+
+## Tactical knife: chunky blade with a fuller, wrapped grip, guard.
+static func _knife(root: Node3D, mat: ShaderMaterial) -> void:
+	var k := _kit()
+	k.uv2_flag = Vector2(1, 0)
+	profile(k, [Vector2(0.0, 0.0), Vector2(0.17, 0.004), Vector2(0.2, 0.022), Vector2(0.15, 0.034), Vector2(0.0, 0.034)], 0.006, Vector3(0, -0.01, 0), 0.0015)
+	k.uv2_flag = Vector2.ZERO
+	k.box(Vector3(0.05, 0.016, 0.03), Vector3(0, 0.007, 0.0), 0.004)
+	profile(k, [Vector2(-0.11, 0.0), Vector2(0.0, 0.0), Vector2(0.0, 0.03), Vector2(-0.11, 0.028)], 0.026, Vector3(0, -0.008, 0), 0.006)
+	k.with_color(ACCENT)
+	profile(k, [Vector2(-0.1, 0.0), Vector2(-0.02, 0.0), Vector2(-0.02, 0.006), Vector2(-0.1, 0.006)], 0.028, Vector3(0, 0.004, 0), 0.002)
+	_mesh_node(root, "body", k, mat)
+	root.rotation = Vector3(0, 0, 0)
+	_socket(root, "grip", Vector3(0, 0.005, 0.06), Vector3(deg_to_rad(80), 0, 0))
+	_socket(root, "muzzle", Vector3(0, 0.0, -0.2))
+	_socket(root, "eject", Vector3(0, 0, 0))
+	_socket(root, "sight_aim", Vector3(0, 0.05, 0))
+	_socket(root, "left_hand_ik", Vector3(-0.15, -0.1, 0.1), Vector3(0, 0, deg_to_rad(-60)))
+
+
+## Placeholder silhouette (only used for unknown ids).
 static func _generic(root: Node3D, mat: ShaderMaterial, weapon_id: String) -> void:
 	var body := _kit()
 	var length := 0.5 if weapon_id in ["wasp", "pike", "hornet", "grifter"] else 0.85
