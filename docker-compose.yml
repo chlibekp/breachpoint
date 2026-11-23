@@ -1,15 +1,22 @@
-# Local development stack (spec 14.5). Postgres/Redis are provisioned now so services in
-# milestone 8 can attach; the gateway is the only Node service so far.
+# Local development stack (spec 14.5): game gateway + match workers + HTTP API (one Node process),
+# Postgres, Redis and nginx for the browser build (run tools/export-web.sh first).
+# Change JWT_SECRET / TICKET_SECRET for anything beyond local testing.
 services:
   gateway:
     build:
       context: .
       dockerfile: docker/server.Dockerfile
-    ports: ["7350:7350"]
+    ports: ["7350:7350", "7351:7351"]
     environment:
       PORT: "7350"
+      API_PORT: "7351"
       DATABASE_URL: postgres://breachpoint:breachpoint@postgres:5432/breachpoint
       REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev-only-secret-change-me
+      PUBLIC_GATEWAY_URL: ws://localhost:7350
+      MAP: solstice,neon
+      REPLAY_DIR: /data/replays
+    volumes: [replays:/data/replays]
     depends_on: [postgres, redis]
 
   web:
@@ -35,3 +42,4 @@ services:
 
 volumes:
   pgdata:
+  replays:

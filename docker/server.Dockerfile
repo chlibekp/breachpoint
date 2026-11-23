@@ -9,6 +9,6 @@ RUN npm ci --omit=dev --ignore-scripts && npm install --no-save tsx@4
 COPY shared shared
 COPY server server
 ENV NODE_ENV=production PORT=7350
-EXPOSE 7350
+EXPOSE 7350 7351
 USER node
 CMD ["npx", "tsx", "server/src/main.ts"]

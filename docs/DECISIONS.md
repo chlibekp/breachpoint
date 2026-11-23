@@ -110,14 +110,18 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
 
 - **Single-threaded web export by default** (preset `Web`), threaded preset `Web (threaded)` behind
   COOP/COEP (nginx `/threaded/` location). Pick after profiling (milestone 10).
-- **Both VRAM compression families** enabled for web (S3TC/BPTC for desktop GPUs, ETC2/ASTC as
-  fallback).
+- **Desktop VRAM formats only on web** (S3TC/BPTC). The spec's browser target is a laptop. ETC2/ASTC
+  doubled the pack (217 MB) and only helps mobile browsers, which are not a target.
+  *(Changed in milestone 10.)*
 - **WASM SIMD**: Godot 4.7's official web templates are built by Emscripten with SIMD disabled and
   expose no export toggle. Enabling it means custom templates (`scons platform=web` with
   `-msimd128`); deferred until profiling shows the CPU is the web bottleneck.
-- **Half-resolution textures on web**: Godot has no per-platform texture size import override. Plan
-  (milestone 2, when real textures arrive): a pre-export step that re-imports a copy of the project
-  with `process/size_limit` halved for the web export. Logged as an open problem until then.
+- **Half-resolution textures on web**: Godot has no per-platform texture size import override.
+  `tools/export-web.sh` exports from a staging copy whose 3D texture imports get
+  `process/size_limit=512` (sources are 1024²). UI, font and VFX textures stay full size.
+- **Hashed web filenames**: after export, the engine JS/WASM, pack and worklets are renamed
+  `index.<sha256-12>.*` and `index.html` is rewritten. This is what lets nginx serve them `immutable`.
+  Result: a 75 MB pack (26 MB gzipped) plus 10 MB gzipped WASM.
 - **Branded loading shell** `client/web/shell.html` (custom HTML shell) with a real byte-progress
   bar, the logo lock-up and a readable missing-feature notice.
 - Web server URL: `?server=wss://host:port` query parameter, else same host on port 7350.
@@ -130,3 +134,43 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
   with user overrides in `user://settings.cfg` — keeps rebinding data-driven.
 - Audio bus layout built at runtime by the `Audio` autoload (Master limiter, Music side-chained to
   Voice) instead of a hand-edited `.tres`.
+
+## Art pipeline (milestones 2–9)
+
+- **No Blender in the build container.** All art is generated from code so it stays reproducible and
+  original:
+  - `tools/texgen` makes numpy PBR sets (albedo, normal, ORM).
+  - `tools/sfxgen` synthesises the WAVs.
+  - `MeshKit` builds chamfered meshes. Vertex alpha 0 marks bevel edges for edge wear.
+  - `MapBuilder` merges geometry per material, unwraps UV2, and exports yaw-only OBB collision for the
+    server.
+  - Agents and weapons are parametric (`AgentLooks`, `WeaponBuilder.RECIPES`).
+- **Map layouts are walk-rect lists.** `LayoutFill` turns everything else into building mass with
+  facades facing the walkable space. Nav rects for bots come from the same rects.
+- **NEON DISTRICT street lights are dynamic and unshadowed.** At night, static lights would leave the
+  map black until a bake exists. The LightmapGI pass adds moon bounce only. Compatibility's per-object
+  light limit (8) is respected by spacing.
+
+## Replays, anti-cheat, comms (milestone 10)
+
+- **Replays record snapshots plus broadcast events, not inputs.**
+  - The server stream is the protocol itself: an unculled snapshot every 3rd tick plus every broadcast
+    message, gzip-streamed to `.bpr`. The viewer reuses the client codec and `RemotePlayer`.
+  - Re-simulating inputs would tie old replays to the sim version.
+  - Size: about 2.5 MB per full match. Kept 14 days. Players of a match may download it.
+- **Anti-cheat produces review flags, never bans.**
+  - Detectors: reaction time from re-acquisition to first hit, snap-to-head, headshot ratio and
+    accuracy. Thresholds are in `match.json → antiCheat`.
+  - Flags go to `anticheat_flags` next to player `reports`. A reviewer watches the replay.
+- **Voice runs over WebRTC data channels, not media tracks.**
+  - Godot's WebRTC API has no audio tracks. Push-to-talk audio is 16 kHz G.711 µ-law in 20 ms
+    frames, sent unordered with no retransmits.
+  - Desktop needs the webrtc-native GDExtension (probed at runtime). Without it, or until a channel
+    opens, the match server relays `VoiceData` to teammates only.
+  - No STUN server by default. Configure one in Settings → `comms.stun_server`.
+- **Fog-of-war line of sight is reused over time.**
+  - Visible results hold for 3 ticks; hidden ones are rechecked every 2nd tick. The cache is cleared
+    when smokes or walls change.
+  - This halved per-match tick cost (`qa/perf/2026-11-23-m10-load.md`).
+- **Matchmade matches end; quick servers cycle.** Each cycle gets its own match id (`<id>-<n>`) for
+  stats and replays.
