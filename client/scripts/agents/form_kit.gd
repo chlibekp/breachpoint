@@ -399,3 +399,41 @@ static func grown(rings: Array, grow: float, scale: float = 1.0) -> Array:
 		r[R_ZB] = r[R_ZB] * scale + grow
 		out.append(r)
 	return out
+
+
+## Fabric folds: resamples `rings` densely (ascending or descending) and adds `count` soft bulges
+## of `amp` metres between y0 and y1 (bunched sleeves, bloused hems). Front/back depth follow.
+static func folds(rings: Array, y0: float, y1: float, count: int, amp: float, samples: int = 18) -> Array:
+	var r0: PackedFloat32Array = rings[0]
+	var rn: PackedFloat32Array = rings[rings.size() - 1]
+	var lo := minf(r0[R_Y], rn[R_Y])
+	var hi := maxf(r0[R_Y], rn[R_Y])
+	var out: Array = []
+	for i: int in samples + 1:
+		var y := lerpf(lo, hi, float(i) / samples)
+		var r := _ring_at(rings, y).duplicate()
+		r[R_Y] = y
+		if y >= minf(y0, y1) and y <= maxf(y0, y1):
+			var t := (y - minf(y0, y1)) / maxf(absf(y1 - y0), 0.0001)
+			var g := amp * pow(absf(sin(t * PI * count)), 0.7) * sin(t * PI)
+			r[R_RX] += g
+			r[R_ZF] += g
+			r[R_ZB] += g
+			r[R_SHADE] = r[R_SHADE] * lerpf(0.9, 1.0, pow(absf(sin(t * PI * count)), 0.5))
+		out.append(r)
+	return out
+
+
+## Shrinks the radii of the rings near one end (y beyond `y_from` toward the end) by `amount`, so
+## a shell tucks under the neighbouring shell instead of z-fighting with it.
+static func tuck(rings: Array, y_from: float, y_to: float, amount: float) -> Array:
+	var out: Array = []
+	for r0: PackedFloat32Array in rings:
+		var r := r0.duplicate()
+		var t := clampf((r[R_Y] - y_from) / (y_to - y_from), 0.0, 1.0)
+		var g := -amount * smoothstep(0.0, 1.0, t)
+		r[R_RX] += g
+		r[R_ZF] += g
+		r[R_ZB] += g
+		out.append(r)
+	return out

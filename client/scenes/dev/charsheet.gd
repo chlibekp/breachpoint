@@ -67,25 +67,6 @@ func _spawn(id: String, pos: Vector3, yaw: float, pose: String) -> void:
 	if pose == "aim":
 		anim.attach_weapon(WeaponBuilder.build("saber"))
 	rig.add_child(anim)
-	if pose != "aim":
-		var relax := _Relax.new()
-		relax.rig = rig
-		rig.add_child(relax)
-
-
-## Relaxed showroom arms (after the animator's reset): slight A-pose, soft elbows.
-class _Relax extends Node:
-	var rig: AgentRig
-
-	func _ready() -> void:
-		process_priority = 100
-
-	func _process(_delta: float) -> void:
-		for side: String in ["l", "r"]:
-			var sx := -1.0 if side == "l" else 1.0
-			(rig.bones["upper_arm_" + side] as Node3D).rotation = Vector3(0.06, 0.0, sx * 0.16)
-			(rig.bones["forearm_" + side] as Node3D).rotation = Vector3(0.22, 0.0, sx * -0.05)
-			(rig.bones["hand_" + side] as Node3D).rotation = Vector3(0.05, sx * -0.25, sx * -0.04)
 
 
 func _tris(rig: AgentRig, per_part: bool = false) -> int:
@@ -94,10 +75,12 @@ func _tris(rig: AgentRig, per_part: bool = false) -> int:
 	for mi: Node in rig.find_children("*", "MeshInstance3D", true, false):
 		var mesh := (mi as MeshInstance3D).mesh
 		for s: int in mesh.get_surface_count():
-			var verts: PackedVector3Array = mesh.surface_get_arrays(s)[Mesh.ARRAY_VERTEX]
-			n += verts.size() / 3
+			var a := mesh.surface_get_arrays(s)
+			var idx: PackedInt32Array = a[Mesh.ARRAY_INDEX] if a[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
+			var tri := idx.size() / 3 if not idx.is_empty() else (a[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
+			n += tri
 			var key := "%s/%s" % [mi.get_parent().name, mi.name]
-			parts[key] = int(parts.get(key, 0)) + verts.size() / 3
+			parts[key] = int(parts.get(key, 0)) + tri
 	if per_part:
 		var keys: Array = parts.keys()
 		keys.sort_custom(func(a: Variant, b: Variant) -> bool: return int(parts[a]) > int(parts[b]))

@@ -31,21 +31,21 @@ static func forms(spec: Dictionary) -> Dictionary:
 	]
 	f["abdomen"] = [
 		_r(-0.08, (0.13 if fem else 0.14) * b, 0.09, 0.092, 0.0, 2.3),
-		_r(0.03, (0.118 if fem else 0.138) * b, 0.084, 0.088, 0.0, 2.3),
+		_r(0.03, (0.11 if fem else 0.13) * b, 0.082, 0.086, 0.0, 2.3),
 		_r(0.14, (0.126 if fem else 0.148) * b, 0.092, 0.092, 0.0, 2.4),
 		_r(0.25, (0.138 if fem else 0.158) * b, 0.104, 0.096, 0.0, 2.4),
 	]
 	f["chest"] = [
 		_r(-0.07, (0.126 if fem else 0.146) * b, 0.092, 0.09, 0.0, 2.4),
 		_r(0.03, (0.14 if fem else 0.163) * b, (0.118 if fem else 0.108) * b, 0.096 * b, 0.0, 2.5),
-		_r(0.09, (0.154 if fem else 0.182) * b, (0.12 if fem else 0.115) * b, 0.1 * b, 0.0, 2.6),
-		_r(0.15, (0.162 if fem else 0.196) * b, 0.104 * b, 0.102 * b, 0.006, 2.9),
-		_r(0.2, (0.158 if fem else 0.192) * b, 0.09 * b, 0.094 * b, 0.01, 3.2),
+		_r(0.09, (0.16 if fem else 0.192) * b, (0.12 if fem else 0.115) * b, 0.1 * b, 0.0, 2.6),
+		_r(0.15, (0.172 if fem else 0.212) * b, 0.106 * b, 0.104 * b, 0.006, 2.9),
+		_r(0.2, (0.166 if fem else 0.206) * b, 0.092 * b, 0.096 * b, 0.01, 3.2),
 		_r(0.235, (0.12 if fem else 0.142) * b, 0.07, 0.078, 0.012, 2.6),
 		_r(0.258, 0.068, 0.054, 0.06, 0.014, 2.2),
 		_r(0.27, 0.054, 0.048, 0.054, 0.014, 2.0),
 	]
-	var a := (0.95 if fem else 1.1) * b
+	var a := (1.0 if fem else 1.15) * b
 	f["upper_arm"] = [
 		_r(0.06, 0.028 * a, 0.028 * a, 0.028 * a),
 		_r(0.04, 0.056 * a, 0.056 * a, 0.054 * a),
@@ -62,7 +62,7 @@ static func forms(spec: Dictionary) -> Dictionary:
 		_r(-0.19, 0.037 * a, 0.031 * a, 0.033 * a),
 		_r(-0.255, 0.032 * a, 0.026 * a, 0.027 * a),
 	]
-	var l := (0.94 if fem else 1.0) * b
+	var l := (1.0 if fem else 1.05) * b
 	f["thigh"] = [
 		_r(0.09, 0.084 * l, 0.08 * l, 0.078 * l, 0.004, 2.2),
 		_r(0.02, 0.1 * l, 0.094 * l, 0.094 * l, 0.0, 2.2),
@@ -95,9 +95,9 @@ static func forms(spec: Dictionary) -> Dictionary:
 		_r(0.22, 0.008, 0.008, 0.012, 0.01, 2.0),
 	]
 	f["neck"] = [
-		_r(-0.07, (0.056 if fem else 0.062) * b, 0.052, 0.056, 0.014),
-		_r(0.03, (0.049 if fem else 0.056) * b, 0.046, 0.05, 0.012),
-		_r(0.14, (0.044 if fem else 0.05) * b, 0.042, 0.048, 0.016),
+		_r(-0.07, (0.064 if fem else 0.07) * b, 0.06, 0.064, 0.014),
+		_r(0.03, (0.058 if fem else 0.064) * b, 0.054, 0.058, 0.012),
+		_r(0.14, (0.05 if fem else 0.055) * b, 0.047, 0.052, 0.016),
 	]
 	return f
 
@@ -131,7 +131,25 @@ static func build(rig: AgentRig, pal: Dictionary, spec: Dictionary) -> Dictionar
 		if fa_id != "":
 			rig.part("forearm_" + side, m.call(fa_id), func(k: FormKit) -> void: k.loft(f["forearm"], 14, 1, true, true))
 		var hand_id: String = ms.get("hands", "gloves")
-		rig.part("hand_" + side, m.call(hand_id), func(k: FormKit) -> void: hand(k, sx, spec), "hand")
+		rig.part("hand_" + side, m.call(hand_id), func(k: FormKit) -> void:
+			hand(k, sx, spec)
+			if hand_id != "skin":
+				# Chunky glove: padded knuckle ridge and back-of-hand plate.
+				var s: float = (0.92 if spec.get("fem", false) else 1.0) * float(spec.get("hand_scale", 1.14))
+				k.loft([
+					_r(-0.07 * s, 0.006, 0.026 * s, 0.024 * s, 0.0, 2.6),
+					_r(-0.045 * s, 0.009, 0.034 * s, 0.032 * s, 0.0, 2.8),
+					_r(-0.015 * s, 0.006, 0.03 * s, 0.028 * s, 0.0, 2.6),
+				], 10, 1, true, true), "hand")
+		if hand_id != "skin":
+			rig.part("forearm_" + side, m.call(hand_id), func(k: FormKit) -> void:
+				# Flared gauntlet cuff.
+				k.loft([
+					_r(-0.262, 0.034, 0.029, 0.03),
+					_r(-0.235, 0.043, 0.038, 0.039),
+					_r(-0.2, 0.047, 0.042, 0.043),
+					_r(-0.19, 0.045, 0.04, 0.041),
+				], 14, 1, true, true), "glove_cuff")
 		if legs_id != "":
 			rig.part("thigh_" + side, m.call(legs_id), func(k: FormKit) -> void:
 				k.set_transform(Transform3D(Basis.IDENTITY, Vector3(sx * 0.006, 0, 0)))
@@ -158,12 +176,12 @@ static func head(rig: AgentRig, pal: Dictionary, spec: Dictionary, hr: Array) ->
 		# Nose: bridge to tip, plus soft nostril wings.
 		var zb := FormKit.front_z(hr, 0.0, 0.1)
 		var zt := FormKit.front_z(hr, 0.0, 0.068)
-		var nose_len := 0.012 if fem else 0.017
+		var nose_len := 0.0095 if fem else 0.016
 		k.tube(PackedVector3Array([Vector3(0, 0.106, zb + 0.004), Vector3(0, 0.09, zb - 0.004), Vector3(0, 0.073, zt - nose_len), Vector3(0, 0.064, zt - nose_len + 0.006)]),
-			PackedFloat32Array([0.005, 0.006, 0.0078 if fem else 0.0098, 0.0058]), 9, 1.0, Vector3.FORWARD)
+			PackedFloat32Array([0.0045, 0.0055, 0.0068 if fem else 0.0095, 0.0052]), 9, 1.0, Vector3.FORWARD)
 		k.color = Color(1.0, 0.92, 0.9)
 		for sx: float in [-1.0, 1.0]:
-			k.ellipsoid(Vector3(0.0062, 0.0052, 0.006), Vector3(sx * 0.0078, 0.067, zt - nose_len * 0.25), 8, 5)
+			k.ellipsoid(Vector3(0.0058, 0.0046, 0.0055) * (0.85 if fem else 1.0), Vector3(sx * 0.0072, 0.0672, zt - nose_len * 0.4), 8, 5)
 			# Ears.
 			k.color = Color(1.0, 0.86, 0.82)
 			var ex := FormKit.side_x(hr, 0.085)
@@ -201,7 +219,7 @@ static func head(rig: AgentRig, pal: Dictionary, spec: Dictionary, hr: Array) ->
 			for i: int in 7:
 				var t := float(i) / 6.0
 				var x := lerpf(0.017, 0.054 if fem else 0.051, t)
-				var y := ey + 0.0055 + sin(t * PI) * 0.0055 - (0.0 if t < 0.8 else (t - 0.8) * (0.01 if fem else 0.016))
+				var y := ey + 0.0066 + sin(t * PI) * 0.0045 - (0.0 if t < 0.8 else (t - 0.8) * (0.01 if fem else 0.016))
 				pts.append(Vector3(sx * x, y, FormKit.front_z(hr, sx * x, y) - 0.0042 + absf(t - 0.45) * 0.004))
 			k.tube(pts, PackedFloat32Array([0.0014, 0.0026, 0.003, 0.003, 0.0028, 0.0024 if fem else 0.0018, 0.0012]), 6, 0.6, Vector3.FORWARD)
 			# Lower lid hint.
@@ -216,10 +234,25 @@ static func head(rig: AgentRig, pal: Dictionary, spec: Dictionary, hr: Array) ->
 		var mouth := PackedVector3Array()
 		for i: int in 7:
 			var t := float(i) / 6.0 * 2.0 - 1.0
-			var x := t * (0.018 if fem else 0.02)
+			var x := t * (0.015 if fem else 0.017)
 			var y := 0.043 + absf(t) * 0.0022 - (1.0 - t * t) * 0.0012
 			mouth.append(Vector3(x, y, FormKit.front_z(hr, x, y) - 0.0016))
 		k.strand(mouth, 0.0011, 0.0011, 5, 0.6, Vector3.FORWARD), "lashes")
+	# Eyelids: a fleshy upper lid fold over the top of the eye and a soft lower lid.
+	rig.part("head", skin, func(k: FormKit) -> void:
+		for sx: float in [-1.0, 1.0]:
+			var z := FormKit.front_z(hr, sx * ex, ey)
+			k.set_transform(Transform3D(Basis(Vector3.BACK, sx * -0.12) * Basis(Vector3.UP, sx * 0.25), Vector3(sx * ex, ey + 0.0115, z + 0.0042)))
+			k.ellipsoid(Vector3(er.x * 1.1, 0.0045, er.z * 1.05), Vector3.ZERO, 12, 6)
+		k.reset_transform(), "eyelids")
+	# Painted skin variation: warm cheeks, nose tip and ears.
+	var hs: float = rig.bone_scale.get("head", 1.0)
+	var ho := rig.rest_origin("head")
+	var to_rig := func(p: Vector3) -> Vector3: return ho + Vector3(0, 0.008, 0) + (p - Vector3(0, 0.02, 0)) * hs
+	for sx: float in [-1.0, 1.0]:
+		rig.tint("skin", to_rig.call(Vector3(sx * 0.044, 0.066, FormKit.front_z(hr, sx * 0.044, 0.066))), 0.036, Color(1.0, 0.76, 0.74))
+		rig.tint("skin", to_rig.call(Vector3(sx * 0.076, 0.087, 0.012)), 0.026, Color(1.0, 0.86, 0.83))
+	rig.tint("skin", to_rig.call(Vector3(0, 0.068, FormKit.front_z(hr, 0.0, 0.068) - 0.012)), 0.02, Color(1.0, 0.88, 0.86))
 	rig.part("head", glint, func(k: FormKit) -> void:
 		for sx: float in [-1.0, 1.0]:
 			var z := FormKit.front_z(hr, sx * (ex - 0.002), ey)
@@ -276,8 +309,8 @@ static func hand(k: FormKit, sx: float, spec: Dictionary) -> void:
 ## Shaped combat boot on the foot bone (ankle origin); the sole bottom sits AgentAnimator.ANKLE_Y
 ## below the ankle. opts: toe (length), chunk (sole thickness).
 static func boot(k: FormKit, opts: Dictionary) -> void:
-	var toe: float = opts.get("toe", 0.2)
-	var chunk: float = opts.get("chunk", 1.0)
+	var toe: float = opts.get("toe", 0.21)
+	var chunk: float = opts.get("chunk", 1.35)
 	# Loft along the foot: loft +Y maps to -Z (toe), loft -Z maps to -Y (sole side), cz = height.
 	k.set_transform(Transform3D(Basis(Vector3.RIGHT, -PI * 0.5), Vector3.ZERO))
 	k.loft([
@@ -557,3 +590,28 @@ static func beard(k: FormKit, hr: Array, front_top: float, side_top: float, grow
 		shades.append(lerpf(0.85, 1.0, t))
 		centres.append(Vector3(0, 0.05, 0.0))
 	k.patch(rows, Vector3.ZERO, shades, false, false, centres)
+
+
+## Sculpted hair clumps swept front to back over the skull. Each clump dict: x (start), spread
+## (x multiplier toward the back), lift (height above the skull at the front), w (half width),
+## z0/z1 (front/back), drop (extra fall at the back). Flattened blades, pointed tips, painted
+## highlight band (vertex shade: dark root, bright band, darker tip).
+static func hair_clumps(k: FormKit, hr: Array, clumps: Array) -> void:
+	for c: Dictionary in clumps:
+		var pts := PackedVector3Array()
+		var radii := PackedFloat32Array()
+		var shades := PackedFloat32Array()
+		var n := 9
+		for j: int in n:
+			var t := float(j) / (n - 1)
+			var z := lerpf(float(c["z0"]), float(c["z1"]), t)
+			var x := float(c["x"]) * lerpf(1.0, float(c["spread"]), t)
+			var top := skull_top(hr, z)
+			var w := skull_width(hr, top - 0.02, z)
+			var side := clampf(absf(x) / maxf(w, 0.01), 0.0, 1.0)
+			var h := top - side * side * 0.03 + float(c["lift"]) * (1.0 - t) * (1.0 - t * 0.3) + 0.008 - float(c["drop"]) * t * t
+			pts.append(Vector3(x, h, z))
+			var wv: float = float(c["w"]) * (sin(clampf(t * 1.15, 0.0, 1.0) * PI * 0.5 + 0.4) if t < 0.85 else (1.0 - t) / 0.15 * 0.55)
+			radii.append(maxf(wv, 0.0015))
+			shades.append(lerpf(0.78, 1.0, smoothstep(0.0, 0.35, t)) * lerpf(1.0, 0.8, smoothstep(0.55, 1.0, t)))
+		k.tube(pts, radii, 9, 0.34, Vector3.UP, true, shades)

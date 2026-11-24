@@ -35,6 +35,7 @@ repository's own code and is original to the project:
 | Asset class | Generator | Output |
 |---|---|---|
 | PBR texture sets (maps, props, weapons, VFX) | `tools/texgen/texgen.py`, `tools/texgen/vfxgen.py` | `client/assets/**/T_*.png` |
+| Character detail sets (weave, canvas, quilt, knit, leather, metal, skin, hair; triplanar normal + variation) | `tools/texgen/chargen.py` | `client/assets/agents/textures/T_Char*.png` |
 | Sound effects (weapons, footsteps, abilities, UI, charge) | `tools/sfxgen/sfxgen.py` (synthesis) | `client/assets/audio/**.wav` |
 | Map geometry | `client/addons/bp_tools/build_*.gd` with `MeshKit` / `MapBuilder` | `client/assets/maps/*/meshes/*.res` |
 | Agents, weapons, viewmodels | `AgentLooks`, `WeaponBuilder`, `Viewmodel` (built at runtime) | — |

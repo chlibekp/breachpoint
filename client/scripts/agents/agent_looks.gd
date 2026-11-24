@@ -8,9 +8,22 @@ extends RefCounted
 const SKIN_TONES: Dictionary = AgentBody.SKIN_TONES
 
 
+## Baked meshes per agent id: [entries, material specs]. Building and baking an agent once per
+## session; later rigs of the same agent share the meshes and get their own materials (reveal,
+## rim and team tint stay per rig).
+static var _cache: Dictionary = {}
+
+
 static func build(agent_id: String) -> AgentRig:
 	var rig := AgentRig.new()
 	rig.agent_id = agent_id
+	if _cache.has(agent_id):
+		var c: Array = _cache[agent_id]
+		var specs: Dictionary = c[1]
+		for mid: String in specs:
+			rig.material(mid, specs[mid])
+		rig.instance_entries(c[0])
+		return rig
 	match agent_id:
 		"kestrel":
 			_kestrel(rig)
@@ -38,7 +51,7 @@ static func build(agent_id: String) -> AgentRig:
 			var pal := _palette(Color(color), "light")
 			AgentBody.build(rig, pal, {"mats": {"torso": "signature", "upper_arm": "cloth", "legs": "cloth_light"}})
 			_hair(rig, pal, AgentBody.forms({})["head"], "crop")
-	rig.finalize()
+	_cache[agent_id] = [rig.finalize(), rig.mat_specs.duplicate()]
 	return rig
 
 
@@ -96,9 +109,10 @@ static func _hair(rig: AgentRig, pal: Dictionary, hr: Array, style: String) -> v
 static func _cargo_pants(rig: AgentRig, pal: Dictionary, f: Dictionary, mat_id: String, pocket_id: String, opts: Dictionary = {}) -> void:
 	var mat := _mat(rig, pal, mat_id)
 	var pocket := _mat(rig, pal, pocket_id)
-	var loose: float = opts.get("loose", 0.012)
-	var th := FormKit.grown(f["thigh"], loose)
-	var sh := FormKit.grown(f["shin"], loose * 0.8)
+	var loose: float = opts.get("loose", 0.012) + 0.008
+	# Volume: bunched over the knee and above the boot tops.
+	var th := FormKit.folds(FormKit.grown(f["thigh"], loose), -0.46, -0.33, 1, 0.008, 10)
+	var sh := FormKit.folds(FormKit.grown(f["shin"], loose * 0.85), -0.34, -0.2, 2, 0.007, 10)
 	rig.part("hips", mat, func(k: FormKit) -> void:
 		# Seat: smooth trouser volume bridging pelvis and thigh tops (no anatomical cleft).
 		var seat: Array = FormKit.grown(f["pelvis"].slice(2), loose * 0.6)
@@ -161,26 +175,32 @@ static func _kestrel(rig: AgentRig) -> void:
 	rig.part("chest", sig, func(k: FormKit) -> void:
 		k.loft(jacket_c, 18, 2, false, true), "jacket")
 	rig.part("spine", sig, func(k: FormKit) -> void:
-		k.loft(FormKit.slice(abd, 0.075, 0.25, 0.02, 4), 18, 1, false, false)
+		k.loft(FormKit.tuck(FormKit.folds(FormKit.slice(abd, 0.075, 0.25, 0.022, 6), 0.075, 0.2, 1, 0.012, 8), 0.13, 0.25, 0.012), 18, 1, false, false)
 		# Ribbed hem band, cinched.
 		k.color = Color(0.8, 0.78, 0.78)
 		k.loft(FormKit.slice(abd, 0.045, 0.085, 0.015, 2), 18, 0, true, true), "jacket_low")
-	# Bomber sleeves: puffed shells with a shoulder yoke and an elbow seam.
+	# Bomber sleeves: puffed shells with a rounded cap over the shoulder, bunched at the elbow and
+	# above the cuff.
 	for side: String in ["l", "r"]:
 		var sxs := -1.0 if side == "l" else 1.0
+		var sleeve := FormKit.folds(FormKit.grown(f["upper_arm"], 0.017, 1.04), -0.31, -0.2, 2, 0.007, 11)
 		rig.part("upper_arm_" + side, sig, func(k: FormKit) -> void:
-			k.loft(FormKit.grown(f["upper_arm"], 0.012, 1.04), 14, 1, false, true), "sleeve")
+			k.loft(sleeve, 16, 1, false, true), "sleeve")
 		rig.part("forearm_" + side, sig, func(k: FormKit) -> void:
-			k.loft(FormKit.slice(f["forearm"], -0.19, 0.04, 0.012, 5), 14, 1, false, true)
-			k.color = Color(0.8, 0.78, 0.78)
-			k.loft(FormKit.slice(f["forearm"], 0.0, 0.035, 0.016, 2), 14, 0, true, true), "sleeve_low")
+			k.loft(FormKit.tuck(FormKit.folds(FormKit.slice(f["forearm"], -0.19, 0.06, 0.016, 6), -0.19, -0.1, 2, 0.006, 9), -0.02, 0.06, 0.012), 16, 1, false, true), "sleeve_low")
 		rig.part("shoulder_" + side, sig, func(k: FormKit) -> void:
-			k.ellipsoid(Vector3(0.062, 0.064, 0.078), Vector3(sxs * 0.03, -0.008, 0.0), 14, 8), "yoke")
+			k.set_transform(Transform3D(Basis.IDENTITY, Vector3(sxs * 0.04, 0, 0)))
+			k.loft([
+				FormKit.ring(-0.07, 0.07, 0.074, 0.074, 0.0, 2.2, 0.95),
+				FormKit.ring(-0.02, 0.082, 0.086, 0.086, 0.0, 2.2),
+				FormKit.ring(0.03, 0.072, 0.078, 0.078, 0.0, 2.2),
+				FormKit.ring(0.06, 0.035, 0.045, 0.045, 0.0, 2.0),
+			], 16, 1, true, true), "shoulder_cap")
 		# Reflective rescue bands on the upper sleeves.
 		rig.part("upper_arm_" + side, _mat(rig, pal, "reflect"), func(k: FormKit) -> void:
-			k.loft(FormKit.slice(FormKit.grown(f["upper_arm"], 0.012, 1.04), -0.16, -0.125, 0.007, 3), 14, 0, false, false), "reflect")
+			k.loft(FormKit.slice(sleeve, -0.16, -0.125, 0.006, 3), 16, 0, false, false), "reflect")
 	# Tall collar (signature): orange stand collar open at the throat, shearling lining + rim.
-	var copts := {"y0": 0.225, "height": 0.085, "rx": 0.09, "rzf": 0.078, "rzb": 0.08, "cz": 0.018, "flare": 0.016, "gap": 0.42, "front_drop": 0.4, "thick": 0.012}
+	var copts := {"y0": 0.225, "height": 0.1, "rx": 0.09, "rzf": 0.078, "rzb": 0.08, "cz": 0.018, "flare": 0.016, "gap": 0.42, "front_drop": 0.4, "thick": 0.012}
 	rig.part("chest", sig, func(k: FormKit) -> void: AgentBody.collar(k, true, copts), "collar")
 	rig.part("chest", cream, func(k: FormKit) -> void: AgentBody.collar(k, false, copts), "collar_lining")
 	# Flight-suit inner collar visible in the opening.
@@ -333,19 +353,17 @@ static func _kestrel_hair(rig: AgentRig, pal: Dictionary, hr: Array) -> void:
 	rig.part("head", hair, func(k: FormKit) -> void:
 		# Swept-back top with a lifted front.
 		AgentBody.hair_mass(k, hr, {"front": -0.094, "back": 0.1, "vol_front": 0.03, "vol_mid": 0.026, "vol_back": 0.012, "side": 0.012, "depth": 0.065, "lift": 0.012})
-		# Chunky clumps riding the top, painted highlight mid-strand.
-		for i: int in 6:
-			var u := (i - 2.5) / 2.5
-			var x0 := u * 0.05
-			var pts := PackedVector3Array()
-			for j: int in 7:
-				var t := float(j) / 6.0
-				var z := lerpf(-0.07, 0.085, t)
-				var x := x0 * lerpf(1.0, 1.35, t)
-				var h := AgentBody.skull_top(hr, z) + lerpf(0.034, 0.006, t) - absf(u) * 0.014 + sin(t * PI) * 0.004
-				pts.append(Vector3(x, h, z))
-			k.tube(pts, PackedFloat32Array([0.014, 0.019, 0.019, 0.016, 0.012, 0.007, 0.002]), 7, 0.32, Vector3.UP,
-				true, PackedFloat32Array([0.92, 1.0, 1.0, 0.94, 0.88, 0.84, 0.8])), "hair")
+		# Sculpted clumps in three layered rows, swept back from a lifted front; each clump is a broad
+		# flattened blade with a painted highlight band mid-strand and darker root and tip.
+		AgentBody.hair_clumps(k, hr, [
+			{"x": -0.045, "spread": 1.35, "lift": 0.036, "w": 0.026, "z0": -0.088, "z1": 0.095, "drop": 0.0},
+			{"x": -0.015, "spread": 1.2, "lift": 0.042, "w": 0.028, "z0": -0.094, "z1": 0.1, "drop": 0.0},
+			{"x": 0.018, "spread": 1.2, "lift": 0.04, "w": 0.028, "z0": -0.092, "z1": 0.1, "drop": 0.0},
+			{"x": 0.048, "spread": 1.35, "lift": 0.034, "w": 0.025, "z0": -0.086, "z1": 0.095, "drop": 0.0},
+			{"x": -0.068, "spread": 1.15, "lift": 0.022, "w": 0.022, "z0": -0.07, "z1": 0.085, "drop": 0.02},
+			{"x": 0.07, "spread": 1.15, "lift": 0.022, "w": 0.022, "z0": -0.07, "z1": 0.085, "drop": 0.02},
+			{"x": 0.0, "spread": 1.0, "lift": 0.05, "w": 0.024, "z0": -0.08, "z1": 0.06, "drop": 0.0},
+		]), "hair")
 
 
 # ====================================================================== shared outfit helpers
@@ -384,7 +402,7 @@ static func _braid(k: FormKit, pts: PackedVector3Array, r: float) -> void:
 static func _mamba(rig: AgentRig) -> void:
 	var green := Color("#9BE22B")
 	var pal := _palette(green, "deep")
-	pal["cloth"] = {"color": Color("#22262B"), "roughness": 0.64, "sheen": 0.3}
+	pal["cloth"] = {"color": Color("#22262B"), "roughness": 0.6, "sheen": 0.3, "detail": "Quilt", "detail_scale": 7.0, "detail_strength": 0.6}
 	pal["signature"] = {"color": green, "roughness": 0.42, "sheen": 0.45}
 	pal["armor"] = {"color": Color("#2C3238"), "roughness": 0.28, "metallic": 0.45, "edge_wear": 0.55}
 	pal["gloves"] = {"color": Color("#16181B"), "roughness": 0.45}
@@ -394,10 +412,12 @@ static func _mamba(rig: AgentRig) -> void:
 	pal["visor"] = {"color": Color("#10200A"), "roughness": 0.05, "metallic": 0.3, "emissive": Color("#B6FF3A"), "emissive_energy": 2.4}
 	var spec := {
 		"fem": false, "bulk": 0.97, "iris": Color("#3A2416"), "brow": Color("#120C0A"),
-		"mats": {"torso": "cloth", "legs": "cloth", "upper_arm": "cloth", "forearm": "cloth", "hands": "gloves"},
+		"mats": {"torso": "cloth", "legs": "", "upper_arm": "cloth", "forearm": "cloth", "hands": "gloves"},
 		"boot": {"shaft": -0.395, "toe": 0.21},
 	}
 	var f := AgentBody.build(rig, pal, spec)
+	# Padded race-suit legs (not skin-tight anatomy).
+	_cargo_pants(rig, pal, f, "cloth", "cloth", {"loose": 0.0, "pockets": false})
 	var sig := _mat(rig, pal, "signature")
 	var armor := _mat(rig, pal, "armor")
 	var hood := _mat(rig, pal, "hood")
@@ -415,9 +435,9 @@ static func _mamba(rig: AgentRig) -> void:
 		rig.part("forearm_" + side, sig, func(k: FormKit) -> void: _outer_stripe(k, f["forearm"], -0.24, 0.02, sx, 0.22, 0.003))
 		rig.part("thigh_" + side, sig, func(k: FormKit) -> void:
 			k.set_transform(Transform3D(Basis.IDENTITY, Vector3(sx * 0.006, 0, 0)))
-			_outer_stripe(k, f["thigh"], -0.44, 0.04, sx, 0.16, 0.003)
+			_outer_stripe(k, FormKit.grown(f["thigh"], 0.01), -0.44, 0.04, sx, 0.16, 0.003)
 			k.reset_transform())
-		rig.part("shin_" + side, sig, func(k: FormKit) -> void: _outer_stripe(k, f["shin"], -0.4, 0.0, sx, 0.16, 0.003))
+		rig.part("shin_" + side, sig, func(k: FormKit) -> void: _outer_stripe(k, FormKit.grown(f["shin"], 0.009), -0.4, 0.0, sx, 0.16, 0.003))
 		# Sleek knee guards: armour shell with a green inset.
 		rig.part("shin_" + side, armor, func(k: FormKit) -> void:
 			k.loft([

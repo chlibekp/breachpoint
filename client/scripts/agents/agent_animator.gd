@@ -27,6 +27,7 @@ var _phase: float = 0.0
 var _t: float = 0.0
 var _death_t: float = 0.0
 var _weapon_pivot: Node3D
+var _idle: float = 0.0
 
 
 func revive() -> void:
@@ -67,17 +68,24 @@ func _process(delta: float) -> void:
 	var stride := clampf(speed * 0.11, 0.0, 0.42)
 	var bob := absf(sin(_phase)) * 0.035 * run
 	var breathe := sin(_t * 1.7) * 0.006
-	hips.position.y = STAND_HIPS - crouch * 0.36 - bob + breathe * 0.5 - (0.0 if not airborne else -0.02)
+	# Stylised idle: contrapposto (weight on the right leg), slow sway; fades out when moving,
+	# crouching or airborne.
+	_idle = clampf(1.0 - speed / 1.5, 0.0, 1.0) * (1.0 - crouch) * (0.0 if airborne else 1.0)
+	var sway := sin(_t * 0.55)
+	hips.position.y = STAND_HIPS - crouch * 0.36 - bob + breathe * 0.5 - (0.0 if not airborne else -0.02) - 0.014 * _idle
+	hips.position.x = (0.026 + sway * 0.006) * _idle
 	# Body leans into the movement direction a little.
 	var move_dir := Vector3(velocity_local.x, 0, velocity_local.z).normalized() if speed > 0.1 else Vector3.ZERO
-	hips.rotation = Vector3(-move_dir.z * 0.05 * run + crouch * 0.12, 0, move_dir.x * 0.04 * run)
-	# Aim offsets distributed over spine/chest/neck.
+	hips.rotation = Vector3(-move_dir.z * 0.05 * run + crouch * 0.12, 0.09 * _idle, move_dir.x * 0.04 * run + (0.055 + sway * 0.008) * _idle)
+	# Aim offsets distributed over spine/chest/neck; the idle counter-tilts the shoulders and opens
+	# the chest (shoulders back), with breathing on the chest.
 	var pitch := clampf(aim_pitch, deg_to_rad(-80), deg_to_rad(80))
 	var yaw := clampf(aim_yaw_offset, deg_to_rad(-90), deg_to_rad(90))
-	(bones["spine"] as Node3D).rotation = Vector3(pitch * 0.25 + breathe, yaw * 0.3, 0)
-	(bones["chest"] as Node3D).rotation = Vector3(pitch * 0.35 - crouch * 0.1, yaw * 0.4, 0)
-	(bones["neck"] as Node3D).rotation = Vector3(pitch * 0.25, yaw * 0.2, 0)
-	(bones["head"] as Node3D).rotation = Vector3(pitch * 0.15 - (hips.rotation.x), yaw * 0.1, 0)
+	var breath_chest := sin(_t * 1.7) * 0.012
+	(bones["spine"] as Node3D).rotation = Vector3(pitch * 0.25 + breathe + 0.02 * _idle, yaw * 0.3 - 0.04 * _idle, -0.05 * _idle)
+	(bones["chest"] as Node3D).rotation = Vector3(pitch * 0.35 - crouch * 0.1 + (0.05 + breath_chest) * _idle, yaw * 0.4 - 0.06 * _idle, (-0.045 - sway * 0.01) * _idle)
+	(bones["neck"] as Node3D).rotation = Vector3(pitch * 0.25 - 0.03 * _idle, yaw * 0.2, 0.02 * _idle)
+	(bones["head"] as Node3D).rotation = Vector3(pitch * 0.15 - (hips.rotation.x) - 0.02 * _idle, yaw * 0.1 + 0.05 * _idle, 0.05 * _idle)
 	_legs(stride, run, speed, move_dir)
 	_arms(pitch, yaw)
 
@@ -90,6 +98,8 @@ func _legs(stride: float, run: float, speed: float, move_dir: Vector3) -> void:
 		var swing := sin(ph)
 		var lift := maxf(0.0, cos(ph)) * (0.12 + 0.1 * run) if speed > 0.25 else 0.0
 		var foot := Vector3(sx * (0.12 + crouch * 0.05), ANKLE_Y + lift, 0.0) + move_dir * swing * stride
+		# Contrapposto: weight leg under the hip, free leg out and forward with a soft knee.
+		foot += (Vector3(-0.025, 0, 0.02) if side == "r" else Vector3(-0.07, 0.0, -0.07)) * _idle
 		if crouch > 0.0:
 			foot.z += (0.12 if side == "l" else -0.18) * crouch
 		if airborne:
@@ -99,7 +109,8 @@ func _legs(stride: float, run: float, speed: float, move_dir: Vector3) -> void:
 		rig.solve_two_bone("thigh_" + side, "shin_" + side, "foot_" + side, target, knee_pole)
 		# Keep feet flat-ish and pointing forward.
 		var foot_bone: Node3D = rig.bones["foot_" + side]
-		foot_bone.global_basis = rig_xf.basis * Basis(Vector3.RIGHT, -lift * 1.5)
+		var toe_out := (0.32 if side == "l" else -0.12) * _idle
+		foot_bone.global_basis = rig_xf.basis * Basis(Vector3.UP, toe_out) * Basis(Vector3.RIGHT, -lift * 1.5)
 
 
 func _arms(pitch: float, yaw: float) -> void:
@@ -110,14 +121,21 @@ func _arms(pitch: float, yaw: float) -> void:
 	_weapon_pivot.position = hold + Vector3(0, 0, firing_kick * 0.04)
 	_weapon_pivot.rotation = Vector3(pitch * 0.92 + firing_kick * 0.06, yaw * 0.95, 0)
 	if weapon == null:
+		# Relaxed hero stance: arms off the body, soft elbows, hands turned in.
+		for side: String in ["l", "r"]:
+			var sx := -1.0 if side == "l" else 1.0
+			var sw := sin(_t * 0.55 + (0.0 if side == "l" else 1.3)) * 0.02
+			(rig.bones["upper_arm_" + side] as Node3D).rotation = Vector3(0.1 + sw, sx * 0.1, sx * (0.2 + (0.04 if side == "r" else 0.0)))
+			(rig.bones["forearm_" + side] as Node3D).rotation = Vector3(0.42 + sw, sx * 0.2, sx * -0.08)
+			(rig.bones["hand_" + side] as Node3D).rotation = Vector3(0.1, sx * -0.35, sx * -0.12)
 		return
 	var grip := weapon.get_node_or_null("grip") as Node3D
 	var support := weapon.get_node_or_null("left_hand_ik") as Node3D
 	if grip != null:
-		rig.solve_two_bone("upper_arm_r", "forearm_r", "hand_r", grip.global_position, rig_xf * Vector3(0.6, 0.7, 0.3))
+		rig.solve_two_bone("upper_arm_r", "forearm_r", "hand_r", grip.global_position, rig_xf * Vector3(0.45, 0.6, 0.35))
 		(rig.bones["hand_r"] as Node3D).global_basis = grip.global_basis
 	if support != null and weapon_class != "melee":
-		rig.solve_two_bone("upper_arm_l", "forearm_l", "hand_l", support.global_position, rig_xf * Vector3(-0.6, 0.7, 0.2))
+		rig.solve_two_bone("upper_arm_l", "forearm_l", "hand_l", support.global_position, rig_xf * Vector3(-0.35, 0.55, 0.1))
 		(rig.bones["hand_l"] as Node3D).global_basis = support.global_basis
 
 
