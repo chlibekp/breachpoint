@@ -99,7 +99,14 @@ static func _cargo_pants(rig: AgentRig, pal: Dictionary, f: Dictionary, mat_id: 
 	var th := FormKit.grown(f["thigh"], loose)
 	var sh := FormKit.grown(f["shin"], loose * 0.8)
 	rig.part("hips", mat, func(k: FormKit) -> void:
-		k.loft(FormKit.grown(f["pelvis"], loose * 0.5), 18, 1, true, true), "trousers_seat")
+		# Seat: smooth trouser volume bridging pelvis and thigh tops (no anatomical cleft).
+		var seat: Array = FormKit.grown(f["pelvis"].slice(2), loose * 0.6)
+		var low: PackedFloat32Array = seat[0]
+		var bottom := FormKit.ring(-0.2, low[FormKit.R_RX] * 0.92, low[FormKit.R_ZF] * 0.86, low[FormKit.R_ZB] * 0.9, 0.0, 2.4, 0.85)
+		var mid := FormKit.ring(-0.14, low[FormKit.R_RX] * 0.99, low[FormKit.R_ZF] * 0.97, low[FormKit.R_ZB] * 1.0, 0.0, 2.4, 0.9)
+		seat.push_front(mid)
+		seat.push_front(bottom)
+		k.loft(seat, 18, 1, true, true), "trousers_seat")
 	for side: String in ["l", "r"]:
 		var sx := -1.0 if side == "l" else 1.0
 		var outer := 0.0 if sx > 0.0 else PI
