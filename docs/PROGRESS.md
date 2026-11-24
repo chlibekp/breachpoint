@@ -155,3 +155,8 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
   end/loading screens, load test (+LOS optimisation), web build 217→75 MB with hashed files.
   Fixed: matchmade matches ignored lobby map/mode (ratings never moved), workers never released,
   e2e test leaked its server, replaced bots left a frozen body on the joining player's spawn.
+- **2026-11-24 (char)** — Character pass: all 8 agents rebuilt on smooth code-built anatomy
+  (`FormKit` lofts/tubes/panels, `AgentBody` face/hands/boots/hair/garments) with original outfits
+  and signature shapes (see `docs/art/agents/README.md`); 12–17k tris, parts batched per bone and
+  material; FP arm colours matched; review scene `scenes/dev/charsheet.tscn`. Readability re-run:
+  SOLSTICE 25/25 (worst 3.18), NEON 13/13 (worst 6.83).
