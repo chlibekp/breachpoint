@@ -38,23 +38,15 @@ verified, what is open, and the exact next steps. Update it at the end of every 
 - [x] Browser loading: `tools/export-web.sh` (half-res 3D textures, desktop VRAM formats only,
       hashed filenames) → 75 MB pack / 26 MB gzip + 10 MB gzip wasm; boots in Chromium in ~4 s.
 - [x] Compatibility glow compensation (`glowScale`).
-- [~] Readability (definition of done: character contrast ≥ 3:1).
-  - Tool: `res://scenes/dev/readability.tscn -- --map=<id> --out=<dir>`.
-  - Fixes so far: a character-only camera fill light, plus `character_lift` albedo self-illumination
-    (MapRuntime exports, set per map).
-  - Per-map character value floor (shader global `character_value_floor`), fill and lift.
-  - NEON: floor 0.3, fill 7, lift 3. Worst 2.39; 9 of 13 bookmarks pass
-    (`qa/readability/2026-11-23-neon/`).
-  - SOLSTICE (daylight, no fill or lift): worst 1.02, fails nearly everywhere
-    (`qa/readability/2026-11-23-solstice/`). Sunlit plaster is about L 0.15–0.24, so a mean-luminance
-    3:1 needs near-black or near-white agents.
-  - **Owner decision needed:** keep the mean-luminance metric (then SOLSTICE needs darker walls or
-    much darker agents), or measure silhouette-edge contrast, which is closer to how readable a
-    character is.
-  - NEON still failing: B Alley, B Market, Market stalls, Turnstiles. Their backgrounds are
-    brighter (lamps, wet reflections), so the next fix is local: dim or move those lamps, or add
-    darker backdrops behind the common angles.
-  - SOLSTICE readability run: see `qa/readability/2026-11-23-solstice/` once it completes.
+- [x] Readability (definition of done: character contrast ≥ 3:1). The metric is silhouette-edge
+      contrast (owner decision 2026-11-24, see DECISIONS.md). Run it with
+      `res://scenes/dev/readability.tscn -- --map=<id> --size=1920x1080 --out=<dir>`.
+      - SOLSTICE (two-tone outline): 25 of 25 measured bookmarks pass, worst 3.35.
+      - NEON (fill + lift + value floor): 13 of 13 pass, worst 6.67.
+      - Reports: `qa/readability/2026-11-24-*/report.json`.
+      - Skipped (no spot where an agent can stand in view): Balcony overwatch, B Link, Roofline,
+        A Main push, Bay vista, Parking deck. Add dedicated player-height bookmarks for those angles
+        if wanted.
 - [ ] Compatibility "cool lift" with shadowed sun (needs an engine-level repro).
 - [ ] Snapshot deltas against `baseTick` (halves egress; field already in the protocol).
 - [ ] Final art polish pass on every bookmark camera; perf capture on real hardware.
@@ -125,7 +117,6 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
 
 ## Next steps (in order)
 
-1. Readability: agent value pass (outfit mid-tones), re-run both maps until every bookmark is ≥ 3:1.
 2. Snapshot delta compression (protocol: encode players relative to `baseTick`, acked by the client).
 3. Compatibility shadow-lift investigation; real-hardware perf captures (144 fps Medium / 60 fps web).
 4. Art polish pass using the bookmark sets in `qa/screens/2026-11-23/`.

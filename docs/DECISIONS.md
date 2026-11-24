@@ -181,11 +181,15 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
 - **Readability metric: silhouette-edge contrast (owner decision 2026-11-24).**
   - `scenes/dev/readability.tscn` stands an enemy agent about 10 m into every bookmark view (chest
     and knees visible) and renders at 1080p with TAA off (MSAA 4×).
-  - It takes the agent mask from a with/without diff, keeping the largest region only, and excludes
-    glow, SSR and the agent's shadow.
-  - At every outline pixel it compares the 2 px boundary band with the background 2 px outside, as a
-    WCAG ratio. Pass = median ≥ 3:1. The report also gives p25, the share of the outline ≥ 3:1, and
-    the old mean-luminance "fill" ratio.
+  - Agent pixels are those that change between the with/without frames **and** lie inside an
+    agent-only silhouette rendered with the map hidden. That rules out sky drift, glow, SSR and the
+    agent's shadow.
+  - At every outline pixel it takes the boundary band (4 px at 1080p, the full two-tone outline) and
+    compares it with the background 2 px outside, keeping the best WCAG ratio. Occlusion edges, where
+    a prop covers the agent, are skipped. Pass = median ≥ 3:1.
+  - Placements where the agent is mostly hidden (under 1,500 px) are skipped.
+  - The report also gives p25, the share of the outline ≥ 3:1, and the old mean-luminance "fill"
+    ratio.
   - Superseded the mean-luminance metric, which daylight maps could only pass with near-black or
     near-white characters.
 - **Character readability levers (all per map, `MapRuntime` exports → shader globals):**

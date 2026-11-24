@@ -87,8 +87,14 @@ func _ready() -> void:
 		var at := rig.global_position
 		rig.global_position = at + Vector3(0, -500, 0)
 		var without := await _grab()
+		# Full silhouette with the map hidden: edges where props cover the agent are occlusion
+		# edges, not silhouette edges, and are left out of the measurement.
+		map.visible = false
+		var sky_only := await _grab()
 		rig.global_position = at
-		var r := _measure(with_agent, without, box)
+		var agent_only := await _grab()
+		map.visible = true
+		var r := _measure(with_agent, without, box, _silhouette(agent_only, sky_only))
 		if r.get("hidden", false):
 			print("[readability] %-18s skipped (agent mostly hidden: %d px)" % [m["name"], r["pixels"]])
 			continue
@@ -207,7 +213,22 @@ func _largest_region(mask: PackedByteArray, w: int, h: int, lo: Vector2i, hi: Ve
 	return {"mask": out, "lo": nlo, "hi": nhi}
 
 
-func _measure(a: Image, b: Image, box: Rect2i) -> Dictionary:
+## Full (unoccluded) agent silhouette from the map-hidden pair of frames.
+func _silhouette(a: Image, b: Image) -> PackedByteArray:
+	a.convert(Image.FORMAT_RGB8)
+	b.convert(Image.FORMAT_RGB8)
+	var da := a.get_data()
+	var db := b.get_data()
+	var out := PackedByteArray()
+	out.resize(a.get_width() * a.get_height())
+	for p: int in out.size():
+		var i := p * 3
+		if absi(da[i] - db[i]) > DIFF or absi(da[i + 1] - db[i + 1]) > DIFF or absi(da[i + 2] - db[i + 2]) > DIFF:
+			out[p] = 1
+	return out
+
+
+func _measure(a: Image, b: Image, box: Rect2i, full: PackedByteArray) -> Dictionary:
 	a.convert(Image.FORMAT_RGB8)
 	b.convert(Image.FORMAT_RGB8)
 	var da := a.get_data()
@@ -225,7 +246,9 @@ func _measure(a: Image, b: Image, box: Rect2i) -> Dictionary:
 	for y: int in range(box.position.y, box.end.y):
 		for x: int in range(box.position.x, box.end.x):
 			var i := (y * w + x) * 3
-			if absi(da[i] - db[i]) > DIFF or absi(da[i + 1] - db[i + 1]) > DIFF or absi(da[i + 2] - db[i + 2]) > DIFF:
+			# Agent pixel = changed AND inside the agent-only silhouette (sky/cloud drift, lighting
+			# noise and reflections elsewhere in the frame can never qualify).
+			if full[y * w + x] != 0 and (absi(da[i] - db[i]) > DIFF or absi(da[i + 1] - db[i + 1]) > DIFF or absi(da[i + 2] - db[i + 2]) > DIFF):
 				mask[y * w + x] = 1
 				la += _lum(da, i)
 				lb += _lum(db, i)
@@ -262,6 +285,8 @@ func _measure(a: Image, b: Image, box: Rect2i) -> Dictionary:
 				var oy := y + d.y * 2
 				if mask[oy * w + ox] != 0:
 					continue
+				if full[(y + d.y) * w + x + d.x] != 0 or full[oy * w + ox] != 0:
+					continue  # occlusion edge: a prop covers the agent here
 				# The silhouette boundary is a 2 px band (outermost pixel + one inside): an outline
 				# or rim lives there. Take whichever of the two separates more from the background.
 				var l_out := _lum(db, (oy * w + ox) * 3)
