@@ -11,6 +11,17 @@ All eight agents are built in code (no Blender): `client/scripts/agents/`.
   ponchos).
 - `agent_looks.gd` (AgentLooks) dresses each agent. Each agent gets one signature colour and one
   signature shape (spec §6.1).
+- Pass 2 (look):
+  - Detail textures: `tools/texgen/chargen.py` makes weave, canvas, quilt, knit, leather, metal,
+    skin and hair detail sets. M_Character projects them triplanar in mesh space.
+  - Shader: a painterly two-tone ramp with a warm terminator band, cool lifted shades, and crisp
+    highlights on smooth surfaces.
+  - Build-time bake (`AgentRig.finalize`): voxel ambient occlusion, a head-to-toe value gradient,
+    skin tints (blush, nose, ears), and a slightly bigger head, hands and feet. The baked meshes
+    are cached per agent.
+  - Shapes: fabric folds and tucks (`FormKit.folds` / `tuck`), sculpted hair clumps
+    (`AgentBody.hair_clumps`), eyelids, glove cuffs.
+  - Animation: contrapposto idle with sway and breathing; elbows down when aiming.
 - Review with `scenes/dev/charsheet.tscn` (`--view=turn|face|bust|busts|all`, `--pose=rest|aim`).
   It prints triangle counts.
 
@@ -32,7 +43,7 @@ Rules kept:
 
 - All shapes, outfits and faces are original. The reference images set the quality bar only.
 - Hitboxes are unchanged and identical for every agent (spec §6.2). Only the visual mesh differs.
-- Triangle budget: about 14.5k to 21k per agent (web LOD0 budget is 20–25k).
+- Triangle budget: 20k or less per agent (13.4k–20.1k after pass 2).
 - Tiny face details (eyes, lashes, lips, brows, glows) skip the silhouette outline pass
   (`no_outline`), so the two-tone map outline never rings them.
 - The first-person arm colours (`viewmodel.gd` `_arm_look`) match each agent's sleeves, cuffs and

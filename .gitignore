@@ -12,3 +12,4 @@ build/
 qa/screens/**/*.tmp
 dump.rdb
 replays/
+__pycache__/
