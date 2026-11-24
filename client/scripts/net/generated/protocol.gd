@@ -36,6 +36,7 @@ const MSG_SHOT_EVENT: int = 28
 const MSG_VOICE_SIGNAL: int = 29
 const MSG_VOICE_DATA: int = 30
 const MSG_MAP_PING: int = 31
+const MSG_SNAPSHOT_DELTA: int = 32
 
 const MSG_NAMES: Dictionary = {
 	1: "Hello",
@@ -69,6 +70,7 @@ const MSG_NAMES: Dictionary = {
 	29: "VoiceSignal",
 	30: "VoiceData",
 	31: "MapPing",
+	32: "SnapshotDelta",
 }
 
 const UNRELIABLE: Dictionary = {
@@ -77,6 +79,7 @@ const UNRELIABLE: Dictionary = {
 	26: true,
 	28: true,
 	30: true,
+	32: true,
 }
 
 static func _write_input_cmd(w: ProtocolCodec.Writer, v: Dictionary) -> void:
@@ -369,6 +372,11 @@ static func encode(msg: Dictionary) -> PackedByteArray:
 			w.put_u8(msg["playerId"])
 			w.put_u8(msg["kind"])
 			w.put_pos(msg["pos"])
+		"SnapshotDelta":
+			w.put_u8(32)
+			w.put_u32(msg["tick"])
+			w.put_u32(msg["baseTick"])
+			w.put_bytes(msg["data"])
 		_:
 			push_error("Protocol.encode: unknown message type %s" % type_name)
 			return PackedByteArray()
@@ -585,6 +593,11 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 			msg["playerId"] = r.get_u8()
 			msg["kind"] = r.get_u8()
 			msg["pos"] = r.get_pos()
+		32:
+			msg["type"] = "SnapshotDelta"
+			msg["tick"] = r.get_u32()
+			msg["baseTick"] = r.get_u32()
+			msg["data"] = r.get_bytes()
 		_:
 			return {}
 	if not r.ok_and_finished():

@@ -29,7 +29,7 @@ export type FromWorker =
       missing: number;
     };
 
-const match = new Match(workerData as MatchOptions);
+const match = new Match({ snapshotDeltas: true, ...(workerData as MatchOptions) });
 const port = parentPort!;
 match.setTransport((playerId: number, msg: Message) => {
   let bytes: Uint8Array;
@@ -101,7 +101,7 @@ port.on("message", (m: ToWorker) => {
       } catch {
         return;
       }
-      if (msg.type === "Input") match.receiveInput(m.playerId, msg.cmds);
+      if (msg.type === "Input") match.receiveInput(m.playerId, msg.cmds, msg.ackSnapshot);
       else if (msg.type === "BuyRequest") match.buy(m.playerId, msg.item);
       else if (msg.type === "Chat") match.chat(m.playerId, msg.teamOnly, msg.text);
       else if (msg.type === "VoiceSignal")

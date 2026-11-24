@@ -879,6 +879,27 @@
           "type": "pos"
         }
       ]
+    },
+    {
+      "id": 32,
+      "name": "SnapshotDelta",
+      "dir": "s2c",
+      "channel": "unreliable",
+      "$comment": "Snapshot delta-compressed against the last snapshot the client acknowledged (Input.ackSnapshot). data = zero-run-length encoding of (encoded Snapshot XOR encoded base Snapshot); both encodings have the same length. Codec: server/src/match/snapshot-delta.ts, client/scripts/net/snapshot_delta.gd.",
+      "fields": [
+        {
+          "name": "tick",
+          "type": "u32"
+        },
+        {
+          "name": "baseTick",
+          "type": "u32"
+        },
+        {
+          "name": "data",
+          "type": "bytes"
+        }
+      ]
     }
   ]
 }

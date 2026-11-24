@@ -102,6 +102,8 @@ func _handle(bytes: PackedByteArray) -> void:
 			rtt_updated.emit(rtt_ms)
 		"Disconnect":
 			last_error = msg["reason"]
+		"Snapshot":
+			msg["_raw"] = bytes  # exact server bytes: the base for later SnapshotDelta messages
 	message_received.emit(msg)
 
 

@@ -165,6 +165,12 @@ const samples: Message[] = [
     kind: 2,
     sdp: "0\n0\ncandidate:1 1 udp 2122 192.0.2.1 5000 typ host",
   },
+  {
+    type: "SnapshotDelta",
+    tick: 1200,
+    baseTick: 1196,
+    data: new Uint8Array([0x00, 0x05, 0x13, 0x00, 0x02, 0x7f]),
+  },
   { type: "MapPing", playerId: 4, kind: 3, pos: { x: -12.5, y: 0.25, z: 40 } },
   {
     type: "VoiceData",

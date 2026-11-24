@@ -174,7 +174,12 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
   - This halved per-match tick cost (`qa/perf/2026-11-23-m10-load.md`).
 - **Matchmade matches end; quick servers cycle.** Each cycle gets its own match id (`<id>-<n>`) for
   stats and replays.
-- **Snapshot delta compression is deferred.** The spec's bandwidth target is under 25 KB/s down per
+- **Snapshot delta compression (implemented 2026-11-24; earlier deferral below kept for history).**
+  The server XORs the encoded snapshot with the newest one the client acked (`Input.ackSnapshot`,
+  kept ~1 s per viewer) and run-length encodes the zero bytes into `SnapshotDelta`. It falls back to
+  full snapshots when the visible player set changes or no base is held. The client keeps the exact
+  received bytes. Wire bytes are about 21 % of full snapshots.
+- **(Superseded) Snapshot delta compression is deferred.** The spec's bandwidth target is under 25 KB/s down per
   player in a full 10-player fight. The load test measures about 8 KB/s (64 kbit/s) per client with
   full snapshots, fog-of-war culling and quantised fields. Deltas against `baseTick` stay as an
   optimisation: the field is reserved and currently always 0.

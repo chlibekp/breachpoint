@@ -48,7 +48,7 @@ verified, what is open, and the exact next steps. Update it at the end of every 
         A Main push, Bay vista, Parking deck. Add dedicated player-height bookmarks for those angles
         if wanted.
 - [ ] Compatibility sun-shadow lift: investigated, engine-side; options (a)/(b)/(c) in DECISIONS.md — owner call.
-- [ ] Snapshot deltas against `baseTick` (halves egress; field already in the protocol).
+- [x] Snapshot deltas: `SnapshotDelta` = zero-RLE of (snapshot XOR acked base); ~21 % of full-snapshot bytes in tests; verified live (7,954 deltas applied, 0 missed).
 - [x] Observability: Prometheus `/metrics` (METRICS_PORT 9464), alert rules and Grafana dashboard
       in `docker/monitoring/`, wired into docker-compose.
 - [x] Web FXAA pass; music as OGG Vorbis.

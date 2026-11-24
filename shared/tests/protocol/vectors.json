@@ -402,6 +402,17 @@
     },
     {
       "message": {
+        "type": "SnapshotDelta",
+        "tick": 1200,
+        "baseTick": 1196,
+        "data": {
+          "$bytes": "00051300027f"
+        }
+      },
+      "hex": "20b0040000ac040000060000051300027f"
+    },
+    {
+      "message": {
         "type": "MapPing",
         "playerId": 4,
         "kind": 3,

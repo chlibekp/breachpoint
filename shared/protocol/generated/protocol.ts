@@ -37,6 +37,7 @@ export const MsgId = {
   VoiceSignal: 29,
   VoiceData: 30,
   MapPing: 31,
+  SnapshotDelta: 32,
 } as const;
 
 export const MsgChannel: Record<number, "reliable" | "unreliable"> = {
@@ -71,6 +72,7 @@ export const MsgChannel: Record<number, "reliable" | "unreliable"> = {
   29: "reliable",
   30: "unreliable",
   31: "reliable",
+  32: "unreliable",
 };
 
 export interface InputCmd {
@@ -404,6 +406,12 @@ export interface MapPingMsg {
   kind: number;
   pos: Vec3;
 }
+export interface SnapshotDeltaMsg {
+  type: "SnapshotDelta";
+  tick: number;
+  baseTick: number;
+  data: Uint8Array;
+}
 
 export type Message =
   | HelloMsg
@@ -436,7 +444,8 @@ export type Message =
   | ShotEventMsg
   | VoiceSignalMsg
   | VoiceDataMsg
-  | MapPingMsg;
+  | MapPingMsg
+  | SnapshotDeltaMsg;
 
 export function encode(msg: Message, w: Writer = new Writer()): Uint8Array {
   switch (msg.type) {
@@ -680,6 +689,13 @@ export function encode(msg: Message, w: Writer = new Writer()): Uint8Array {
       w.u8(msg.playerId);
       w.u8(msg.kind);
       w.pos(msg.pos);
+      break;
+    }
+    case "SnapshotDelta": {
+      w.u8(32);
+      w.u32(msg.tick);
+      w.u32(msg.baseTick);
+      w.bytes(msg.data);
       break;
     }
   }
@@ -962,6 +978,14 @@ export function decode(bytes: Uint8Array): Message {
         playerId: r.u8(),
         kind: r.u8(),
         pos: r.pos(),
+      };
+      break;
+    case 32:
+      msg = {
+        type: "SnapshotDelta",
+        tick: r.u32(),
+        baseTick: r.u32(),
+        data: r.bytes(),
       };
       break;
     default:

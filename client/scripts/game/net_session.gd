@@ -152,7 +152,23 @@ func _on_message(msg: Dictionary) -> void:
 			scoreboard.match_id = str(msg["matchId"])
 			scoreboard.my_id = my_id
 		"Snapshot":
+			_snap_full += 1
+			_remember_snapshot(msg)
 			_on_snapshot(msg)
+		"SnapshotDelta":
+			# Delta against a snapshot we acknowledged; rebuild it and handle it like a full one.
+			var base: PackedByteArray = _snap_bytes.get(int(msg["baseTick"]), PackedByteArray())
+			if not base.is_empty():
+				var full := SnapshotDelta.apply(msg["data"], base)
+				if not full.is_empty():
+					var snap := Protocol.decode(full)
+					if str(snap.get("type", "")) == "Snapshot":
+						_snap_bytes[int(snap["tick"])] = full
+						_prune_snapshots(int(snap["tick"]))
+						_snap_delta += 1
+						_on_snapshot(snap)
+						return
+			_snap_missed += 1
 		"Spawn":
 			if int(msg["playerId"]) == my_id and player != null:
 				player.teleport(msg["pos"], float(msg["yaw"]))
@@ -482,6 +498,28 @@ func _check_last_alive() -> void:
 	if mates > 0:
 		_last_alive_round = round_num
 		announcer.say("announcer", "last_alive")
+
+
+## Encoded snapshots by tick (≈1 s) — the bases SnapshotDelta messages are applied to.
+var _snap_bytes: Dictionary = {}
+var _snap_full := 0
+var _snap_delta := 0
+var _snap_missed := 0
+
+
+func _exit_tree() -> void:
+	print_verbose("[net] snapshots full=%d delta=%d missed=%d" % [_snap_full, _snap_delta, _snap_missed])
+
+
+func _remember_snapshot(msg: Dictionary) -> void:
+	_snap_bytes[int(msg["tick"])] = msg["_raw"] if msg.has("_raw") else Protocol.encode(msg)
+	_prune_snapshots(int(msg["tick"]))
+
+
+func _prune_snapshots(newest: int) -> void:
+	for t: int in _snap_bytes.keys():
+		if newest - t > 96:
+			_snap_bytes.erase(t)
 
 
 ## Human teammates for voice (bots never transmit); names key mute/volume settings.

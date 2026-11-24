@@ -3,7 +3,13 @@
 // runs the round state machine and economy, and sends each client a fog-of-war-culled snapshot.
 // I/O-free: callers pass `send(playerId, message)`; the worker/gateway does the transport.
 import { loadRawConfig } from "@breachpoint/shared/config";
-import type { InputCmd, Message, PlayerState } from "@breachpoint/shared/protocol";
+import {
+  encode,
+  type InputCmd,
+  type Message,
+  type PlayerState,
+} from "@breachpoint/shared/protocol";
+import { encodeDelta } from "./snapshot-delta.ts";
 import type { World } from "../sim/collision.ts";
 import { segmentBlocked } from "../sim/collision.ts";
 import {
@@ -50,6 +56,8 @@ export interface MatchOptions {
   /** Override round count / phases for tests and quick modes. */
   roundsToWin?: number;
   phaseScale?: number;
+  /** Send SnapshotDelta against the client's acknowledged snapshot when smaller (default on). */
+  snapshotDeltas?: boolean;
   /** Directory for .bpr replays (spec §14.4); omit to disable recording. */
   replayDir?: string;
 }
@@ -132,6 +140,9 @@ export interface ServerPlayer extends AbilityPlayer {
   charges: number[];
   damageTaken: Map<number, number>;
   visibleTicks: Map<number, number>;
+  /** Newest snapshot tick the client acknowledged (Input.ackSnapshot) and what we sent per tick. */
+  ackSnapshot: number;
+  sentSnapshots: Map<number, Uint8Array>;
   pingMs: number;
   stepDist: number;
   plantProgress: number;
@@ -382,6 +393,8 @@ export class Match {
       charges: [0, 0, 1, 0],
       damageTaken: new Map(),
       visibleTicks: new Map(),
+      ackSnapshot: 0,
+      sentSnapshots: new Map(),
       pingMs: 0,
       stepDist: 0,
       plantProgress: 0,
@@ -444,9 +457,10 @@ export class Match {
     }
   }
 
-  receiveInput(id: number, cmds: InputCmd[]): void {
+  receiveInput(id: number, cmds: InputCmd[], ackSnapshot = 0): void {
     const p = this.players.get(id);
     if (!p || p.bot) return;
+    if (ackSnapshot > p.ackSnapshot && ackSnapshot <= this.tick) p.ackSnapshot = ackSnapshot;
     for (const c of cmds) {
       if (c.seq <= p.lastSeq || p.inputs.some((q) => q.seq === c.seq)) continue;
       // Validation (spec §14.3). Angles are absolute (no turn-rate exploit), but must be finite;
@@ -1481,7 +1495,7 @@ export class Match {
         }
         if (send) players.push(states.get(q.id)!);
       }
-      this.send(viewer.id, {
+      this.sendSnapshot(viewer, {
         type: "Snapshot",
         tick: this.tick,
         baseTick: 0,
@@ -1489,6 +1503,33 @@ export class Match {
         players,
       });
     }
+  }
+
+  /**
+   * Sends a snapshot as a delta against the newest one the client acknowledged when that is
+   * smaller (spec §13); otherwise in full. Keeps ~1 s of sent snapshots per viewer as bases.
+   */
+  private sendSnapshot(viewer: ServerPlayer, msg: Message & { type: "Snapshot" }): void {
+    if (!this.options.snapshotDeltas) {
+      this.send(viewer.id, msg);
+      return;
+    }
+    const bytes = encode(msg);
+    viewer.sentSnapshots.set(this.tick, bytes);
+    for (const t of viewer.sentSnapshots.keys()) {
+      if (this.tick - t > TICK_RATE) viewer.sentSnapshots.delete(t);
+      else break;
+    }
+    const base = viewer.sentSnapshots.get(viewer.ackSnapshot);
+    const delta = base ? encodeDelta(bytes, base) : null;
+    if (delta && delta.length + 12 < bytes.length)
+      this.send(viewer.id, {
+        type: "SnapshotDelta",
+        tick: this.tick,
+        baseTick: viewer.ackSnapshot,
+        data: delta,
+      });
+    else this.send(viewer.id, msg);
   }
 
   private soundEvent(p: ServerPlayer, kind: number, param: string, range: number): void {
