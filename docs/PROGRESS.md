@@ -160,3 +160,8 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
   and signature shapes (see `docs/art/agents/README.md`); 12–17k tris, parts batched per bone and
   material; FP arm colours matched; review scene `scenes/dev/charsheet.tscn`. Readability re-run:
   SOLSTICE 25/25 (worst 3.18), NEON 13/13 (worst 6.83).
+- **2026-11-24 (char 2)** — Character pass 2: procedural character detail textures
+  (`tools/texgen/chargen.py`), painterly M_Character (triplanar detail, warm terminator, cool
+  shade, crisp highlights), baked AO/gradient/skin tints, contrapposto idle + sway, bigger
+  head/hands/feet, puffier clothing with folds, sculpted hair clumps, eyelids; 13.4–20.1k tris.
+  Readability: SOLSTICE 25/25 (worst 3.18), NEON 13/13 (worst 6.89).
