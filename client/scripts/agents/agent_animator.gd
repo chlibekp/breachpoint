@@ -5,6 +5,11 @@
 class_name AgentAnimator
 extends Node
 
+## Standing hip height and ankle height: legs nearly straight (AgentBody boots put the sole
+## ANKLE_Y below the ankle).
+const STAND_HIPS := 0.978
+const ANKLE_Y := 0.075
+
 var rig: AgentRig
 var weapon: Node3D  ## WeaponModel (has sockets grip / left_hand_ik)
 
@@ -62,7 +67,7 @@ func _process(delta: float) -> void:
 	var stride := clampf(speed * 0.11, 0.0, 0.42)
 	var bob := absf(sin(_phase)) * 0.035 * run
 	var breathe := sin(_t * 1.7) * 0.006
-	hips.position.y = 0.96 - crouch * 0.36 - bob + breathe * 0.5 - (0.0 if not airborne else -0.02)
+	hips.position.y = STAND_HIPS - crouch * 0.36 - bob + breathe * 0.5 - (0.0 if not airborne else -0.02)
 	# Body leans into the movement direction a little.
 	var move_dir := Vector3(velocity_local.x, 0, velocity_local.z).normalized() if speed > 0.1 else Vector3.ZERO
 	hips.rotation = Vector3(-move_dir.z * 0.05 * run + crouch * 0.12, 0, move_dir.x * 0.04 * run)
@@ -84,7 +89,7 @@ func _legs(stride: float, run: float, speed: float, move_dir: Vector3) -> void:
 		var ph := _phase + (0.0 if side == "l" else PI)
 		var swing := sin(ph)
 		var lift := maxf(0.0, cos(ph)) * (0.12 + 0.1 * run) if speed > 0.25 else 0.0
-		var foot := Vector3(sx * (0.11 + crouch * 0.05), 0.09 + lift, 0.0) + move_dir * swing * stride
+		var foot := Vector3(sx * (0.12 + crouch * 0.05), ANKLE_Y + lift, 0.0) + move_dir * swing * stride
 		if crouch > 0.0:
 			foot.z += (0.12 if side == "l" else -0.18) * crouch
 		if airborne:

@@ -88,14 +88,20 @@ func material(id: String, spec: Dictionary) -> ShaderMaterial:
 		m.set_shader_parameter("emissive_energy", spec.get("emissive_energy", 2.0))
 	if spec.has("rim"):
 		m.set_shader_parameter("rim_color", spec["rim"])
-	m.next_pass = outline_material()
+	for key: String in ["sss", "sheen", "toon_mix", "edge_wear", "rim_strength"]:
+		if spec.has(key):
+			m.set_shader_parameter(key, spec[key])
+	# Tiny face details (eyes, lashes, lips) skip the silhouette hull: it would ring them.
+	if not spec.get("no_outline", false):
+		m.next_pass = outline_material()
 	materials[id] = m
 	return m
 
 
-## Adds a mesh part (built by `fn(k: MeshKit)` in bone space) to a bone with a material.
+## Adds a mesh part (built by `fn(k: FormKit)` in bone space) to a bone with a material.
+## FormKit extends MeshKit, so older `func(k: MeshKit)` builders still work.
 func part(bone_name: String, mat: ShaderMaterial, fn: Callable, part_name: String = "") -> MeshInstance3D:
-	var k := MeshKit.new()
+	var k := FormKit.new()
 	fn.call(k)
 	var mi := MeshInstance3D.new()
 	mi.name = part_name if part_name != "" else "part_%d" % bones[bone_name].get_child_count()

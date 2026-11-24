@@ -32,6 +32,10 @@ uniform vec4 emissive_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform float emissive_energy = 0.0;
 uniform float reveal : hint_range(0.0, 1.0) = 0.0;
 uniform float edge_wear : hint_range(0.0, 1.0) = 0.25;
+// Skin: warm subsurface glow along the light terminator (ears, nose, cheeks read alive).
+uniform float sss : hint_range(0.0, 1.0) = 0.0;
+// Fabric: soft albedo-tinted sheen at grazing angles (velvet/nylon read, painterly edge light).
+uniform float sheen : hint_range(0.0, 1.0) = 0.0;
 
 vec3 saturate_color(vec3 c, float s) {
 	float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
@@ -54,6 +58,7 @@ void fragment() {
 	float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), rim_power);
 	vec3 emit = emissive_color.rgb * emissive_energy + ALBEDO * character_lift;
 	emit += rim_color.rgb * fres * rim_strength * 0.25;
+	emit += ALBEDO * pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 2.0) * sheen * 0.35;
 	emit += team_enemy_color.rgb * smoothstep(0.35, 0.9, fres) * reveal * 2.5;
 	EMISSION = emit;
 }
@@ -68,6 +73,9 @@ void light() {
 	DIFFUSE_LIGHT += LIGHT_COLOR * d / PI;
 	// Shadows are tinted and lifted, never grey-black (art bible §4.2).
 	DIFFUSE_LIGHT += LIGHT_COLOR * shadow_tint.rgb * (1.0 - d) * 0.05;
+	// Subsurface: a warm band where light wraps past the terminator.
+	float term = smoothstep(-0.45, 0.05, ndl) * (1.0 - smoothstep(0.05, 0.55, ndl));
+	DIFFUSE_LIGHT += LIGHT_COLOR * vec3(0.95, 0.38, 0.26) * term * sss * 0.16 * mix(0.5, 1.0, ATTENUATION);
 	vec3 h = normalize(VIEW + LIGHT);
 	float ndh = clamp(dot(NORMAL, h), 0.0, 1.0);
 	float a = max(ROUGHNESS * ROUGHNESS, 0.03);

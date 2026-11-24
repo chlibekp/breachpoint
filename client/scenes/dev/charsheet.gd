@@ -1,0 +1,129 @@
+## Character review sheet (art pass): one agent as a turnaround (front, 3/4, side, back), a face
+## close-up, or all eight in a row, on a neutral studio stage or on the Range. Prints triangle
+## counts per agent. Usage:
+##   -- --capture=res://scenes/dev/charsheet.tscn --agent=kestrel --view=turn|face|bust|all
+##      [--pose=rest|aim] [--stage=studio|range] [--size=WxH] --out=<png>
+extends Node3D
+
+const IDS: Array[String] = ["kestrel", "mamba", "vesper", "haldor", "orin", "sable", "imani", "tomas"]
+
+
+func _ready() -> void:
+	var args := Game.parse_user_args(OS.get_cmdline_user_args())
+	var agent := str(args.get("agent", "kestrel"))
+	var view := str(args.get("view", "turn"))
+	var pose := str(args.get("pose", "rest"))
+	if str(args.get("stage", "studio")) == "range":
+		add_child((load("res://scenes/maps/range.tscn") as PackedScene).instantiate())
+	else:
+		_studio()
+	var cam := Camera3D.new()
+	cam.current = true
+	add_child(cam)
+	match view:
+		"face":
+			_spawn(agent, Vector3.ZERO, 180.0 + float(args.get("yaw", "20")), pose)
+			cam.fov = 22
+			cam.position = Vector3(0, 1.69, 0.75)
+			cam.look_at(Vector3(0, 1.68, 0))
+		"bust":
+			_spawn(agent, Vector3.ZERO, 180.0 + float(args.get("yaw", "25")), pose)
+			cam.fov = 30
+			cam.position = Vector3(0, 1.5, 1.6)
+			cam.look_at(Vector3(0, 1.42, 0))
+		"busts":
+			var set_i := int(args.get("set", "0"))
+			for i: int in 4:
+				_spawn(IDS[set_i * 4 + i], Vector3(-1.35 + i * 0.9, 0, 0), 180.0 + float(args.get("yaw", "20")), pose)
+			cam.fov = 30
+			cam.position = Vector3(0, 1.48, 3.3)
+			cam.look_at(Vector3(0, 1.4, 0))
+		"all":
+			for i: int in IDS.size():
+				_spawn(IDS[i], Vector3(-4.2 + i * 1.2, 0, 0), 180.0 + float(args.get("yaw", "0")), pose)
+			cam.fov = 40
+			cam.position = Vector3(0, 1.2, 7.6)
+			cam.look_at(Vector3(0, 0.95, 0))
+		_:
+			var yaws := [180.0, 225.0, 270.0, 0.0]
+			for i: int in 4:
+				_spawn(agent, Vector3(-1.95 + i * 1.3, 0, 0), yaws[i], pose)
+			cam.fov = 32
+			cam.position = Vector3(0, 1.0, 5.6)
+			cam.look_at(Vector3(0, 0.92, 0))
+	for id: String in (IDS if view in ["all", "busts"] else [agent]):
+		print("[charsheet] %s triangles: %d" % [id, _tris(AgentLooks.build(id))])
+
+
+func _spawn(id: String, pos: Vector3, yaw: float, pose: String) -> void:
+	var rig := AgentLooks.build(id)
+	rig.position = pos
+	rig.rotation_degrees.y = yaw
+	add_child(rig)
+	var anim := AgentAnimator.new()
+	anim.setup(rig)
+	if pose == "aim":
+		anim.attach_weapon(WeaponBuilder.build("saber"))
+	rig.add_child(anim)
+	if pose != "aim":
+		var relax := _Relax.new()
+		relax.rig = rig
+		rig.add_child(relax)
+
+
+## Relaxed showroom arms (after the animator's reset): slight A-pose, soft elbows.
+class _Relax extends Node:
+	var rig: AgentRig
+
+	func _ready() -> void:
+		process_priority = 100
+
+	func _process(_delta: float) -> void:
+		for side: String in ["l", "r"]:
+			var sx := -1.0 if side == "l" else 1.0
+			(rig.bones["upper_arm_" + side] as Node3D).rotation = Vector3(0.06, 0.0, sx * 0.16)
+			(rig.bones["forearm_" + side] as Node3D).rotation = Vector3(0.22, 0.0, sx * -0.05)
+			(rig.bones["hand_" + side] as Node3D).rotation = Vector3(0.05, sx * -0.25, sx * -0.04)
+
+
+func _tris(rig: AgentRig) -> int:
+	var n := 0
+	for mi: Node in rig.find_children("*", "MeshInstance3D", true, false):
+		var mesh := (mi as MeshInstance3D).mesh
+		for s: int in mesh.get_surface_count():
+			n += (mesh.surface_get_arrays(s)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
+	rig.free()
+	return n
+
+
+func _studio() -> void:
+	var env := Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color("#3A4250")
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color("#8C96AA")
+	env.ambient_light_energy = 0.55
+	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	var we := WorldEnvironment.new()
+	we.environment = env
+	add_child(we)
+	var key := DirectionalLight3D.new()
+	key.light_color = Color("#FFE8CC")
+	key.light_energy = 1.5
+	key.shadow_enabled = true
+	key.rotation_degrees = Vector3(-38, 35, 0)
+	add_child(key)
+	var fill := DirectionalLight3D.new()
+	fill.light_color = Color("#9DB4FF")
+	fill.light_energy = 0.35
+	fill.rotation_degrees = Vector3(-15, -140, 0)
+	add_child(fill)
+	var floor_mi := MeshInstance3D.new()
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(30, 30)
+	floor_mi.mesh = plane
+	var fm := StandardMaterial3D.new()
+	fm.albedo_color = Color("#59606B")
+	fm.roughness = 0.9
+	floor_mi.material_override = fm
+	add_child(floor_mi)
