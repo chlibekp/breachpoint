@@ -2,7 +2,8 @@
 """BREACHPOINT procedural sound generator (spec §16). Every sound is synthesised from noise,
 oscillators and envelopes — original by construction, nothing sampled, nothing to license.
 
-Writes 16-bit mono WAVs to client/assets/sfx/<group>/SFX_<name>_<variant>.wav.
+Writes 16-bit mono WAVs to client/assets/sfx/<group>/SFX_<name>_<variant>.wav (music: OGG Vorbis
+via ffmpeg).
 Weapons get 3 layers (mech = close mechanical, body, tail) + a distant variant, 4 variations each.
 Footsteps: 7 surfaces x 6 variations. Plus reloads, impacts, hit/kill feedback, UI, Breach Charge.
 """
@@ -10,6 +11,7 @@ from __future__ import annotations
 
 import json
 import sys
+import subprocess
 import wave
 from pathlib import Path
 
@@ -75,11 +77,20 @@ def save(group: str, name: str, x: np.ndarray, gain: float = 0.9) -> None:
     d.mkdir(parents=True, exist_ok=True)
     x = x / (np.max(np.abs(x)) + 1e-9) * gain
     pcm = (np.clip(x, -1, 1) * 32767).astype(np.int16)
-    with wave.open(str(d / f"SFX_{name}.wav"), "wb") as w:
+    wav = d / f"SFX_{name}.wav"
+    with wave.open(str(wav), "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)
         w.setframerate(SR)
         w.writeframes(pcm.tobytes())
+    if group == "music":
+        # Spec 16: music ships as OGG Vorbis (streamed, ~10x smaller than PCM); SFX stay WAV.
+        ogg = wav.with_suffix(".ogg")
+        subprocess.run(
+            ["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav), "-c:a", "libvorbis", "-q:a", "4", str(ogg)],
+            check=True,
+        )
+        wav.unlink()
 
 
 # ---------------------------------------------------------------- weapons
@@ -301,7 +312,7 @@ def main(argv: list[str]) -> None:
         feedback(rng)
     if "music" in groups:
         music(rng)
-    manifest = {g.name: sorted(p.stem for p in g.glob("*.wav")) for g in OUT.iterdir() if g.is_dir()}
+    manifest = {g.name: sorted(p.stem for p in [*g.glob("*.wav"), *g.glob("*.ogg")]) for g in OUT.iterdir() if g.is_dir()}
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
     print("[sfxgen] done")
 

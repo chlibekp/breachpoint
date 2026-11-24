@@ -56,7 +56,8 @@ static func stream(group: String, sfx_name: String) -> AudioStream:
 		if variants.is_empty():
 			return null
 		chosen = variants[randi() % variants.size()]
-	var path := "res://assets/sfx/%s/%s.wav" % [group, chosen]
+	# Music ships as OGG Vorbis (spec 16), everything else as WAV.
+	var path := "res://assets/sfx/%s/%s.%s" % [group, chosen, "ogg" if group == "music" else "wav"]
 	if not _streams.has(path):
 		_streams[path] = load(path)
 	return _streams[path]
