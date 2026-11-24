@@ -87,24 +87,25 @@ func _build_arms(agent_id: String) -> void:
 
 
 static func _arm_look(agent_id: String) -> Dictionary:
+	# Matches AgentLooks (sleeve, cuff/wrist band, glove, skin).
 	match agent_id:
 		"kestrel":
-			return {"sleeve": Color("#F2741E"), "cuff": Color("#E9E1D0"), "glove": Color("#30343A"), "skin": Color("#E9C2A6")}
+			return {"sleeve": Color("#F2701A"), "cuff": Color("#D8CBB2"), "glove": Color("#2A2D31"), "skin": Color("#EDC6AA")}
 		"mamba":
-			return {"sleeve": Color("#22272C"), "cuff": Color("#9BE22B"), "glove": Color("#1C1F22"), "skin": Color("#5E3A27")}
+			return {"sleeve": Color("#22262B"), "cuff": Color("#9BE22B"), "glove": Color("#16181B"), "skin": Color("#5C3826")}
 		"vesper":
-			return {"sleeve": Color("#3A2A6E"), "cuff": Color("#C9A04A"), "glove": Color("#22202C"), "skin": Color("#D9A984")}
+			return {"sleeve": Color("#43308A"), "cuff": Color("#9A7CF0"), "glove": Color("#241D38"), "skin": Color("#DDAA86")}
 		"haldor":
-			return {"sleeve": Color("#D9D4CA"), "cuff": Color("#2A2A2D"), "glove": Color("#2A2A2D"), "skin": Color("#E9C2A6")}
+			return {"sleeve": Color("#DDD7CB"), "cuff": Color("#26272B"), "glove": Color("#26272B"), "skin": Color("#EDC6AA")}
 		"orin":
-			return {"sleeve": Color("#5A4A38"), "cuff": Color("#C8913A"), "glove": Color("#4A3A2A"), "skin": Color("#B9825C")}
+			return {"sleeve": Color("#BA845E"), "cuff": Color("#7D6B4E"), "glove": Color("#4A3828"), "skin": Color("#BA845E")}
 		"sable":
-			return {"sleeve": Color("#2F8CFF"), "cuff": Color("#F4F6FA"), "glove": Color("#1A1C20"), "skin": Color("#D9A984")}
+			return {"sleeve": Color("#2F8CFF"), "cuff": Color("#F4F6FA"), "glove": Color("#DDAA86"), "skin": Color("#DDAA86")}
 		"imani":
-			return {"sleeve": Color("#2E3A33"), "cuff": Color("#F2B632"), "glove": Color("#EDEBE6"), "skin": Color("#5E3A27")}
+			return {"sleeve": Color("#33413A"), "cuff": Color("#E8AE2E"), "glove": Color("#262B28"), "skin": Color("#5C3826")}
 		"tomas":
-			return {"sleeve": Color("#C8743A"), "cuff": Color("#3A4250"), "glove": Color("#3A2E28"), "skin": Color("#B9825C")}
-	return {"sleeve": Color("#2B3440"), "cuff": Color("#5B6673"), "glove": Color("#30343A"), "skin": Color("#D9A984")}
+			return {"sleeve": Color("#C8743A"), "cuff": Color("#454D55"), "glove": Color("#3A2E28"), "skin": Color("#BA845E")}
+	return {"sleeve": Color("#2B3440"), "cuff": Color("#5B6673"), "glove": Color("#30343A"), "skin": Color("#DDAA86")}
 
 
 func _mat(color: Color, roughness: float) -> ShaderMaterial:
