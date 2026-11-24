@@ -25,7 +25,8 @@ describe.each(["solstice", "neon"])("authoritative match with 10 bots on %s", (m
     expect(m.players.size).toBe(10);
     const times: number[] = [];
     let ticks = 0;
-    while (m.phase !== Phase.MATCH_OVER && ticks < 64 * 60 * 15) {
+    // Overtime (win by 2) can run long; 45 game-minutes is a generous cap.
+    while (m.phase !== Phase.MATCH_OVER && ticks < 64 * 60 * 45) {
       const t0 = performance.now();
       m.step();
       times.push(performance.now() - t0);

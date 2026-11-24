@@ -17,6 +17,13 @@ services:
       MAP: solstice,neon
       REPLAY_DIR: /data/replays
       METRICS_PORT: "9464"
+      # OAuth (spec 14.1): set client id/secret pairs to enable Google/Discord sign-in. Register the
+      # redirect URI <OAUTH_REDIRECT_BASE>/auth/oauth/callback with each provider.
+      OAUTH_REDIRECT_BASE: http://localhost:7351
+      OAUTH_GOOGLE_CLIENT_ID: ${OAUTH_GOOGLE_CLIENT_ID:-}
+      OAUTH_GOOGLE_CLIENT_SECRET: ${OAUTH_GOOGLE_CLIENT_SECRET:-}
+      OAUTH_DISCORD_CLIENT_ID: ${OAUTH_DISCORD_CLIENT_ID:-}
+      OAUTH_DISCORD_CLIENT_SECRET: ${OAUTH_DISCORD_CLIENT_SECRET:-}
     volumes: [replays:/data/replays]
     depends_on: [postgres, redis]
 

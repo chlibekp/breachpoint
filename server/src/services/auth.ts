@@ -113,6 +113,48 @@ export class AuthService {
     return this.issue(row);
   }
 
+  /**
+   * OAuth sign-in (spec §14.1). Returns the linked account, or links by verified e-mail, or creates
+   * a new account named after the provider profile.
+   */
+  async oauthLogin(identity: {
+    provider: string;
+    subject: string;
+    email: string | null;
+    emailVerified: boolean;
+    name: string;
+  }): Promise<Tokens> {
+    const linked = (
+      await this.db.query<AccountRow>(
+        "SELECT a.* FROM oauth_identities o JOIN accounts a ON a.id = o.account_id WHERE o.provider = $1 AND o.subject = $2",
+        [identity.provider, identity.subject],
+      )
+    ).rows[0];
+    if (linked) return this.issue(linked);
+    const email = identity.email?.toLowerCase() ?? null;
+    let row: AccountRow | undefined;
+    if (email && identity.emailVerified)
+      row = (await this.db.query<AccountRow>("SELECT * FROM accounts WHERE email = $1", [email]))
+        .rows[0];
+    if (!row) {
+      const name =
+        identity.name.replace(/[^A-Za-z0-9_]/g, "").slice(0, 16) ||
+        `Player${Math.floor(Math.random() * 9000 + 1000)}`;
+      // Only claim the e-mail when the provider verified it and nobody else holds it.
+      const free =
+        email && identity.emailVerified
+          ? (await this.db.query("SELECT 1 FROM accounts WHERE email = $1", [email])).rows
+              .length === 0
+          : false;
+      row = await this.insertAccount(name, free ? email : null, null, false);
+    }
+    await this.db.query(
+      "INSERT INTO oauth_identities(provider, subject, account_id, email) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
+      [identity.provider, identity.subject, row.id, email],
+    );
+    return this.issue(row);
+  }
+
   async refresh(refreshToken: string): Promise<Tokens> {
     const { rows } = await this.db.query<{
       id: string;

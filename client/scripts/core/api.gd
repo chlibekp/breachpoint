@@ -56,6 +56,40 @@ func register(email: String, password: String, player_name: String) -> bool:
 	return r.get("ok", false)
 
 
+## OAuth providers the server has enabled ("google", "discord").
+func oauth_providers() -> PackedStringArray:
+	var r := await request("GET", "/auth/oauth/providers", null, false)
+	var out := PackedStringArray()
+	if r.get("ok", false) and r["body"] is Dictionary:
+		for p: Variant in (r["body"] as Dictionary).get("providers", []):
+			out.append(str(p))
+	return out
+
+
+## OAuth sign-in: opens the provider page in the system browser (or a new tab on web) and polls the
+## server until the sign-in completes. Returns true when signed in; false on cancel/timeout.
+func oauth_login(provider: String) -> bool:
+	var r := await request("POST", "/auth/oauth/start", {"provider": provider}, false)
+	if not r.get("ok", false):
+		return false
+	var session := str(r["body"]["session"])
+	OS.shell_open(str(r["body"]["url"]))
+	for _i: int in 90:  # up to 3 minutes
+		await get_tree().create_timer(2.0).timeout
+		var p := await request("GET", "/auth/oauth/poll?session=%s" % session.uri_encode(), null, false)
+		if not p.get("ok", false):
+			return false
+		var status := str((p["body"] as Dictionary).get("status", ""))
+		if status == "ok":
+			_take_tokens(p["body"]["tokens"])
+			return true
+		if status != "pending":
+			last_error = str((p["body"] as Dictionary).get("error", "sign-in failed"))
+			return false
+	last_error = "sign-in timed out"
+	return false
+
+
 func _take_tokens(body: Dictionary) -> void:
 	access_token = str(body["accessToken"])
 	refresh_token = str(body["refreshToken"])

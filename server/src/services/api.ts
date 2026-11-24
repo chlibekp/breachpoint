@@ -6,6 +6,7 @@ import { MODES, SocialService, type Mode } from "./social.ts";
 import type { StatsService } from "./stats.ts";
 import { readFile } from "node:fs/promises";
 import { replayPath } from "../match/replay.ts";
+import type { OAuthService } from "./oauth.ts";
 
 export function buildApi(
   auth: AuthService,
@@ -13,6 +14,7 @@ export function buildApi(
   stats: StatsService,
   gatewayUrl: string,
   replayDir?: string,
+  oauth?: OAuthService,
 ): Router {
   const r = new Router();
   const user = (req: Req): AccessClaims => {
@@ -38,6 +40,27 @@ export function buildApi(
   r.on("POST", "/auth/login", async (q) => ({
     body: await auth.login(str(q.body["email"], "email"), str(q.body["password"], "password")),
   }));
+  // OAuth sign-in (Google, Discord): start → browser → callback → client polls (see oauth.ts).
+  r.on("GET", "/auth/oauth/providers", async () => ({
+    body: { providers: oauth?.enabled ?? [] },
+  }));
+  r.on("POST", "/auth/oauth/start", async (q) => {
+    if (!oauth) throw new HttpError(404, "oauth_disabled");
+    return { body: await oauth.start(str(q.body["provider"], "provider")) };
+  });
+  r.on("GET", "/auth/oauth/callback", async (q) => {
+    if (!oauth) throw new HttpError(404, "oauth_disabled");
+    const html = await oauth.callback(q.query);
+    return {
+      body: null,
+      raw: new TextEncoder().encode(html),
+      contentType: "text/html; charset=utf-8",
+    };
+  });
+  r.on("GET", "/auth/oauth/poll", async (q) => {
+    if (!oauth) throw new HttpError(404, "oauth_disabled");
+    return { body: await oauth.poll(q.query["session"] ?? "") };
+  });
   r.on("POST", "/auth/guest", async () => ({ status: 201, body: await auth.guest() }));
   r.on("POST", "/auth/refresh", async (q) => ({
     body: await auth.refresh(str(q.body["refreshToken"], "refreshToken")),

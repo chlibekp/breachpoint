@@ -24,7 +24,8 @@ func _ready() -> void:
 	_agent = str(Settings.get_value("gameplay", "agent"))
 	_build_showroom()
 	_build_ui()
-	_show_tab("PLAY")
+	Api.session_changed.connect(_on_session_changed)
+	_show_tab(str(Game.parse_user_args(OS.get_cmdline_user_args()).get("tab", "PLAY")).to_upper())  # --tab=<name> for QA captures
 	Sfx.play_2d("music", "menu_theme", -10.0, "Music")
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_status.text = "CONNECTING TO PRISM NETWORK…"
@@ -186,6 +187,15 @@ func _build_ui() -> void:
 	_ui.add_child(_status)
 
 
+var _current_tab := ""
+
+
+## The account-dependent tab re-renders when the session changes (guest sign-in, login, OAuth).
+func _on_session_changed() -> void:
+	if _current_tab == "CAREER":
+		_tab_career()
+
+
 func _clear() -> VBoxContainer:
 	for c: Node in _content.get_children():
 		c.queue_free()
@@ -196,6 +206,7 @@ func _clear() -> VBoxContainer:
 
 
 func _show_tab(tab: String) -> void:
+	_current_tab = tab
 	match tab:
 		"PLAY":
 			_tab_play()
@@ -425,12 +436,62 @@ func _preview_weapon(weapon_id: String, skin: String) -> void:
 	tw.tween_property(piv, "rotation:y", TAU, 8.0).from(0.0)
 
 
+## Guest → real account: e-mail sign-in / registration and OAuth (Google, Discord) when enabled.
+## Competitive needs a registered account (spec §14.1).
+func _account_box(v: VBoxContainer) -> void:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 8)
+	v.add_child(box)
+	box.add_child(_lbl("PLAYING AS GUEST · sign in to keep progress and play Competitive", &"AccentLabel"))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	box.add_child(row)
+	var email := LineEdit.new()
+	email.placeholder_text = "E-mail"
+	email.custom_minimum_size = Vector2(230, 0)
+	row.add_child(email)
+	var pw := LineEdit.new()
+	pw.placeholder_text = "Password (10+ chars)"
+	pw.secret = true
+	pw.custom_minimum_size = Vector2(200, 0)
+	pw.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(pw)
+	var nick := LineEdit.new()
+	nick.placeholder_text = "Name (new account)"
+	nick.custom_minimum_size = Vector2(190, 0)
+	row.add_child(nick)
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 10)
+	box.add_child(actions)
+	var status := _lbl("", &"MutedLabel")
+	var done := func(ok: bool) -> void:
+		if ok:
+			_tab_career()
+		else:
+			status.text = "Failed: %s" % Api.last_error
+	actions.add_child(_btn("SIGN IN", func() -> void:
+		status.text = "Signing in…"
+		done.call(await Api.login(email.text.strip_edges(), pw.text))))
+	actions.add_child(_btn("CREATE ACCOUNT", func() -> void:
+		status.text = "Creating account…"
+		done.call(await Api.register(email.text.strip_edges(), pw.text, nick.text.strip_edges()))))
+	var oauth_row := actions
+	box.add_child(status)
+	for provider: String in await Api.oauth_providers():
+		var label := {"google": "GOOGLE", "discord": "DISCORD"}.get(provider, provider.to_upper()) as String
+		oauth_row.add_child(_btn(label, func() -> void:
+			status.text = "Finish signing in in your browser…"
+			done.call(await Api.oauth_login(provider))))
+
+
 func _tab_career() -> void:
 	var v := _clear()
 	v.add_child(_lbl("CAREER", &"HeaderLarge"))
 	var prof: Dictionary = Api.profile
 	var rating: Dictionary = prof.get("rating", {}) if prof.get("rating") is Dictionary else {}
-	v.add_child(_lbl("%s   ·   LEVEL %s   ·   RANK %s" % [Api.display_name(), str(prof.get("level", 1)), str(rating.get("tier", "Unranked")).to_upper()], &"HeaderSmall"))
+	v.add_child(_lbl("%s   ·   LEVEL %s   ·   RANK %s" % [Api.display_name(), str(int(prof.get("level", 1))), str(rating.get("tier", "Unranked")).to_upper()], &"HeaderSmall"))
+	if Api.online and bool(prof.get("guest", true)):
+		_account_box(v)
 	var list := VBoxContainer.new()
 	v.add_child(list)
 	if not Api.online:

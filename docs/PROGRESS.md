@@ -52,7 +52,10 @@ verified, what is open, and the exact next steps. Update it at the end of every 
 - [x] Observability: Prometheus `/metrics` (METRICS_PORT 9464), alert rules and Grafana dashboard
       in `docker/monitoring/`, wired into docker-compose.
 - [x] Web FXAA pass; music as OGG Vorbis.
-- [ ] OAuth (Google, Discord) — needs owner-registered OAuth apps (client id/secret).
+- [x] OAuth (Google, Discord): PKCE code flow, browser + polling for desktop and web, account
+      linking by verified e-mail, Career tab sign-in UI (also e-mail login/registration, which
+      had no UI before). Enable with `OAUTH_<GOOGLE|DISCORD>_CLIENT_ID/_SECRET` and
+      `OAUTH_REDIRECT_BASE`. Tested against a fake provider; not tried against the real ones.
 - [ ] Final art polish pass on every bookmark camera; perf capture on real hardware.
 
 ## What exists (map of the code)

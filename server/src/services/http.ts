@@ -6,6 +6,8 @@ export interface Req {
   method: string;
   path: string;
   params: Record<string, string>;
+  /** URL query string parameters. */
+  query: Record<string, string>;
   body: Record<string, unknown>;
   headers: IncomingMessage["headers"];
   ip: string;
@@ -114,6 +116,7 @@ export class Router {
         method: req.method ?? "GET",
         path: url.pathname,
         params,
+        query: Object.fromEntries(url.searchParams),
         body,
         headers: req.headers,
         ip,

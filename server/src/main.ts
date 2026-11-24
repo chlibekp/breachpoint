@@ -12,6 +12,7 @@ import { AuthService } from "./services/auth.ts";
 import { connect, migrate } from "./services/db.ts";
 import { SocialService } from "./services/social.ts";
 import { StatsService, type MatchResult } from "./services/stats.ts";
+import { OAuthService, providersFromEnv } from "./services/oauth.ts";
 
 const issues = validateConfigs();
 if (issues.length > 0) {
@@ -88,7 +89,19 @@ if (env("DATABASE_URL") && env("REDIS_URL")) {
     onReady: (lobby) => manager.createMatch(lobby.id, lobby.mode, lobby.map),
   });
   social.start();
-  await buildApi(auth, social, stats, publicGateway, replayDir).listen(apiPort);
+  await buildApi(
+    auth,
+    social,
+    stats,
+    publicGateway,
+    replayDir,
+    new OAuthService(
+      redis,
+      auth,
+      providersFromEnv(process.env),
+      env("OAUTH_REDIRECT_BASE", `http://127.0.0.1:${apiPort}`),
+    ),
+  ).listen(apiPort);
   log({ msg: "api listening", port: apiPort });
 }
 
