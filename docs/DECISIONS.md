@@ -203,3 +203,9 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
     2 px two-tone outline.
   - Outlines are neutral for every character. The red enemy outline from spec §4.4 still appears only
     when revealed.
+- **Web FXAA is our own canvas pass.** Godot 4.7's Compatibility renderer has no screen-space AA.
+  QualityManager adds a full-screen FXAA ColorRect on canvas layer −10, above the 3D view and below
+  every UI layer.
+- **Metrics have no dependency.** `server/src/services/metrics.ts` renders the Prometheus text
+  format itself. Workers ship 5 s tick-histogram deltas to the main thread. Input loss is counted
+  as server ticks where a living human had no queued input.

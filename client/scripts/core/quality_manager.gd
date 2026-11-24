@@ -50,9 +50,9 @@ func effective_aa() -> String:
 	var parts := PackedStringArray()
 	if int(tier.get("msaa", 0)) > 0:
 		parts.append("MSAA %dx" % int(tier["msaa"]))
+	if tier.get("fxaa", false):
+		parts.append("FXAA")
 	if renderer == RENDERER_FORWARD:
-		if tier.get("fxaa", false):
-			parts.append("FXAA")
 		if tier.get("taa", false):
 			parts.append("TAA")
 		if tier.get("fsr2", false):
@@ -64,8 +64,6 @@ func _apply_viewport(vp: Viewport) -> void:
 	var msaa: int = int(tier["msaa"])
 	vp.msaa_3d = {0: Viewport.MSAA_DISABLED, 2: Viewport.MSAA_2X, 4: Viewport.MSAA_4X, 8: Viewport.MSAA_8X}.get(msaa, Viewport.MSAA_DISABLED)
 	if renderer == RENDERER_FORWARD:
-		# Godot 4.7's Compatibility renderer has no screen-space AA, so the web tier's FXAA is a
-		# no-op there (DECISIONS.md); MSAA 2x carries web anti-aliasing.
 		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if tier["fxaa"] else Viewport.SCREEN_SPACE_AA_DISABLED
 		vp.use_taa = tier["taa"]
 		if tier["fsr2"]:
@@ -74,8 +72,33 @@ func _apply_viewport(vp: Viewport) -> void:
 		else:
 			vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
 		vp.use_debanding = true
+	else:
+		# Compatibility has no built-in screen-space AA: draw our own FXAA pass instead.
+		_set_web_fxaa(bool(tier.get("fxaa", false)))
 	# Sharpening after TAA (spec 9.2) is applied through the scaling pipeline's FSR sharpness.
 	vp.fsr_sharpness = 2.0 - clampf(float(tier["sharpen"]) * 2.0, 0.0, 2.0)
+
+
+var _fxaa_layer: CanvasLayer
+
+
+## Full-screen FXAA for the Compatibility renderer. The layer sits above the 3D view (layer -10) and
+## below every UI layer (>= 0), so the HUD stays crisp.
+func _set_web_fxaa(on: bool) -> void:
+	if on and _fxaa_layer == null:
+		_fxaa_layer = CanvasLayer.new()
+		_fxaa_layer.name = "WebFXAA"
+		_fxaa_layer.layer = -10
+		var rect := ColorRect.new()
+		rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var mat := ShaderMaterial.new()
+		mat.shader = load("res://shaders/post/fxaa_web.gdshader")
+		rect.material = mat
+		_fxaa_layer.add_child(rect)
+		add_child(_fxaa_layer)
+	if _fxaa_layer != null:
+		_fxaa_layer.visible = on
 
 
 ## Applies tier-dependent post effects to a map's Environment. Base grading (tonemap, LUT,

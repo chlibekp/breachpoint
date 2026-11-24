@@ -49,6 +49,10 @@ verified, what is open, and the exact next steps. Update it at the end of every 
         if wanted.
 - [ ] Compatibility "cool lift" with shadowed sun (needs an engine-level repro).
 - [ ] Snapshot deltas against `baseTick` (halves egress; field already in the protocol).
+- [x] Observability: Prometheus `/metrics` (METRICS_PORT 9464), alert rules and Grafana dashboard
+      in `docker/monitoring/`, wired into docker-compose.
+- [x] Web FXAA pass; music as OGG Vorbis.
+- [ ] OAuth (Google, Discord) — needs owner-registered OAuth apps (client id/secret).
 - [ ] Final art polish pass on every bookmark camera; perf capture on real hardware.
 
 ## What exists (map of the code)
@@ -108,8 +112,8 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
 
 1. **Compatibility look parity** — glow ≈ 2× stronger and a shadowed sun adds a cool lift on web
    (measured; DECISIONS.md). Needs per-renderer env compensation in `QualityManager.apply_environment`.
-2. No FXAA on Compatibility in 4.7 (web AA = MSAA 2x only).
-3. Half-res web textures need a pre-export re-import step; audio is WAV (should be OGG/QOA on web).
+2. ~~No FXAA on Compatibility~~: own FXAA pass (`shaders/post/fxaa_web.gdshader`) under the HUD.
+3. ~~Half-res web textures / OGG~~: `tools/export-web.sh`; music is OGG Vorbis, SFX WAV (spec 16).
 4. NEON street lights are dynamic (unshadowed) so the map reads at night without a bake; the
    bake adds moon bounce only. Check web perf with ~25 omni lights (Compatibility limit 8/object).
 5. Perf numbers are from software rendering; real-hardware capture still needed.
