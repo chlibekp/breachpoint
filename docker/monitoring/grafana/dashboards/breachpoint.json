@@ -1,0 +1,323 @@
+{
+  "uid": "breachpoint-ops",
+  "title": "BREACHPOINT \u2014 match servers",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "tags": ["breachpoint"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Matches",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(bp_matches)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Human players",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(bp_players{kind=\"human\"})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Connections",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(bp_connections)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Tick p99 (5m)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.99, sum(rate(bp_tick_duration_seconds_bucket[5m])) by (le))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Tick duration (p50 / p99) \u2014 alert at 10 ms",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.5, sum(rate(bp_tick_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.99, sum(rate(bp_tick_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.01
+              }
+            ]
+          },
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Bandwidth",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(bp_bytes_sent_total[1m]))",
+          "legendFormat": "out"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(bp_bytes_received_total[1m]))",
+          "legendFormat": "in"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Input loss (ticks without a client input)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(bp_inputs_missing_total[1m])) / clamp_min(sum(rate(bp_inputs_total[1m])) + sum(rate(bp_inputs_missing_total[1m])), 1)",
+          "legendFormat": "loss"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
+            ]
+          },
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Players",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(bp_players{kind=\"human\"})",
+          "legendFormat": "humans"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(bp_players{kind=\"bot\"})",
+          "legendFormat": "bots"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(bp_matches)",
+          "legendFormat": "matches"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Late ticks / dropped frames",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "bp-prom"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(bp_late_ticks_total[1m]))",
+          "legendFormat": "late ticks/s"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(bp_frames_dropped_total[1m])) by (reason)",
+          "legendFormat": "dropped {{reason}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    }
+  ]
+}

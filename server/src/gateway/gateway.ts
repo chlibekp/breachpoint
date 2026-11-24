@@ -3,6 +3,7 @@
 import { type AddressInfo } from "node:net";
 import { WebSocketServer, type RawData, type WebSocket } from "ws";
 import { decode, encode, PROTOCOL_VERSION, type Message } from "@breachpoint/shared/protocol";
+import { metrics } from "../services/metrics.ts";
 
 export interface MatchRouter {
   join(playerId: number, name: string, agent: string): unknown;
@@ -55,7 +56,10 @@ export class Gateway {
   /** Delivers an encoded server frame to a player (used by the match router). */
   deliver(playerId: number, bytes: Uint8Array): void {
     const ws = this.byId.get(playerId);
-    if (ws && ws.readyState === ws.OPEN) ws.send(bytes, { binary: true });
+    if (ws && ws.readyState === ws.OPEN) {
+      ws.send(bytes, { binary: true });
+      metrics.bytesOut.inc(bytes.byteLength);
+    }
   }
 
   start(): Promise<void> {
@@ -88,7 +92,9 @@ export class Gateway {
   }
 
   private send(ws: WebSocket, msg: Message): void {
-    ws.send(encode(msg), { binary: true });
+    const bytes = encode(msg);
+    ws.send(bytes, { binary: true });
+    metrics.bytesOut.inc(bytes.byteLength);
   }
 
   private onConnection(ws: WebSocket): void {
@@ -105,6 +111,7 @@ export class Gateway {
       windowStart: performance.now(),
     };
     this.sessions.set(ws, session);
+    metrics.connections.set(this.sessions.size);
     this.byId.set(id, ws);
     ws.on("message", (data, isBinary) => this.onMessage(ws, session, data, isBinary));
     ws.on("pong", () => {
@@ -114,6 +121,7 @@ export class Gateway {
     ws.on("close", () => {
       if (session.inMatch) this.options.router?.leave(session.playerId);
       this.sessions.delete(ws);
+      metrics.connections.set(this.sessions.size);
       if (this.byId.get(id) === ws) this.byId.delete(id);
     });
     ws.on("error", () => ws.terminate());
@@ -126,6 +134,7 @@ export class Gateway {
       session.windowStart = now;
       session.frames = 0;
     }
+    metrics.bytesIn.inc(data.byteLength);
     if (++session.frames > MAX_FRAMES_PER_SECOND) return this.drop(ws, "rate_limited");
     const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
     let msg: Message;
@@ -177,6 +186,7 @@ export class Gateway {
   }
 
   private drop(ws: WebSocket, reason: string): void {
+    metrics.framesDropped.inc(1, { reason });
     this.send(ws, { type: "Disconnect", reason });
     ws.close(1008, reason);
   }

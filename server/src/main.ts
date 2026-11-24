@@ -6,6 +6,7 @@ import { Redis } from "ioredis";
 import { Gateway } from "./gateway/gateway.ts";
 import { MatchManager } from "./match/match-manager.ts";
 import { pruneReplays } from "./match/replay.ts";
+import { metrics } from "./services/metrics.ts";
 import { buildApi } from "./services/api.ts";
 import { AuthService } from "./services/auth.ts";
 import { connect, migrate } from "./services/db.ts";
@@ -21,6 +22,7 @@ if (issues.length > 0) {
 const env = (k: string, d = ""): string => process.env[k] ?? d;
 const port = Number(env("PORT", "7350"));
 const apiPort = Number(env("API_PORT", "7351"));
+const metricsPort = Number(env("METRICS_PORT", "9464"));
 // MAP: comma-separated rotation; the first map hosts anonymous quick-join matches.
 const maps = env("MAP", "solstice,neon")
   .split(",")
@@ -105,6 +107,11 @@ gateway = new Gateway({
 });
 await gateway.start();
 log({ msg: "gateway listening", port: gateway.port, maps, fillBots });
+// Prometheus scrape endpoint (spec §14.5). Keep it on an internal network; it is not public API.
+if (metricsPort > 0) {
+  await metrics.listen(metricsPort);
+  log({ msg: "metrics listening", port: metricsPort });
+}
 
 const shutdown = async (): Promise<void> => {
   social?.stop();

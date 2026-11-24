@@ -1,0 +1,23 @@
+# Alert rules (spec §14.5: alert if tick time exceeds 10 ms at the 99th percentile).
+groups:
+  - name: breachpoint
+    rules:
+      - alert: TickTimeP99Over10ms
+        expr: histogram_quantile(0.99, sum(rate(bp_tick_duration_seconds_bucket[5m])) by (le)) > 0.010
+        for: 2m
+        labels: { severity: page }
+        annotations:
+          summary: "Match tick p99 above 10 ms"
+          description: "p99 tick duration is {{ $value | humanizeDuration }} (budget 15.6 ms at 64 Hz)."
+      - alert: InputLossHigh
+        expr: sum(rate(bp_inputs_missing_total[5m])) / clamp_min(sum(rate(bp_inputs_total[5m])) + sum(rate(bp_inputs_missing_total[5m])), 1) > 0.05
+        for: 5m
+        labels: { severity: warn }
+        annotations:
+          summary: "More than 5 % of human ticks had no input (packet loss or late packets)"
+      - alert: LateTicks
+        expr: sum(rate(bp_late_ticks_total[5m])) > 1
+        for: 5m
+        labels: { severity: warn }
+        annotations:
+          summary: "Match loops are falling behind schedule"

@@ -41,6 +41,7 @@ run("matchmaking end to end", () => {
         ...process.env,
         PORT: "17350",
         API_PORT: "17351",
+        METRICS_PORT: "17352",
         DATABASE_URL: DB,
         REDIS_URL: REDIS,
         MM_FILL_AFTER: "1",

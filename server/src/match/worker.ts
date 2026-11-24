@@ -3,6 +3,7 @@
 import { parentPort, workerData } from "node:worker_threads";
 import { decode, encode, type Message } from "@breachpoint/shared/protocol";
 import { Match, type MatchOptions } from "./match.ts";
+import { TickSampler } from "../services/metrics.ts";
 
 export type ToWorker =
   | { cmd: "join"; playerId: number; name: string; agent: string; team: number; accountId: string }
@@ -17,7 +18,16 @@ export type FromWorker =
   | { type: "stats"; tick: number; players: number; maxTickMs: number; lastTickMs: number }
   | { type: "stopped" }
   | { type: "result"; result: unknown }
-  | { type: "ended" };
+  | { type: "ended" }
+  | {
+      type: "metrics";
+      tick: { counts: number[]; sum: number; count: number };
+      lateTicks: number;
+      humans: number;
+      bots: number;
+      inputs: number;
+      missing: number;
+    };
 
 const match = new Match(workerData as MatchOptions);
 const port = parentPort!;
@@ -46,6 +56,30 @@ match.onFinished = () => {
     .then(() => port.postMessage({ type: "ended" } satisfies FromWorker));
 };
 match.start();
+
+// Metrics every 5 s: tick-duration histogram delta, late ticks, players, input loss.
+const sampler = new TickSampler();
+match.loop.onTickDone = (ms) => sampler.observe(ms / 1000);
+let lastLate = 0;
+let lastInputs = 0;
+let lastMissing = 0;
+setInterval(() => {
+  const late = match.loop.stats.lateTicks;
+  let humans = 0;
+  for (const p of match.players.values()) if (!p.bot) humans++;
+  port.postMessage({
+    type: "metrics",
+    tick: sampler.take(),
+    lateTicks: late - lastLate,
+    humans,
+    bots: match.players.size - humans,
+    inputs: match.inputsUsed - lastInputs,
+    missing: match.inputsMissing - lastMissing,
+  } satisfies FromWorker);
+  lastLate = late;
+  lastInputs = match.inputsUsed;
+  lastMissing = match.inputsMissing;
+}, 5000).unref();
 
 port.on("message", (m: ToWorker) => {
   switch (m.cmd) {

@@ -14,6 +14,8 @@ export interface TickStats {
 export class FixedTickLoop {
   readonly tickMs: number;
   readonly stats: TickStats = { ticks: 0, lateTicks: 0, lastTickMs: 0, maxTickMs: 0 };
+  /** Called after every tick with its duration in ms (metrics). */
+  onTickDone: ((ms: number) => void) | null = null;
   private running = false;
   private startNs = 0n;
   private timer: NodeJS.Timeout | NodeJS.Immediate | null = null;
@@ -82,6 +84,7 @@ export class FixedTickLoop {
       const dt = Number(process.hrtime.bigint() - t0) / 1e6;
       this.stats.lastTickMs = dt;
       if (dt > this.stats.maxTickMs) this.stats.maxTickMs = dt;
+      this.onTickDone?.(dt);
       ran++;
     }
     this.schedule();

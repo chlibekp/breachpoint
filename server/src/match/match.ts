@@ -845,8 +845,14 @@ export class Match {
     if (this.tick % 64 === 0) this.broadcastScoreboard();
   }
 
+  /** Human input accounting for the packet-loss metric (consumed vs. missing per tick). */
+  inputsUsed = 0;
+  inputsMissing = 0;
+
   private nextInput(p: ServerPlayer): InputCmd {
     const cmd = p.inputs.shift();
+    if (cmd) this.inputsUsed++;
+    else if (p.alive) this.inputsMissing++;
     if (cmd) {
       p.lastCmd = cmd;
       p.lastSeq = cmd.seq;
