@@ -409,7 +409,7 @@ static func _mamba(rig: AgentRig) -> void:
 	pal["boots"] = {"color": Color("#E4E8EC"), "roughness": 0.5}
 	pal["hood"] = {"color": Color("#86C928"), "roughness": 0.7, "sheen": 0.5}
 	pal["hood_in"] = {"color": Color("#15181B"), "roughness": 0.8}
-	pal["visor"] = {"color": Color("#10200A"), "roughness": 0.05, "metallic": 0.3, "emissive": Color("#B6FF3A"), "emissive_energy": 2.4}
+	pal["visor"] = {"color": Color("#10200A"), "roughness": 0.08, "metallic": 0.5, "emissive": Color("#8FE020"), "emissive_energy": 1.2}
 	var spec := {
 		"fem": false, "bulk": 0.97, "iris": Color("#3A2416"), "brow": Color("#120C0A"),
 		"mats": {"torso": "cloth", "legs": "", "upper_arm": "cloth", "forearm": "cloth", "hands": "gloves"},
@@ -475,10 +475,10 @@ static func _mamba(rig: AgentRig) -> void:
 	rig.part("head", hood, func(k: FormKit) -> void: AgentBody.open_shell(k, hood_rings, true, gaps, 0.014, 26, -PI * 0.5, true, PackedFloat32Array([0.8, 0.88, 0.95, 1, 1, 1, 1])), "hood")
 	rig.part("head", _mat(rig, pal, "hood_in"), func(k: FormKit) -> void: AgentBody.open_shell(k, hood_rings, false, gaps, 0.014, 26), "hood_lining")
 	rig.part("head", _mat(rig, pal, "visor"), func(k: FormKit) -> void:
-		k.panel(hr, 0.082, 0.118, -PI * 0.5 - 1.2, -PI * 0.5 + 1.2, 0.014, 3, 16), "visor")
+		k.panel(hr, 0.074, 0.12, -PI * 0.5 - 1.2, -PI * 0.5 + 1.2, 0.02, 4, 16), "visor")
 	rig.part("head", armor, func(k: FormKit) -> void:
-		k.panel(hr, 0.118, 0.126, -PI * 0.5 - 1.25, -PI * 0.5 + 1.25, 0.016, 1, 16)
-		k.panel(hr, 0.075, 0.082, -PI * 0.5 - 1.25, -PI * 0.5 + 1.25, 0.016, 1, 16), "visor_frame")
+		k.panel(hr, 0.12, 0.128, -PI * 0.5 - 1.25, -PI * 0.5 + 1.25, 0.022, 1, 16)
+		k.panel(hr, 0.067, 0.074, -PI * 0.5 - 1.25, -PI * 0.5 + 1.25, 0.022, 1, 16), "visor_frame")
 	# Drawstring toggles.
 	rig.part("chest", cloth, func(k: FormKit) -> void:
 		for sx: float in [-1.0, 1.0]:
@@ -602,6 +602,12 @@ static func _vesper(rig: AgentRig) -> void:
 	rig.part("head", hair, func(k: FormKit) -> void:
 		AgentBody.hair_cap(k, hr, 0.17, 0.0, 0.01, 0.82, 0.07)
 		AgentBody.hair_mass(k, hr, {"front": -0.09, "back": 0.11, "vol_front": 0.022, "vol_mid": 0.02, "vol_back": 0.016, "side": 0.02, "depth": 0.08, "drop": 0.06})
+		AgentBody.hair_clumps(k, hr, [
+			{"x": -0.05, "spread": 1.3, "lift": 0.02, "w": 0.026, "z0": -0.085, "z1": 0.105, "drop": 0.04},
+			{"x": -0.02, "spread": 1.1, "lift": 0.026, "w": 0.028, "z0": -0.09, "z1": 0.11, "drop": 0.05},
+			{"x": 0.015, "spread": 1.1, "lift": 0.026, "w": 0.028, "z0": -0.09, "z1": 0.11, "drop": 0.05},
+			{"x": 0.05, "spread": 1.3, "lift": 0.02, "w": 0.026, "z0": -0.085, "z1": 0.105, "drop": 0.04},
+		])
 		# Side-swept fringe and bob panels framing the face.
 		for sx: float in [-1.0, 1.0]:
 			var x0 := sx * 0.074
@@ -737,6 +743,11 @@ static func _haldor(rig: AgentRig) -> void:
 	rig.part("head", hair, func(k: FormKit) -> void:
 		AgentBody.hair_cap(k, hr, 0.165, 0.03, 0.007, 0.8, 0.02)
 		AgentBody.hair_mass(k, hr, {"front": -0.09, "back": 0.1, "vol_front": 0.02, "vol_mid": 0.022, "vol_back": 0.01, "side": 0.006, "depth": 0.05})
+		AgentBody.hair_clumps(k, hr, [
+			{"x": -0.04, "spread": 1.2, "lift": 0.03, "w": 0.026, "z0": -0.088, "z1": 0.09, "drop": 0.0},
+			{"x": 0.0, "spread": 1.0, "lift": 0.036, "w": 0.028, "z0": -0.092, "z1": 0.095, "drop": 0.0},
+			{"x": 0.04, "spread": 1.2, "lift": 0.03, "w": 0.026, "z0": -0.088, "z1": 0.09, "drop": 0.0},
+		])
 		_braid(k, FormKit.bezier(Vector3(0, 0.17, 0.1), Vector3(0, 0.12, 0.135), Vector3(0, 0.0, 0.12), 5), 0.013), "hair")
 	rig.part("head", rig.material("beard", {"color": Color("#A8703F"), "roughness": 0.6}), func(k: FormKit) -> void:
 		AgentBody.beard(k, hr, 0.028, 0.085, 0.014, 1.75, -0.012, 0.03)
@@ -949,6 +960,11 @@ static func _sable(rig: AgentRig) -> void:
 	rig.part("head", _mat(rig, pal, "hair"), func(k: FormKit) -> void:
 		AgentBody.hair_cap(k, hr, 0.16, -0.02, 0.012, 0.8, 0.09)
 		AgentBody.hair_mass(k, hr, {"front": -0.084, "back": 0.11, "vol_front": 0.018, "vol_mid": 0.024, "vol_back": 0.02, "side": 0.026, "depth": 0.11, "drop": 0.07})
+		AgentBody.hair_clumps(k, hr, [
+			{"x": -0.035, "spread": 1.6, "lift": 0.014, "w": 0.026, "z0": -0.06, "z1": 0.12, "drop": 0.08},
+			{"x": 0.0, "spread": 1.0, "lift": 0.02, "w": 0.028, "z0": -0.07, "z1": 0.125, "drop": 0.09},
+			{"x": 0.035, "spread": 1.6, "lift": 0.014, "w": 0.026, "z0": -0.06, "z1": 0.12, "drop": 0.08},
+		])
 		# Blunt bangs.
 		k.loft([
 			FormKit.ring(0.135, 0.07, 0.014, 0.018, -0.082, 2.6),
