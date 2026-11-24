@@ -114,7 +114,7 @@ func _set_showroom_agent(agent_id: String) -> void:
 	var anim := AgentAnimator.new()
 	anim.setup(_showroom_rig)
 	anim.attach_weapon(WeaponBuilder.build("saber"))
-	anim.aim_pitch = -0.35
+	anim.aim_pitch = -0.9  # relaxed low-ready hold for the showroom
 	_showroom_rig.add_child(anim)
 
 
