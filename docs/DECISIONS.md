@@ -209,3 +209,18 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
 - **Metrics have no dependency.** `server/src/services/metrics.ts` renders the Prometheus text
   format itself. Workers ship 5 s tick-histogram deltas to the main thread. Input loss is counted
   as server ticks where a living human had no queued input.
+- **Compatibility sun-shadow lift (investigated 2026-11-24, `scenes/dev/parity_probe.tscn`).**
+  - With sun shadows off, the renderers match to about 1/255 on sunlit surfaces.
+  - With them on, Compatibility brightens and desaturates sunlit surfaces: floor (192,174,155) →
+    (208,207,197); terracotta (208,115,72) → (217,155,108). Shaded areas are unaffected.
+  - It happens with or without the lightmap. Environment reflections, light specular and ambient
+    energy all have no effect.
+  - The effect is not linear in sun energy (at half energy the lift remains).
+  - Most likely cause: the extra lighting pass for shadowed directional lights is blended in
+    non-linear (LDR) space inside the engine.
+  - Options:
+    - (a) LightmapGI shadowmask bake, then turn off real-time sun shadows on the web tier. Characters
+      lose dynamic sun shadows on web.
+    - (b) Report upstream with the probe scene as the repro and wait for an engine fix.
+    - (c) Accept the brighter web look.
+  - Not changed yet; needs an owner call.
