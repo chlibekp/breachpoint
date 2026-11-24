@@ -19,6 +19,13 @@ const R_CZ := 5
 const R_N := 6
 const R_SHADE := 7
 
+## Segment budget factor for round forms with 10+ segments (web triangle budget).
+const DETAIL := 0.85
+
+
+static func _segs(n: int) -> int:
+	return n if n < 10 else int(round(n * DETAIL / 2.0)) * 2
+
 
 ## One loft ring. zb < 0 means "same as zf". n = superellipse exponent (2 = ellipse, 3+ = boxier).
 static func ring(y: float, rx: float, zf: float, zb: float = -1.0, cz: float = 0.0, n: float = 2.0, shade: float = 1.0, cx: float = 0.0) -> PackedFloat32Array:
@@ -90,6 +97,7 @@ static func _ring_at(rings: Array, y: float) -> PackedFloat32Array:
 ## Smooth loft through `rings` (bottom to top). `segments` around; `sub` extra Catmull-Rom
 ## subdivisions between rings for smooth silhouettes. Caps: flat fans at open ends.
 func loft(rings: Array, segments: int = 16, sub: int = 1, cap_bottom: bool = true, cap_top: bool = true) -> FormKit:
+	segments = _segs(segments)
 	var rs: Array = _subdivide(rings, sub)
 	var nr := rs.size()
 	var grid: Array[PackedVector3Array] = []

@@ -113,7 +113,8 @@ static func build(rig: AgentRig, pal: Dictionary, spec: Dictionary) -> Dictionar
 	var pelvis_id: String = mats.get("pelvis", legs_id)
 	if torso_id != "":
 		rig.part("spine", m.call(torso_id), func(k: FormKit) -> void: k.loft(f["abdomen"], 18, 1, false, false), "abdomen")
-		rig.part("chest", m.call(torso_id), func(k: FormKit) -> void: k.loft(f["chest"], 18, 2, true, true), "chest")
+		if not spec.get("hide_chest", false):
+			rig.part("chest", m.call(torso_id), func(k: FormKit) -> void: k.loft(f["chest"], 18, 1, true, true), "chest")
 	if pelvis_id != "":
 		rig.part("hips", m.call(pelvis_id), func(k: FormKit) -> void: k.loft(f["pelvis"], 18, 1, true, true), "pelvis")
 	var neck_id: String = mats.get("neck", "skin")
@@ -153,7 +154,7 @@ static func head(rig: AgentRig, pal: Dictionary, spec: Dictionary, hr: Array) ->
 	var fem: bool = spec.get("fem", false)
 	var skin: ShaderMaterial = rig.material("skin", pal["skin"])
 	rig.part("head", skin, func(k: FormKit) -> void:
-		k.loft(hr, 20, 2, true, false)
+		k.loft(hr, 20, 1, true, false)
 		# Nose: bridge to tip, plus soft nostril wings.
 		var zb := FormKit.front_z(hr, 0.0, 0.1)
 		var zt := FormKit.front_z(hr, 0.0, 0.068)
@@ -288,7 +289,7 @@ static func boot(k: FormKit, opts: Dictionary) -> void:
 		_r(toe - 0.04, 0.05, 0.028, 0.027, -0.04, 2.5),
 		_r(toe - 0.01, 0.038, 0.022, 0.019, -0.045, 2.3),
 		_r(toe + 0.006, 0.012, 0.01, 0.01, -0.049, 2.0),
-	], 14, 1, true, true)
+	], 12, 1, true, true)
 	# Toe cap and heel counter: darker, slightly proud.
 	k.color = Color(0.72, 0.72, 0.72)
 	k.loft([
@@ -296,12 +297,12 @@ static func boot(k: FormKit, opts: Dictionary) -> void:
 		_r(toe - 0.04, 0.052, 0.029, 0.029, -0.041, 2.5),
 		_r(toe - 0.01, 0.04, 0.023, 0.021, -0.045, 2.3),
 		_r(toe + 0.008, 0.012, 0.011, 0.011, -0.049, 2.0),
-	], 14, 1, true, true)
+	], 12, 0, true, true)
 	k.loft([
 		_r(-0.083, 0.03, 0.016, 0.016, -0.045, 2.2),
 		_r(-0.074, 0.049, 0.022, 0.03, -0.045, 2.4),
 		_r(-0.045, 0.053, 0.026, 0.03, -0.045, 2.5),
-	], 14, 1, true, true)
+	], 12, 0, true, true)
 	# Sole: wider, flatter slab with a darker tone.
 	var c := chunk
 	k.color = Color(0.5, 0.5, 0.5)
@@ -312,7 +313,7 @@ static func boot(k: FormKit, opts: Dictionary) -> void:
 		_r(0.09, 0.062, 0.011 * c, 0.011 * c, -0.064, 3.4),
 		_r(toe - 0.02, 0.053, 0.011 * c, 0.011 * c, -0.064, 3.0),
 		_r(toe + 0.014, 0.02, 0.01 * c, 0.01 * c, -0.064, 2.4),
-	], 14, 1, true, true)
+	], 12, 0, true, true)
 	k.color = Color.WHITE
 	k.reset_transform()
 

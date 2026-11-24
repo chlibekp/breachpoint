@@ -142,7 +142,7 @@ static func _kestrel(rig: AgentRig) -> void:
 	pal["reflect"] = {"color": Color("#C9CDD2"), "roughness": 0.25, "metallic": 0.5, "emissive": Color("#FFFFFF"), "emissive_energy": 0.15}
 	pal["rift"] = {"color": Color("#331a0a"), "emissive": Color("#FFA14A"), "emissive_energy": 4.0}
 	var spec := {
-		"fem": true, "iris": Color("#3F7FA8"), "brow": Color("#B8925E"),
+		"fem": true, "iris": Color("#3F7FA8"), "brow": Color("#B8925E"), "hide_chest": true,
 		"mats": {"torso": "cloth", "legs": "", "upper_arm": "", "forearm": "signature", "hands": "gloves"},
 	}
 	var f := AgentBody.build(rig, pal, spec)
@@ -483,7 +483,7 @@ static func _vesper(rig: AgentRig) -> void:
 	pal["hair"] = {"color": Color("#2E1E18"), "roughness": 0.62}
 	var spec := {
 		"fem": true, "iris": Color("#6E5A9E"), "brow": Color("#2A1A14"),
-		"mats": {"torso": "cloth", "legs": "cloth", "upper_arm": "", "forearm": "", "hands": "gloves"},
+		"mats": {"torso": "", "legs": "cloth", "upper_arm": "", "forearm": "", "hands": "gloves"},
 		"boot": {"shaft": -0.12, "toe": 0.2},
 	}
 	var f := AgentBody.build(rig, pal, spec)
@@ -523,7 +523,7 @@ static func _vesper(rig: AgentRig) -> void:
 			var y := 0.17 - row * 0.065
 			for sx: float in [-1.0, 1.0]:
 				var x := sx * 0.048
-				k.ellipsoid(Vector3(0.009, 0.009, 0.005), Vector3(x, y, FormKit.front_z(jc, x, y) - 0.002), 8, 5)
+				k.ellipsoid(Vector3(0.009, 0.009, 0.005), Vector3(x, y, FormKit.front_z(jc, x, y) - 0.002), 6, 4)
 		k.loft(FormKit.slice(jc, -0.065, -0.05, 0.004, 2), 18, 0, true, true), "buttons")
 	rig.part("spine", brass, func(k: FormKit) -> void:
 		var ab := FormKit.grown(f["abdomen"], 0.018)
@@ -531,7 +531,7 @@ static func _vesper(rig: AgentRig) -> void:
 			var y := 0.2 - row * 0.07
 			for sx: float in [-1.0, 1.0]:
 				var x := sx * 0.045
-				k.ellipsoid(Vector3(0.009, 0.009, 0.005), Vector3(x, y, FormKit.front_z(ab, x, y) - 0.002), 8, 5)
+				k.ellipsoid(Vector3(0.009, 0.009, 0.005), Vector3(x, y, FormKit.front_z(ab, x, y) - 0.002), 6, 4)
 		k.loft(FormKit.slice(ab, 0.02, 0.045, 0.004, 2), 18, 0, true, true)
 		k.box(Vector3(0.045, 0.034, 0.012), Vector3(0, 0.033, FormKit.front_z(ab, 0.0, 0.033) - 0.008), 0.005), "belt")
 	# Star-chart cape: navy outside with a glowing constellation, violet lining.
@@ -567,11 +567,11 @@ static func _vesper(rig: AgentRig) -> void:
 			var xf := Transform3D(Basis(Vector3.RIGHT, 0.4 + ring_i * 0.7) * Basis(Vector3.BACK, ring_i * 0.9), o)
 			var loop := PackedVector3Array()
 			var rad := PackedFloat32Array()
-			for j: int in 25:
-				var a := TAU * j / 24.0
+			for j: int in 19:
+				var a := TAU * j / 18.0
 				loop.append(xf * Vector3(cos(a) * rr, 0, sin(a) * rr))
 				rad.append(0.007)
-			k.tube(loop, rad, 6, 1.0, Vector3.UP, false)
+			k.tube(loop, rad, 5, 1.0, Vector3.UP, false)
 			k.ellipsoid(Vector3(0.02, 0.02, 0.02) * (1.0 - ring_i * 0.2), xf * Vector3(rr, 0, 0), 8, 6)
 		k.strand(PackedVector3Array([o + Vector3(0, -0.1, 0), o + Vector3(0, 0.1, 0)]), 0.003, 0.003, 5), "orrery")
 	rig.part("chest", glow, func(k: FormKit) -> void: k.ellipsoid(Vector3(0.032, 0.032, 0.032), o, 10, 8), "orrery_core")
@@ -608,7 +608,7 @@ static func _haldor(rig: AgentRig) -> void:
 	pal["boots"] = {"color": Color("#26272B"), "roughness": 0.55, "edge_wear": 0.5}
 	var spec := {
 		"fem": false, "bulk": 1.14, "iris": Color("#5C8AA0"), "brow": Color("#9A6A40"),
-		"mats": {"torso": "suit", "legs": "suit", "upper_arm": "suit", "forearm": "suit", "hands": "basalt"},
+		"mats": {"torso": "", "legs": "suit", "upper_arm": "suit", "forearm": "suit", "hands": "basalt"},
 		"boot": {"shaft": -0.25, "toe": 0.22, "chunk": 1.5}, "hand_scale": 1.2,
 	}
 	var f := AgentBody.build(rig, pal, spec)
@@ -854,7 +854,7 @@ static func _sable(rig: AgentRig) -> void:
 	pal["hair"] = {"color": Color("#16141A"), "roughness": 0.62}
 	var spec := {
 		"fem": true, "bulk": 0.96, "iris": Color("#2E2218"), "brow": Color("#16121A"),
-		"mats": {"torso": "cloth", "legs": "cloth_light", "upper_arm": "", "forearm": "", "hands": "skin"},
+		"mats": {"torso": "", "legs": "cloth_light", "upper_arm": "", "forearm": "", "hands": "skin"},
 		"boot": {"shaft": -0.38, "toe": 0.21, "chunk": 1.6},
 	}
 	var f := AgentBody.build(rig, pal, spec)
@@ -930,10 +930,15 @@ static func _sable(rig: AgentRig) -> void:
 		AgentBody.hair_mass(k, hr, {"front": -0.084, "back": 0.11, "vol_front": 0.018, "vol_mid": 0.024, "vol_back": 0.02, "side": 0.026, "depth": 0.11, "drop": 0.07})
 		# Blunt bangs.
 		k.loft([
-			FormKit.ring(0.12, 0.074, 0.016, 0.02, -0.085, 2.6),
+			FormKit.ring(0.135, 0.07, 0.014, 0.018, -0.082, 2.6),
 			FormKit.ring(0.16, 0.08, 0.022, 0.03, -0.08, 2.4),
 			FormKit.ring(0.2, 0.06, 0.02, 0.03, -0.06, 2.2),
 		], 14, 1, true, true)
+		# Jagged fringe tips under the blunt bangs.
+		for i: int in 7:
+			var x := -0.066 + i * 0.022
+			var top := Vector3(x, 0.152, FormKit.front_z(hr, x, 0.152) - 0.018)
+			k.tube(PackedVector3Array([top, top + Vector3(x * 0.08, -0.016, 0.001), top + Vector3(x * 0.15, -0.028 - (i % 2) * 0.008, 0.004)]), PackedFloat32Array([0.016, 0.011, 0.002]), 8, 0.3, Vector3.FORWARD)
 		for sx: float in [-1.0, 1.0]:
 			k.tube(FormKit.bezier3(Vector3(sx * 0.07, 0.16, -0.07), Vector3(sx * 0.088, 0.09, -0.07), Vector3(sx * 0.086, 0.02, -0.05), Vector3(sx * 0.07, -0.05, -0.04), 8),
 				PackedFloat32Array([0.02, 0.024, 0.024, 0.022, 0.02, 0.016, 0.01, 0.004]), 8, 0.5, Vector3(sx, 0, 0)), "hair")
@@ -1028,10 +1033,10 @@ static func _imani(rig: AgentRig) -> void:
 			var pts := PackedVector3Array()
 			for j: int in 6:
 				var t := float(j) / 5.0
-				var z := lerpf(-0.085, 0.09, t)
-				var x := u * 0.06 * (1.0 - t * 0.6)
-				pts.append(Vector3(x, AgentBody.skull_top(hr, z) + 0.004 - absf(u) * 0.02, z))
-			k.strand(pts, 0.009, 0.008, 6)
+				var z := lerpf(-0.066, 0.09, t)
+				var x := u * 0.055 * (1.0 - t * 0.6)
+				pts.append(Vector3(x, AgentBody.skull_top(hr, z) + 0.001 - absf(u) * 0.016, z))
+			k.strand(pts, 0.0065, 0.0075, 6)
 		k.ellipsoid(Vector3(0.05, 0.04, 0.045), Vector3(0, 0.17, 0.1), 10, 8)
 		# Hanging braids.
 		for i: int in 9:

@@ -52,7 +52,7 @@ func _ready() -> void:
 			cam.position = Vector3(0, 1.0, 5.6)
 			cam.look_at(Vector3(0, 0.92, 0))
 	for id: String in (IDS if view in ["all", "busts"] else [agent]):
-		print("[charsheet] %s triangles: %d" % [id, _tris(AgentLooks.build(id))])
+		print("[charsheet] %s triangles: %d" % [id, _tris(AgentLooks.build(id), args.has("parts"))])
 
 
 func _spawn(id: String, pos: Vector3, yaw: float, pose: String) -> void:
@@ -86,12 +86,21 @@ class _Relax extends Node:
 			(rig.bones["hand_" + side] as Node3D).rotation = Vector3(0.05, sx * -0.25, sx * -0.04)
 
 
-func _tris(rig: AgentRig) -> int:
+func _tris(rig: AgentRig, per_part: bool = false) -> int:
 	var n := 0
+	var parts: Dictionary = {}
 	for mi: Node in rig.find_children("*", "MeshInstance3D", true, false):
 		var mesh := (mi as MeshInstance3D).mesh
 		for s: int in mesh.get_surface_count():
-			n += (mesh.surface_get_arrays(s)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
+			var verts: PackedVector3Array = mesh.surface_get_arrays(s)[Mesh.ARRAY_VERTEX]
+			n += verts.size() / 3
+			var key := "%s/%s" % [mi.get_parent().name, mi.name]
+			parts[key] = int(parts.get(key, 0)) + verts.size() / 3
+	if per_part:
+		var keys: Array = parts.keys()
+		keys.sort_custom(func(a: Variant, b: Variant) -> bool: return int(parts[a]) > int(parts[b]))
+		for key: Variant in keys.slice(0, 14):
+			print("    %6d  %s" % [int(parts[key]), str(key)])
 	rig.free()
 	return n
 
