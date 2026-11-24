@@ -14,6 +14,11 @@ extends Node3D
 @export var character_lift: float = 0.0
 ## Raises dark character albedo toward mid-tones on dark maps (global `character_value_floor`).
 @export var character_value_floor: float = 0.0
+## Character silhouette outline (M_CharacterOutline): alpha 0 = off. Daylight maps use a dark line so
+## agents separate from bright walls; night maps rely on the fill light instead.
+@export var character_outline: Color = Color(0, 0, 0, 0)
+@export var character_outline_light: Color = Color(0, 0, 0, 0)
+@export var character_outline_px: float = 2.0
 
 const SPIN_RATE := 0.08
 
@@ -37,6 +42,9 @@ func _ready() -> void:
 			_spinners.append(c)
 	RenderingServer.global_shader_parameter_set("character_lift", character_lift)
 	RenderingServer.global_shader_parameter_set("character_value_floor", character_value_floor)
+	RenderingServer.global_shader_parameter_set("character_outline", character_outline)
+	RenderingServer.global_shader_parameter_set("character_outline_light", character_outline_light)
+	RenderingServer.global_shader_parameter_set("character_outline_px", character_outline_px)
 	if character_fill > 0.0:
 		_fill = DirectionalLight3D.new()
 		_fill.name = "CharacterFill"
@@ -53,6 +61,8 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	RenderingServer.global_shader_parameter_set("character_lift", 0.0)
 	RenderingServer.global_shader_parameter_set("character_value_floor", 0.0)
+	RenderingServer.global_shader_parameter_set("character_outline", Color(0, 0, 0, 0))
+	RenderingServer.global_shader_parameter_set("character_outline_light", Color(0, 0, 0, 0))
 
 
 ## Stops ambient animation (QA captures that diff frames).

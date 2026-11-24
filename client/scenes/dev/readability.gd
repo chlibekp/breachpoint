@@ -1,14 +1,19 @@
 ## Readability capture (spec definition of done: character contrast 3:1 or better everywhere).
 ## For every bookmark camera: stand an enemy agent ~10 m ahead on the floor, facing the camera, render
-## with and without it, and compare the mean relative luminance of the agent's pixels with the same
-## pixels behind it (WCAG contrast ratio). Writes a JSON report and an annotated PNG per bookmark.
+## with and without it, and measure silhouette-edge contrast: the median WCAG ratio between the agent's
+## outline pixels and the background just outside them (see _measure). Writes a JSON report and a PNG
+## per bookmark (`--overlay` draws the measured outline in cyan).
 ##   godot --path client res://scenes/dev/readability.tscn -- --map=neon --out=../qa/readability/<dir>
-## Optional: --agent=<id> (default kestrel), --size=960x540.
+## Optional: --agent=<id> (default kestrel), --size=1920x1080 (measure at 1080p: outline widths are
+## specified at 1080p), --only=<bookmark index>, --overlay.
 extends Node3D
 
 const PASS_RATIO := 3.0
 const DIFF := 10  ## per-channel byte difference that marks an agent pixel
+## Below this many agent pixels at 1080p the agent is mostly hidden (a fully visible one at 10 m is ~5k).
+const MIN_PIXELS := 1500
 
+var debug_overlay := false
 var map: MapRuntime
 var camera: Camera3D
 var _lut := PackedFloat32Array()
@@ -19,6 +24,7 @@ func _ready() -> void:
 	var map_id := str(args.get("map", "solstice"))
 	var out_dir := str(args.get("out", "user://readability"))
 	var agent_id := str(args.get("agent", "kestrel"))
+	debug_overlay = args.has("overlay")
 	if args.has("size"):
 		var wh := str(args["size"]).split("x")
 		get_window().size = Vector2i(int(wh[0]), int(wh[1]))
@@ -38,6 +44,10 @@ func _ready() -> void:
 		(we.environment.sky.sky_material as ShaderMaterial).set_shader_parameter("cloud_speed", 0.0)
 	for n: Node in map.find_children("*", "GPUParticles3D", true, false) + map.find_children("*", "CPUParticles3D", true, false):
 		(n as Node3D).visible = false
+	# TAA would blend history from the previous agent placement into these single frames; a
+	# converged TAA image of a static scene is close to MSAA, so measure with MSAA instead.
+	get_viewport().use_taa = false
+	get_viewport().msaa_3d = Viewport.MSAA_4X
 	camera = Camera3D.new()
 	camera.current = true
 	add_child(camera)
@@ -79,6 +89,9 @@ func _ready() -> void:
 		var without := await _grab()
 		rig.global_position = at
 		var r := _measure(with_agent, without, box)
+		if r.get("hidden", false):
+			print("[readability] %-18s skipped (agent mostly hidden: %d px)" % [m["name"], r["pixels"]])
+			continue
 		if args.has("debug"):
 			print("box ", box, " img ", with_agent.get_size(), " pixels ", r["pixels"], " rig ", rig.global_position)
 		r["bookmark"] = m["name"]
@@ -87,7 +100,7 @@ func _ready() -> void:
 		results.append(r)
 		var file_base := "%02d_%s" % [idx, str(m["name"]).to_lower().replace(" ", "_")]
 		with_agent.save_png(out_dir.path_join(file_base + ".png"))
-		print("[readability] %-18s ratio %.2f  agent L %.3f  behind L %.3f  %s" % [m["name"], r["ratio"], r["agent_l"], r["behind_l"], "PASS" if r["pass"] else "FAIL"])
+		print("[readability] %-18s edge %.2f  p25 %.2f  outline>=3:1 %3d%%  fill %.2f  %s" % [m["name"], r["ratio"], r["p25"], int(float(r["edge_pass_share"]) * 100.0), r["fill_ratio"], "PASS" if r["pass"] else "FAIL"])
 	var worst := 99.0
 	for r: Dictionary in results:
 		worst = minf(worst, float(r["ratio"]))
@@ -124,10 +137,14 @@ func _place(rig: Node3D) -> bool:
 
 ## Clear line from the camera to the agent's chest (placement did not drop it behind cover).
 func _in_sight(rig: Node3D) -> bool:
-	var chest := rig.global_position + Vector3(0, 1.3, 0)
-	var q := PhysicsRayQueryParameters3D.create(camera.global_position, chest)
-	var hit := get_world_3d().direct_space_state.intersect_ray(q)
-	return hit.is_empty() or (hit["position"] as Vector3).distance_to(chest) < 0.8
+	# Chest and knees must both be visible: edges against occluding props are not silhouette edges.
+	for hgt: float in [1.3, 0.45]:
+		var p := rig.global_position + Vector3(0, hgt, 0)
+		var q := PhysicsRayQueryParameters3D.create(camera.global_position, p)
+		var hit := get_world_3d().direct_space_state.intersect_ray(q)
+		if not hit.is_empty() and (hit["position"] as Vector3).distance_to(p) > 0.8:
+			return false
+	return true
 
 
 func _grab() -> Image:
@@ -141,13 +158,67 @@ func _lum(d: PackedByteArray, i: int) -> float:
 	return 0.2126 * _lut[d[i]] + 0.7152 * _lut[d[i + 1]] + 0.0722 * _lut[d[i + 2]]
 
 
+## Silhouette-edge contrast (owner decision 2026-11-24). For every pixel on the agent's outline,
+## take the boundary band (4 px at 1080p: the full two-tone outline), pair each band pixel with the
+## background pixel 2 px outside, and keep the best WCAG ratio, i.e. the strongest edge the eye finds
+## at that point of the silhouette. `ratio` is the median over the outline: what
+## decides whether the silhouette separates from what is behind it, even when the average
+## brightness matches (a dark-on-light half and a light-on-dark half both count).
+## 4-connected flood fill over the mask's bounding box; returns the largest component only.
+func _largest_region(mask: PackedByteArray, w: int, h: int, lo: Vector2i, hi: Vector2i) -> Dictionary:
+	var label := PackedInt32Array()
+	label.resize(w * h)
+	var best := -1
+	var best_size := 0
+	var next := 1
+	var stack := PackedInt32Array()
+	for y: int in range(lo.y, hi.y + 1):
+		for x: int in range(lo.x, hi.x + 1):
+			var start := y * w + x
+			if mask[start] == 0 or label[start] != 0:
+				continue
+			var size := 0
+			stack.append(start)
+			label[start] = next
+			while not stack.is_empty():
+				var p: int = stack[stack.size() - 1]
+				stack.remove_at(stack.size() - 1)
+				size += 1
+				var px := p % w
+				var py := p / w
+				for q: int in [p - 1 if px > 0 else -1, p + 1 if px < w - 1 else -1, p - w if py > 0 else -1, p + w if py < h - 1 else -1]:
+					if q >= 0 and mask[q] != 0 and label[q] == 0:
+						label[q] = next
+						stack.append(q)
+			if size > best_size:
+				best_size = size
+				best = next
+			next += 1
+	var out := PackedByteArray()
+	out.resize(w * h)
+	var nlo := Vector2i(w, h)
+	var nhi := Vector2i(-1, -1)
+	for y: int in range(lo.y, hi.y + 1):
+		for x: int in range(lo.x, hi.x + 1):
+			if label[y * w + x] == best:
+				out[y * w + x] = 1
+				nlo = Vector2i(mini(nlo.x, x), mini(nlo.y, y))
+				nhi = Vector2i(maxi(nhi.x, x), maxi(nhi.y, y))
+	return {"mask": out, "lo": nlo, "hi": nhi}
+
+
 func _measure(a: Image, b: Image, box: Rect2i) -> Dictionary:
 	a.convert(Image.FORMAT_RGB8)
 	b.convert(Image.FORMAT_RGB8)
 	var da := a.get_data()
 	var db := b.get_data()
 	var w := a.get_width()
+	var h := a.get_height()
 	box = box.intersection(Rect2i(Vector2i.ZERO, a.get_size()))
+	var mask := PackedByteArray()
+	mask.resize(w * h)
+	var lo := Vector2i(w, h)
+	var hi := Vector2i(-1, -1)
 	var la := 0.0
 	var lb := 0.0
 	var n := 0
@@ -155,14 +226,71 @@ func _measure(a: Image, b: Image, box: Rect2i) -> Dictionary:
 		for x: int in range(box.position.x, box.end.x):
 			var i := (y * w + x) * 3
 			if absi(da[i] - db[i]) > DIFF or absi(da[i + 1] - db[i + 1]) > DIFF or absi(da[i + 2] - db[i + 2]) > DIFF:
+				mask[y * w + x] = 1
 				la += _lum(da, i)
 				lb += _lum(db, i)
 				n += 1
-				# Tint the mask in the saved image for review.
-				a.set_pixel(x, y, a.get_pixel(x, y).lerp(Color(1, 0, 1), 0.25))
-	if n < 200:
-		return {"ratio": 0.0, "agent_l": 0.0, "behind_l": 0.0, "pixels": n}
+				lo = Vector2i(mini(lo.x, x), mini(lo.y, y))
+				hi = Vector2i(maxi(hi.x, x), maxi(hi.y, y))
+	if n < MIN_PIXELS * h / 1080:
+		return {"ratio": 0.0, "p25": 0.0, "edge_pass_share": 0.0, "fill_ratio": 0.0, "edge_pixels": 0, "pixels": n, "hidden": true}
+	# Keep only the largest connected region: temporal/lighting noise leaves isolated specks.
+	var keep := _largest_region(mask, w, h, lo, hi)
+	mask = keep["mask"]
+	lo = keep["lo"]
+	hi = keep["hi"]
 	la /= n
 	lb /= n
-	var ratio := (maxf(la, lb) + 0.05) / (minf(la, lb) + 0.05)
-	return {"ratio": ratio, "agent_l": la, "behind_l": lb, "pixels": n}
+	# Boundary band: 4 px at 1080p, the full width of the two-tone outline (2 px light + 2 px dark).
+	var band := maxi(2, roundi(4.0 * h / 1080.0))
+	var dirs: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1), Vector2i(1, 1), Vector2i(-1, -1), Vector2i(1, -1), Vector2i(-1, 1)]
+	var ratios := PackedFloat32Array()
+	for y: int in range(maxi(lo.y, 2), mini(hi.y + 1, h - 2)):
+		for x: int in range(maxi(lo.x, 2), mini(hi.x + 1, w - 2)):
+			if mask[y * w + x] == 0:
+				continue
+			for d: Vector2i in dirs:
+				if mask[(y + d.y) * w + x + d.x] != 0:
+					continue
+				# Edge found: agent sample one step inward (if still agent), background two steps out.
+				var ix := x - d.x
+				var iy := y - d.y
+				if mask[iy * w + ix] == 0:
+					ix = x
+					iy = y
+				var ox := x + d.x * 2
+				var oy := y + d.y * 2
+				if mask[oy * w + ox] != 0:
+					continue
+				# The silhouette boundary is a 2 px band (outermost pixel + one inside): an outline
+				# or rim lives there. Take whichever of the two separates more from the background.
+				var l_out := _lum(db, (oy * w + ox) * 3)
+				var best := 1.0
+				for k: int in band:
+					var bx := x - d.x * k
+					var by := y - d.y * k
+					if bx < 0 or by < 0 or bx >= w or by >= h or mask[by * w + bx] == 0:
+						break
+					var l_in := _lum(da, (by * w + bx) * 3)
+					best = maxf(best, (maxf(l_in, l_out) + 0.05) / (minf(l_in, l_out) + 0.05))
+				ratios.append(best)
+				if debug_overlay:
+					a.set_pixel(x, y, Color(0.2, 1.0, 0.9))  # measured outline in the debug image
+				break
+	if ratios.size() < 30:
+		return {"ratio": 0.0, "p25": 0.0, "edge_pass_share": 0.0, "fill_ratio": 0.0, "edge_pixels": ratios.size(), "pixels": n}
+	ratios.sort()
+	var passing := 0
+	for r: float in ratios:
+		if r >= PASS_RATIO:
+			passing += 1
+	return {
+		"ratio": ratios[ratios.size() >> 1],
+		"p25": ratios[ratios.size() >> 2],
+		"edge_pass_share": float(passing) / ratios.size(),
+		"fill_ratio": (maxf(la, lb) + 0.05) / (minf(la, lb) + 0.05),
+		"agent_l": la,
+		"behind_l": lb,
+		"edge_pixels": ratios.size(),
+		"pixels": n,
+	}

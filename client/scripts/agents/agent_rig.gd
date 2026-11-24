@@ -59,6 +59,22 @@ func bone(bone_name: String) -> Node3D:
 
 
 ## Character material by id; created lazily from a palette entry {color, roughness, metallic, emissive}.
+static var _outline: ShaderMaterial
+
+
+## Shared silhouette outline pass (driven by per-map globals; invisible when the map disables it).
+static func outline_material() -> ShaderMaterial:
+	if _outline == null:
+		var shader: Shader = load("res://shaders/master/M_CharacterOutline.gdshader")
+		var dark := ShaderMaterial.new()
+		dark.shader = shader
+		_outline = ShaderMaterial.new()  # light outer line first, dark inner line drawn over it
+		_outline.shader = shader
+		_outline.set_shader_parameter("light_pass", true)
+		_outline.next_pass = dark
+	return _outline
+
+
 func material(id: String, spec: Dictionary) -> ShaderMaterial:
 	if materials.has(id):
 		return materials[id]
@@ -72,6 +88,7 @@ func material(id: String, spec: Dictionary) -> ShaderMaterial:
 		m.set_shader_parameter("emissive_energy", spec.get("emissive_energy", 2.0))
 	if spec.has("rim"):
 		m.set_shader_parameter("rim_color", spec["rim"])
+	m.next_pass = outline_material()
 	materials[id] = m
 	return m
 

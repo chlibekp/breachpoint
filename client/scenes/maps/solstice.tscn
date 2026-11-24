@@ -1061,6 +1061,9 @@ size = Vector3(1, 12, 154)
 [node name="Solstice" type="Node3D" unique_id=60273849]
 script = ExtResource("bp_root_script")
 map_id = "solstice"
+character_outline = Color(0.04, 0.035, 0.03, 1)
+character_outline_light = Color(0.96, 0.93, 0.86, 1)
+character_outline_px = 2.0
 
 [node name="Sign_BMain" type="Label3D" parent="." unique_id=310184284]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 13.429999, 3.9, -10.799999)

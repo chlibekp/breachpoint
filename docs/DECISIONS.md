@@ -178,10 +178,24 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
   player in a full 10-player fight. The load test measures about 8 KB/s (64 kbit/s) per client with
   full snapshots, fog-of-war culling and quantised fields. Deltas against `baseTick` stay as an
   optimisation: the field is reserved and currently always 0.
-- **Character readability uses three levers, measured by `scenes/dev/readability.tscn`.**
-  - A per-map value floor on character albedo (`character_value_floor`: alb' = f + (1 − f)·alb).
-  - Per map, a character-only fill light aimed from the camera (`MapRuntime.character_fill`).
-  - A global albedo self-illumination (`character_lift`).
-  - Daylight SOLSTICE uses no fill or lift; NEON uses fill 7 and lift 3.
-  - The metric is the WCAG ratio of the agent's mean relative luminance against the same pixels
-    without the agent. Glow, SSR reflections and the agent's own shadow are excluded.
+- **Readability metric: silhouette-edge contrast (owner decision 2026-11-24).**
+  - `scenes/dev/readability.tscn` stands an enemy agent about 10 m into every bookmark view (chest
+    and knees visible) and renders at 1080p with TAA off (MSAA 4×).
+  - It takes the agent mask from a with/without diff, keeping the largest region only, and excludes
+    glow, SSR and the agent's shadow.
+  - At every outline pixel it compares the 2 px boundary band with the background 2 px outside, as a
+    WCAG ratio. Pass = median ≥ 3:1. The report also gives p25, the share of the outline ≥ 3:1, and
+    the old mean-luminance "fill" ratio.
+  - Superseded the mean-luminance metric, which daylight maps could only pass with near-black or
+    near-white characters.
+- **Character readability levers (all per map, `MapRuntime` exports → shader globals):**
+  - `character_fill`: a shadowless, camera-aligned fill light that only reaches the character layer.
+  - `character_lift`: albedo self-illumination.
+  - `character_value_floor`: raises dark albedo.
+  - `character_outline` / `character_outline_light` / `character_outline_px`: a two-tone screen-space
+    hull outline (`M_CharacterOutline`). A dark inner line separates from bright walls; a light outer
+    line at twice the width separates from dark ones.
+  - NEON (night) uses fill 7, lift 3 and floor 0.3, with no outline. SOLSTICE (day) uses only the
+    2 px two-tone outline.
+  - Outlines are neutral for every character. The red enemy outline from spec §4.4 still appears only
+    when revealed.

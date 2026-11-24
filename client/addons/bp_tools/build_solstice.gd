@@ -29,7 +29,7 @@ func _init() -> void:
 	var err := SceneIO.save(map_root, OUT, "res://scripts/maps/map_runtime.gd")
 	# Set the exported map_id in the saved scene (script is attached post-save).
 	var text := FileAccess.get_file_as_string(OUT)
-	text = text.replace('script = ExtResource("bp_root_script")\n', 'script = ExtResource("bp_root_script")\nmap_id = "solstice"\n')
+	text = text.replace('script = ExtResource("bp_root_script")\n', 'script = ExtResource("bp_root_script")\nmap_id = "solstice"\ncharacter_outline = Color(0.04, 0.035, 0.03, 1)\ncharacter_outline_light = Color(0.96, 0.93, 0.86, 1)\ncharacter_outline_px = 2.0\n')
 	var f := FileAccess.open(OUT, FileAccess.WRITE)
 	f.store_string(text)
 	f.close()
