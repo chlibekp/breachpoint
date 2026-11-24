@@ -224,3 +224,9 @@ Format: **decision** — why. Anything touching spec §2, §4 or §10 needs the 
     - (b) Report upstream with the probe scene as the repro and wait for an engine fix.
     - (c) Accept the brighter web look.
   - Not changed yet; needs an owner call.
+- **Compatibility light limit raised to 32 per object.** Setting:
+  `rendering/limits/opengl/max_lights_per_object`. MapBuilder merges geometry per material across
+  the whole map, so one mesh "sees" all ~25 NEON street lamps. With the default limit of 8, most lamp
+  pools were missing on the web build (verified by capture). The better long-term fix is splitting
+  merged map meshes into spatial chunks, which also improves culling; it needs a map rebuild and a
+  re-bake.

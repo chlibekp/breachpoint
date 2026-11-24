@@ -117,8 +117,9 @@ per tick; NEON avg 0.16 ms / p99 0.52 ms (budget 15.6 ms).
    (measured; DECISIONS.md). Needs per-renderer env compensation in `QualityManager.apply_environment`.
 2. ~~No FXAA on Compatibility~~: own FXAA pass (`shaders/post/fxaa_web.gdshader`) under the HUD.
 3. ~~Half-res web textures / OGG~~: `tools/export-web.sh`; music is OGG Vorbis, SFX WAV (spec 16).
-4. NEON street lights are dynamic (unshadowed) so the map reads at night without a bake; the
-   bake adds moon bounce only. Check web perf with ~25 omni lights (Compatibility limit 8/object).
+4. NEON street lights on web: the per-object light limit is raised to 32, so lamp pools render.
+   Next: chunk merged map meshes (map rebuild + re-bake), then measure web GPU cost on real
+   hardware.
 5. Perf numbers are from software rendering; real-hardware capture still needed.
 6. Captures on lavapipe are slow (minutes per lightmapped frame); run them in the background.
 
