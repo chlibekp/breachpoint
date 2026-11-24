@@ -38,6 +38,7 @@ static func build(agent_id: String) -> AgentRig:
 			var pal := _palette(Color(color), "light")
 			AgentBody.build(rig, pal, {"mats": {"torso": "signature", "upper_arm": "cloth", "legs": "cloth_light"}})
 			_hair(rig, pal, AgentBody.forms({})["head"], "crop")
+	rig.finalize()
 	return rig
 
 

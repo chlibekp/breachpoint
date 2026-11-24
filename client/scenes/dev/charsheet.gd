@@ -52,7 +52,9 @@ func _ready() -> void:
 			cam.position = Vector3(0, 1.0, 5.6)
 			cam.look_at(Vector3(0, 0.92, 0))
 	for id: String in (IDS if view in ["all", "busts"] else [agent]):
-		print("[charsheet] %s triangles: %d" % [id, _tris(AgentLooks.build(id), args.has("parts"))])
+		var probe := AgentLooks.build(id)
+		var meshes := probe.find_children("*", "MeshInstance3D", true, false).size()
+		print("[charsheet] %s triangles: %d, mesh instances: %d" % [id, _tris(probe, args.has("parts")), meshes])
 
 
 func _spawn(id: String, pos: Vector3, yaw: float, pose: String) -> void:

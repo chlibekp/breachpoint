@@ -36,6 +36,7 @@ var rest: Dictionary = {}  ## name -> Vector3
 var materials: Dictionary = {}  ## material id -> ShaderMaterial (M_Character instances)
 var weapon_socket: Node3D
 var agent_id: String = ""
+var _batches: Dictionary = {}  ## "bone|material id" -> [FormKit, ShaderMaterial, bone]
 
 
 func _init() -> void:
@@ -99,17 +100,35 @@ func material(id: String, spec: Dictionary) -> ShaderMaterial:
 
 
 ## Adds a mesh part (built by `fn(k: FormKit)` in bone space) to a bone with a material.
-## FormKit extends MeshKit, so older `func(k: MeshKit)` builders still work.
-func part(bone_name: String, mat: ShaderMaterial, fn: Callable, part_name: String = "") -> MeshInstance3D:
-	var k := FormKit.new()
+## FormKit extends MeshKit, so older `func(k: MeshKit)` builders still work. Parts sharing a bone
+## and a material are batched into one mesh (fewer draw calls x3 with the outline passes);
+## call finalize() once the outfit is complete.
+func part(bone_name: String, mat: ShaderMaterial, fn: Callable, _part_name: String = "") -> void:
+	var key := "%s|%d" % [bone_name, mat.get_instance_id()]
+	if not _batches.has(key):
+		_batches[key] = [FormKit.new(), mat, bone_name]
+	var k: FormKit = (_batches[key] as Array)[0]
+	k.reset_transform()
+	k.color = Color.WHITE
 	fn.call(k)
-	var mi := MeshInstance3D.new()
-	mi.name = part_name if part_name != "" else "part_%d" % bones[bone_name].get_child_count()
-	mi.mesh = k.commit(mat)
-	mi.gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
-	mi.layers = 1 | CHARACTER_LAYER  # world + character-only fill light (MapRuntime)
-	bones[bone_name].add_child(mi)
-	return mi
+	k.reset_transform()
+	k.color = Color.WHITE
+
+
+## Commits batched parts into one MeshInstance3D per bone and material.
+func finalize() -> void:
+	for key: String in _batches:
+		var b: Array = _batches[key]
+		var k: FormKit = b[0]
+		var mat: ShaderMaterial = b[1]
+		var bone_name: String = b[2]
+		var mi := MeshInstance3D.new()
+		mi.name = "mesh_%d" % bones[bone_name].get_child_count()
+		mi.mesh = k.commit(mat)
+		mi.gi_mode = GeometryInstance3D.GI_MODE_DYNAMIC
+		mi.layers = 1 | CHARACTER_LAYER  # world + character-only fill light (MapRuntime)
+		bones[bone_name].add_child(mi)
+	_batches.clear()
 
 
 ## Enemy-spotted reveal outline (spec §4.4): drives M_Character `reveal` on every material.
